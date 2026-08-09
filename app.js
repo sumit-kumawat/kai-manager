@@ -903,10 +903,10 @@ function applyRolePermissions() {
   const sendEmailBtns = [document.getElementById('header-send-email-btn'), document.getElementById('mobile-send-email-btn')];
 
   if (role === 'admin') {
-    // Admin sees System Administration + Operational Console + Staff User Management
+    // Admin sees ONLY System Administration (Operational Console hidden per user request)
     adminSecNav?.classList.remove('hidden');
-    operationalSecNav?.classList.remove('hidden');
-    bottomMgrBox?.classList.remove('hidden');
+    operationalSecNav?.classList.add('hidden');
+    bottomMgrBox?.classList.add('hidden');
     financialsLink?.classList.remove('hidden');
     idcardsLink?.classList.remove('hidden');
 
