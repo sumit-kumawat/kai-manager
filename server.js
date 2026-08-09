@@ -208,57 +208,92 @@ function generateServerStaffInvoiceNo(staffId, dbData) {
   return `${cleanId}${letterSuffix}`;
 }
 
-// PDF Receipt Buffer Generator for Immediate SMTP Email Attachment
+// PDF Receipt Buffer Generator for Immediate SMTP Email Attachment (Matches Student Profile Receipt Design)
 function createPdfReceiptBuffer(invoiceObj) {
   if (!invoiceObj) return Buffer.from('Official Receipt PDF Document');
-  const invId = String(invoiceObj.id || invoiceObj.invoiceId || 'INV-001');
-  const name = String(invoiceObj.studentName || invoiceObj.name || invoiceObj.staffName || 'Recipient');
-  const targetId = String(invoiceObj.studentId || invoiceObj.staffId || 'KAISTD202601');
-  const amount = String(invoiceObj.finalPaid || invoiceObj.amount || invoiceObj.salary || '0');
-  const method = String(invoiceObj.paymentMethod || 'Online / Transfer');
+  const invId = String(invoiceObj.id || invoiceObj.invoiceId || 'KAISTD2026001A');
+  const name = String(invoiceObj.studentName || invoiceObj.name || invoiceObj.staffName || 'Athlete / Student');
+  const targetId = String(invoiceObj.studentId || invoiceObj.staffId || 'KAISTD2026001');
+  const belt = String(invoiceObj.belt || invoiceObj.studentBelt || 'Karate Athlete');
+  const origAmount = String(invoiceObj.origAmount || invoiceObj.amount || invoiceObj.salary || '2500');
+  const discount = String(invoiceObj.discount || '0');
+  const amount = String(invoiceObj.finalPaid || invoiceObj.amount || invoiceObj.salary || '2500');
+  const method = String(invoiceObj.paymentMethod || invoiceObj.method || 'Online / Transfer / Cash');
   const dateStr = String(invoiceObj.date || invoiceObj.dueDate || new Date().toISOString().split('T')[0]);
+  const phone = String(invoiceObj.phone || invoiceObj.studentPhone || '+91 70409 25257');
+  const email = String(invoiceObj.email || invoiceObj.studentEmail || 'support@conzex.com');
 
   const pdfText = `%PDF-1.4
 1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj
 2 0 obj <</Type /Pages /Kids [3 0 R] /Count 1>> endobj
-3 0 obj <</Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources <</Font <</F1 4 0 R>>>> /Contents 5 0 R>> endobj
+3 0 obj <</Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources <</Font <</F1 4 0 R /F2 6 0 R>>>> /Contents 5 0 R>> endobj
 4 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold>> endobj
-5 0 obj <</Length 480>> stream
+6 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>> endobj
+5 0 obj <</Length 1200>> stream
 BT
 /F1 18 Tf
 40 800 TD
-(KARATE ACADEMY INDIA - OFFICIAL PAYMENT RECEIPT) Tj
+(KARATE ACADEMY INDIA) Tj
+0 -20 TD
+/F2 10 Tf
+(Official Mat Portal Fee Payment Receipt) Tj
+0 -15 TD
+(Tel: +91 70409 25257  |  Email: support@conzex.com) Tj
+0 -30 TD
+/F1 12 Tf
+(OFFICIAL PAID RECEIPT  -  INVOICE #: ${invId}) Tj
+0 -18 TD
+/F2 10 Tf
+(Date: ${dateStr}) Tj
+0 -30 TD
+/F1 12 Tf
+(BILLED TO ATHLETE:) Tj
+0 -18 TD
+/F1 11 Tf
+(Name: ${name}) Tj
+0 -15 TD
+/F2 10 Tf
+(Student ID: ${targetId}   |   Rank: ${belt}) Tj
+0 -15 TD
+(Phone: ${phone}   |   Email: ${email}) Tj
+0 -35 TD
+/F1 12 Tf
+(FEE BREAKDOWN & PAYMENT DETAILS:) Tj
+0 -20 TD
+/F2 10 Tf
+(Description: Tuition & Training Mat Dues) Tj
+0 -15 TD
+(Payment Method: ${method}) Tj
+0 -15 TD
+(Base Tuition Fee: Rs. ${origAmount}) Tj
+0 -15 TD
+(Concession / Discount: Rs. ${discount}) Tj
+0 -18 TD
+/F1 14 Tf
+(TOTAL AMOUNT SETTLED: Rs. ${amount}) Tj
 0 -30 TD
 /F1 11 Tf
-(Receipt Invoice ID: ${invId}) Tj
-0 -20 TD
-(Date: ${dateStr}) Tj
-0 -20 TD
-(Recipient Name: ${name} [${targetId}]) Tj
-0 -20 TD
-(Amount Settled: Rs. ${amount}) Tj
-0 -20 TD
-(Payment Method: ${method}) Tj
-0 -20 TD
-(Status: OFFICIAL PAID & VERIFIED) Tj
-0 -35 TD
+(STATUS: OFFICIAL PAID & VERIFIED) Tj
+0 -40 TD
+/F2 9 Tf
 (Thank you for training with Karate Academy India!) Tj
-0 -20 TD
-(Support: +91 70409 25257 | info@karateacademyindia.com) Tj
+0 -14 TD
+(This is an officially generated computerised fee payment receipt.) Tj
 ET
 endstream
 endobj
 xref
-0 6
+0 7
 0000000000 65535 f 
 0000000010 00000 n 
 0000000060 00000 n 
 0000000117 00000 n 
-0000000227 00000 n 
-0000000295 00000 n 
-trailer <</Size 6 /Root 1 0 R>>
+0000000237 00000 n 
+0000000305 00000 n 
+0000000385 00000 n 
+trailer <</Size 7 /Root 1 0 R>>
 startxref
-820
+1400
 %%EOF`;
 
   return Buffer.from(pdfText, 'utf-8');

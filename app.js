@@ -3705,26 +3705,66 @@ async function shareReceiptWhatsApp(inv) {
 }
 
 async function shareReceiptEmail(inv) {
+  const student = appState.students.find(s => String(s.studentId) === String(inv.studentId) || String(s.id) === String(inv.studentId));
+  const email = inv.email || student?.contactEmail || student?.email || 'support@conzex.com';
+
+  showToast('Sending branded PDF payment receipt via email...');
+
   try {
-    const file = await generateReceiptPDFBlob(inv.id);
-    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: `${appState.config.appSubtitle} Receipt #${inv.id}`,
-        text: `Fee Receipt #${inv.id} for ${inv.studentName}`
+    const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
+    const res = await fetch(getApiUrl('/api/send-email'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        category: 'receipt',
+        targetEmail: email,
+        targetName: inv.studentName || student?.name || 'Athlete',
+        subject: `Official Payment Receipt #${inv.id} - ${appState.config.appSubtitle || 'Karate Academy India'}`,
+        contentHtml: `
+          <div class="card">
+            <h4 style="margin:0 0 10px 0; color:#0f172a; font-size:15px;">Fee Payment Confirmation</h4>
+            <p style="margin:0 0 8px 0; font-size:13px; color:#334155;">Dear <strong>${inv.studentName || 'Athlete'}</strong>,</p>
+            <p style="margin:0 0 14px 0; font-size:13px; color:#334155;">We have successfully received your payment of <strong>₹${(inv.finalPaid || inv.origAmount || inv.amount).toLocaleString('en-IN')}</strong> for Invoice <strong>#${inv.id}</strong>. Attached to this email is your official branded PDF fee receipt.</p>
+            <table class="table">
+              <tr><td class="label">Invoice Reference</td><td class="value">${inv.id}</td></tr>
+              <tr><td class="label">Student ID</td><td class="value">${inv.studentId || 'KAISTD2026001'}</td></tr>
+              <tr><td class="label">Settled Amount</td><td class="value">₹${(inv.finalPaid || inv.amount).toLocaleString('en-IN')}</td></tr>
+              <tr><td class="label">Payment Method</td><td class="value">${inv.paymentMethod || 'Online'}</td></tr>
+              <tr><td class="label">Status</td><td class="value"><span class="badge-paid">PAID & VERIFIED</span></td></tr>
+            </table>
+          </div>
+        `,
+        meta: {
+          invoiceObj: inv,
+          invoiceData: inv,
+          amount: inv.finalPaid || inv.amount
+        }
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      logActivity(`Branded PDF Receipt Emailed: ${inv.id}`, `To: ${email}`, 'payment');
+      showLightbox({
+        title: 'Receipt Emailed Successfully',
+        message: `Official branded PDF receipt #${inv.id} has been dispatched to ${email}.`,
+        type: 'success'
       });
-      logActivity(`Receipt Shared via Email: ${inv.id}`, `Athlete: ${inv.studentName}`, 'payment');
-      showToast('Receipt PDF shared via Email');
       return;
+    } else {
+      showToast(`SMTP Dispatch: ${data.error || 'Opening mail client...'}`);
     }
-  } catch (e) { }
+  } catch (e) {
+    console.warn('[ShareReceiptEmail] Network / API error:', e.message);
+  }
 
+  // Fallback to mailto if SMTP fails or unconfigured
   downloadReceiptPDF(inv.id);
-  const student = appState.students.find(s => String(s.studentId) === String(inv.studentId));
-  const email = student?.contactEmail || student?.email || appState.config.contactEmail || 'support@conzex.com';
-  const subject = encodeURIComponent(`${appState.config.appSubtitle} - Fee Receipt #${inv.id}`);
+  const subject = encodeURIComponent(`${appState.config.appSubtitle} - Official Fee Receipt #${inv.id}`);
   const body = encodeURIComponent(`Dear ${inv.studentName},\n\nThank you for your fee payment of ₹${(inv.finalPaid || inv.amount).toLocaleString('en-IN')} for Invoice #${inv.id}.\n\nPayment Method: ${inv.paymentMethod}\nStatus: Paid (Balance ₹0)\n\nRegards,\n${appState.config.appSubtitle}`);
-
   window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
 }
 
