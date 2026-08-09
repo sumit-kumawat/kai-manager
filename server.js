@@ -9,6 +9,9 @@ const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'db.json');
 
+// Unique Build Timestamp Token (Changes on every server boot / code push)
+const SERVER_BUILD_ID = 'BUILD_' + Date.now();
+
 // In-memory active session tokens map: token -> user object
 const activeSessions = new Map();
 
@@ -44,8 +47,9 @@ function writeDbFile(data) {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// Hydrate in-memory activeSessions map from db.json on startup
+// Purge sessions on code update/boot so active browser sessions invalidate automatically
 function hydrateActiveSessions() {
+  activeSessions.clear();
   try {
     const dbData = readDbFile();
     if (dbData.sessions && Array.isArray(dbData.sessions)) {
@@ -652,7 +656,8 @@ const server = http.createServer((req, res) => {
             res.end(JSON.stringify({
               success: true,
               token: token,
-              user: sessionUser
+              user: sessionUser,
+              buildId: SERVER_BUILD_ID
             }));
           } else {
             console.log('[Server] Login failed for:', cleanUser);
@@ -665,6 +670,13 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: 'Invalid payload' }));
         }
       });
+      return;
+    }
+
+    // 1b. Version & Build Token Endpoint (`/api/version`)
+    if (req.url === '/api/version' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, buildId: SERVER_BUILD_ID, version: '2.1.0' }));
       return;
     }
 
@@ -765,6 +777,8 @@ const server = http.createServer((req, res) => {
           if (sessionUser.role !== 'admin' && Array.isArray(dbObj.users)) {
             dbObj.users = dbObj.users.filter(u => u.username !== 'admin' && u.role !== 'admin');
           }
+
+          dbObj.buildId = SERVER_BUILD_ID;
 
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(dbObj));

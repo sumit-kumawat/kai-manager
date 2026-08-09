@@ -37,6 +37,24 @@ let appState = {
   isAuthenticated: false
 };
 
+function syncServerBuildVersion(serverBuildId) {
+  if (!serverBuildId) return false;
+  const currentBuild = localStorage.getItem('kai_build_id');
+  if (currentBuild && currentBuild !== serverBuildId) {
+    console.warn(`[Build Sync] Server code/build updated from ${currentBuild} to ${serverBuildId}. Purging stale sessions...`);
+    localStorage.clear();
+    sessionStorage.clear();
+    localStorage.setItem('kai_build_id', serverBuildId);
+    appState.isAuthenticated = false;
+    appState.currentUser = null;
+    triggerLogout(false);
+    showToast('Application code updated. All active sessions logged out.');
+    return true;
+  }
+  localStorage.setItem('kai_build_id', serverBuildId);
+  return false;
+}
+
 function getApiUrl(endpoint) {
   if (!endpoint) return '';
   if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
@@ -1073,6 +1091,8 @@ async function performLogin(username, password) {
     }
 
     if (res && res.ok && data && data.success && data.token && data.user) {
+      if (data.buildId) localStorage.setItem('kai_build_id', data.buildId);
+
       // Store session tokens
       localStorage.setItem('kai_session', 'authenticated_' + Date.now());
       localStorage.setItem('kai_token', data.token);
@@ -1488,6 +1508,9 @@ async function loadDatabase() {
     });
     if (res.ok) {
       const data = await res.json();
+      if (data.buildId && syncServerBuildVersion(data.buildId)) {
+        return;
+      }
       localStorage.setItem('kai_db_cache', JSON.stringify(data));
       applyLoadedData(data);
       return;
