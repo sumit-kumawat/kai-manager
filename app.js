@@ -1453,28 +1453,20 @@ async function loadDatabase() {
       localStorage.setItem('kai_db_cache', JSON.stringify(data));
       applyLoadedData(data);
       return;
-    } else if (res.status === 401) {
-      // Check cached database before forcing logout
-      const cached = localStorage.getItem('kai_db_cache');
-      if (cached) {
-        try {
-          applyLoadedData(JSON.parse(cached));
-          return;
-        } catch (e) { }
-      }
-      clearSessionStore();
-      checkAuth();
-      return;
+    } else {
+      console.warn(`[DB] Server returned HTTP ${res.status} when loading DB, preserving active session & attempting cached fallback.`);
     }
   } catch (e) {
-    console.warn('Network error loading DB, attempting cached fallback:', e.message);
+    console.warn('[DB] Network error loading DB, attempting cached fallback:', e.message);
   }
 
   const cached = localStorage.getItem('kai_db_cache');
   if (cached) {
     try {
       applyLoadedData(JSON.parse(cached));
-    } catch (e) { }
+    } catch (e) {
+      console.error('[DB] Cache parse error:', e);
+    }
   }
 }
 
