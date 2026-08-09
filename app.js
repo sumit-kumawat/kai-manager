@@ -55,7 +55,7 @@ let currentLogFilter = 'all';
 const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1555597673-b21d5c935865?w=100&auto=format&fit=crop&q=80';
 const DEFAULT_LOGO = 'https://www.karateacademyindia.com/logo.png';
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initApp() {
   setupBrowserHistoryNavigation();
   setupSyncChannel();
   setupNavigation();
@@ -93,7 +93,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadPendingAdmissions();
     }
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 // ==========================================
 // CENTRALIZED SYSTEM ACTIVITY LOGGING ENGINE
@@ -671,8 +677,7 @@ function setupLogoRefreshHandler() {
   });
 }
 
-function resetApplicationState() {
-  // 1. Invalidate backend session token if present
+function clearSessionStore() {
   const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
   if (token) {
     fetch('/api/logout', {
@@ -681,9 +686,10 @@ function resetApplicationState() {
     }).catch(() => { });
   }
 
-  // 2. Clear browser storage & cookies
-  try { localStorage.clear(); } catch (e) { }
-  try { sessionStorage.clear(); } catch (e) { }
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // Clear all cookies
   try {
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
@@ -694,7 +700,7 @@ function resetApplicationState() {
     }
   } catch (e) { }
 
-  // 3. Complete memory state wipe
+  // Complete memory state wipe
   appState.currentUser = null;
   appState.userRole = 'viewer';
   appState.isAuthenticated = false;
@@ -704,66 +710,19 @@ function resetApplicationState() {
   appState.classes = [];
   appState.users = [];
   appState.activityLogs = [];
-  appState.pendingAdmissions = [];
   appState.activeTab = 'dashboard';
-  appState.activeAdminSec = 'branding';
 
-  // 4. Complete DOM rendered container & table body purge
-  const containerIds = [
-    'students-table-body',
-    'financials-table-body',
-    'attendance-history-table-body',
-    'staff-table-body',
-    'logs-table-body',
-    'admissions-list-container',
-    'admission-detail-pane',
-    'global-search-results-dropdown',
-    'mobile-search-dropdown',
-    'schedule-grid-container'
-  ];
-  containerIds.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = '';
-  });
-
-  // 5. Reset Dashboard Stat Cards
-  const statIds = [
-    'stat-total-students-count',
-    'stat-attendance-rate',
-    'stat-new-admissions-count',
-    'stat-pending-admissions-count',
-    'stat-total-revenue-val',
-    'stat-outstanding-dues-val',
-    'stat-belt-candidates-count'
-  ];
-  statIds.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = '--';
-  });
-
-  // 6. Reset search inputs & dropdowns
-  const gSearch = document.getElementById('global-search-input');
-  const mSearch = document.getElementById('mobile-search-input');
-  if (gSearch) gSearch.value = '';
-  if (mSearch) mSearch.value = '';
-  if (typeof clearGlobalSearch === 'function') clearGlobalSearch();
-
-  // 7. Hide all modals and active tabs
+  // Complete DOM tab activation purge
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
   document.querySelectorAll('.admin-tab-area').forEach(sec => sec.classList.add('hidden'));
-  document.querySelectorAll('.modal-backdrop-container').forEach(m => m.classList.add('hidden'));
 
-  // 8. Reset login inputs & error displays
+  // Reset login form inputs & errors
   const userIn = document.getElementById('login-username');
   const passIn = document.getElementById('login-password');
   const loginErr = document.getElementById('login-error');
   if (userIn) userIn.value = '';
   if (passIn) passIn.value = '';
   if (loginErr) loginErr.classList.add('hidden');
-}
-
-function clearSessionStore() {
-  resetApplicationState();
 }
 
 // ==========================================
@@ -791,8 +750,14 @@ function checkAuth() {
       // Show app, hide login
       const viewLogin = document.getElementById('view-login');
       const appWrapper = document.getElementById('app-wrapper');
-      if (viewLogin) viewLogin.classList.add('hidden');
-      if (appWrapper) appWrapper.classList.remove('hidden');
+      if (viewLogin) {
+        viewLogin.classList.add('hidden');
+        viewLogin.style.display = '';
+      }
+      if (appWrapper) {
+        appWrapper.classList.remove('hidden');
+        appWrapper.style.display = '';
+      }
 
       updateHeaderUserInfo();
       applyRolePermissions();
@@ -818,8 +783,16 @@ function checkAuth() {
   appState.isAuthenticated = false;
   appState.currentUser = null;
   appState.userRole = 'viewer';
-  document.getElementById('view-login')?.classList.remove('hidden');
-  document.getElementById('app-wrapper')?.classList.add('hidden');
+  const vLogin = document.getElementById('view-login');
+  const aWrap = document.getElementById('app-wrapper');
+  if (vLogin) {
+    vLogin.classList.remove('hidden');
+    vLogin.style.display = '';
+  }
+  if (aWrap) {
+    aWrap.classList.add('hidden');
+    aWrap.style.display = '';
+  }
   return false;
 }
 
@@ -837,8 +810,16 @@ function triggerLogout(isInactivity = false) {
     else inactAlert.classList.add('hidden');
   }
 
-  document.getElementById('view-login')?.classList.remove('hidden');
-  document.getElementById('app-wrapper')?.classList.add('hidden');
+  const vLogin = document.getElementById('view-login');
+  const aWrap = document.getElementById('app-wrapper');
+  if (vLogin) {
+    vLogin.classList.remove('hidden');
+    vLogin.style.display = '';
+  }
+  if (aWrap) {
+    aWrap.classList.add('hidden');
+    aWrap.style.display = '';
+  }
 
   const dropdown = document.getElementById('admin-profile-dropdown');
   if (dropdown) dropdown.classList.add('hidden');
@@ -1022,9 +1003,6 @@ async function performLogin(username, password) {
     return false;
   }
 
-  // Purge any stale DOM elements or previous user state before logging in
-  resetApplicationState();
-
   try {
     console.log('Attempting login for:', userVal);
 
@@ -1110,8 +1088,16 @@ async function performLogin(username, password) {
       appState.isAuthenticated = true;
 
       loginErr?.classList.add('hidden');
-      document.getElementById('view-login')?.classList.add('hidden');
-      document.getElementById('app-wrapper')?.classList.remove('hidden');
+      const vLogin = document.getElementById('view-login');
+      const aWrap = document.getElementById('app-wrapper');
+      if (vLogin) {
+        vLogin.classList.add('hidden');
+        vLogin.style.display = '';
+      }
+      if (aWrap) {
+        aWrap.classList.remove('hidden');
+        aWrap.style.display = '';
+      }
 
       updateHeaderUserInfo();
       applyRolePermissions();
@@ -1505,28 +1491,20 @@ async function loadDatabase() {
       localStorage.setItem('kai_db_cache', JSON.stringify(data));
       applyLoadedData(data);
       return;
-    } else if (res.status === 401) {
-      // Check cached database before forcing logout
-      const cached = localStorage.getItem('kai_db_cache');
-      if (cached) {
-        try {
-          applyLoadedData(JSON.parse(cached));
-          return;
-        } catch (e) { }
-      }
-      clearSessionStore();
-      checkAuth();
-      return;
+    } else {
+      console.warn(`[DB] Server returned HTTP ${res.status} when loading DB, preserving active session & attempting cached fallback.`);
     }
   } catch (e) {
-    console.warn('Network error loading DB, attempting cached fallback:', e.message);
+    console.warn('[DB] Network error loading DB, attempting cached fallback:', e.message);
   }
 
   const cached = localStorage.getItem('kai_db_cache');
   if (cached) {
     try {
       applyLoadedData(JSON.parse(cached));
-    } catch (e) { }
+    } catch (e) {
+      console.error('[DB] Cache parse error:', e);
+    }
   }
 }
 
