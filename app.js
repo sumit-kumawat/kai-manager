@@ -748,16 +748,8 @@ function checkAuth() {
       sessionStorage.setItem('kai_user', JSON.stringify(user));
 
       // Show app, hide login
-      const viewLogin = document.getElementById('view-login');
-      const appWrapper = document.getElementById('app-wrapper');
-      if (viewLogin) {
-        viewLogin.classList.add('hidden');
-        viewLogin.style.display = 'none';
-      }
-      if (appWrapper) {
-        appWrapper.classList.remove('hidden');
-        appWrapper.style.display = 'flex';
-      }
+      document.getElementById('view-login')?.classList.add('hidden');
+      document.getElementById('app-wrapper')?.classList.remove('hidden');
 
       updateHeaderUserInfo();
       applyRolePermissions();
@@ -783,16 +775,8 @@ function checkAuth() {
   appState.isAuthenticated = false;
   appState.currentUser = null;
   appState.userRole = 'viewer';
-  const vLogin = document.getElementById('view-login');
-  const aWrap = document.getElementById('app-wrapper');
-  if (vLogin) {
-    vLogin.classList.remove('hidden');
-    vLogin.style.display = 'flex';
-  }
-  if (aWrap) {
-    aWrap.classList.add('hidden');
-    aWrap.style.display = 'none';
-  }
+  document.getElementById('view-login')?.classList.remove('hidden');
+  document.getElementById('app-wrapper')?.classList.add('hidden');
   return false;
 }
 
@@ -810,16 +794,8 @@ function triggerLogout(isInactivity = false) {
     else inactAlert.classList.add('hidden');
   }
 
-  const vLogin = document.getElementById('view-login');
-  const aWrap = document.getElementById('app-wrapper');
-  if (vLogin) {
-    vLogin.classList.remove('hidden');
-    vLogin.style.display = 'flex';
-  }
-  if (aWrap) {
-    aWrap.classList.add('hidden');
-    aWrap.style.display = 'none';
-  }
+  document.getElementById('view-login')?.classList.remove('hidden');
+  document.getElementById('app-wrapper')?.classList.add('hidden');
 
   const dropdown = document.getElementById('admin-profile-dropdown');
   if (dropdown) dropdown.classList.add('hidden');
@@ -1088,16 +1064,8 @@ async function performLogin(username, password) {
       appState.isAuthenticated = true;
 
       loginErr?.classList.add('hidden');
-      const vLogin = document.getElementById('view-login');
-      const aWrap = document.getElementById('app-wrapper');
-      if (vLogin) {
-        vLogin.classList.add('hidden');
-        vLogin.style.display = 'none';
-      }
-      if (aWrap) {
-        aWrap.classList.remove('hidden');
-        aWrap.style.display = 'flex';
-      }
+      document.getElementById('view-login')?.classList.add('hidden');
+      document.getElementById('app-wrapper')?.classList.remove('hidden');
 
       updateHeaderUserInfo();
       applyRolePermissions();
