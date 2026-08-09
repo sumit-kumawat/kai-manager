@@ -299,6 +299,182 @@ startxref
   return Buffer.from(pdfText, 'utf-8');
 }
 
+// PDF Payslip Buffer Generator for Immediate Staff Salary SMTP Email Attachment
+function createPdfPayslipBuffer(salaryObj) {
+  if (!salaryObj) return Buffer.from('Official Salary Payslip Document');
+  const payslipId = String(salaryObj.id || 'PAYSLIP-' + Date.now());
+  const name = String(salaryObj.staffName || salaryObj.name || 'Staff Member');
+  const staffId = String(salaryObj.staffId || 'KAISTF2026001');
+  const role = String(salaryObj.role || salaryObj.designation || 'Staff Instructor');
+  const month = String(salaryObj.month || new Date().toLocaleString('en-IN', { month: 'long', year: 'numeric' }));
+  const amount = String(salaryObj.paidAmount || salaryObj.amount || salaryObj.salary || '0');
+  const method = String(salaryObj.paymentMethod || 'Bank Transfer');
+  const ref = String(salaryObj.paymentRef || 'N/A');
+  const dateStr = String(salaryObj.paymentDate || new Date().toISOString().split('T')[0]);
+
+  const pdfText = `%PDF-1.4
+1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj
+2 0 obj <</Type /Pages /Kids [3 0 R] /Count 1>> endobj
+3 0 obj <</Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources <</Font <</F1 4 0 R /F2 6 0 R>>>> /Contents 5 0 R>> endobj
+4 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold>> endobj
+6 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>> endobj
+5 0 obj <</Length 1200>> stream
+BT
+/F1 18 Tf
+40 800 TD
+(KARATE ACADEMY INDIA) Tj
+0 -20 TD
+/F2 10 Tf
+(Official Monthly Staff Salary Payslip) Tj
+0 -15 TD
+(Tel: +91 70409 25257  |  Email: info@karateacademyindia.com) Tj
+0 -30 TD
+/F1 12 Tf
+(CONFIDENTIAL SALARY PAYSLIP  -  PERIOD: ${month}) Tj
+0 -18 TD
+/F2 10 Tf
+(Payslip Ref: ${payslipId}   |   Payment Date: ${dateStr}) Tj
+0 -30 TD
+/F1 12 Tf
+(STAFF MEMBER DETAILS:) Tj
+0 -18 TD
+/F1 11 Tf
+(Name: ${name}) Tj
+0 -15 TD
+/F2 10 Tf
+(Staff ID: ${staffId}   |   Designation: ${role}) Tj
+0 -35 TD
+/F1 12 Tf
+(PAYMENT & SALARY BREAKDOWN:) Tj
+0 -20 TD
+/F2 10 Tf
+(Salary Period: ${month}) Tj
+0 -15 TD
+(Payment Method: ${method}) Tj
+0 -15 TD
+(Transaction Ref / UTR: ${ref}) Tj
+0 -18 TD
+/F1 14 Tf
+(NET SALARY PAID: Rs. ${amount}) Tj
+0 -30 TD
+/F1 11 Tf
+(STATUS: PAID & VERIFIED) Tj
+0 -40 TD
+/F2 9 Tf
+(Thank you for your service and dedication to Karate Academy India!) Tj
+0 -14 TD
+(This is an officially generated computerised salary payslip document.) Tj
+ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000010 00000 n 
+0000000060 00000 n 
+0000000117 00000 n 
+0000000237 00000 n 
+0000000305 00000 n 
+0000000385 00000 n 
+trailer <</Size 7 /Root 1 0 R>>
+startxref
+1400
+%%EOF`;
+
+  return Buffer.from(pdfText, 'utf-8');
+}
+
+// PDF Financial Ledger Statement Generator
+function createPdfFinancialLedgerBuffer(dbData, filterBranch = 'all') {
+  const cfg = dbData.config || {};
+  const appTitle = cfg.appTitle || 'KAI Manager';
+  const orgName = cfg.receiptHeader || 'KARATE ACADEMY INDIA';
+  const phone = cfg.contactPhone || '+91 70409 25257';
+  const email = cfg.contactEmail || 'admin@conzex.com';
+
+  let financials = dbData.financials || [];
+  let expenses = dbData.expenses || [];
+  let salaries = dbData.staffSalaries || [];
+
+  if (filterBranch && filterBranch !== 'all') {
+    financials = financials.filter(f => !f.branchId || String(f.branchId) === String(filterBranch));
+    expenses = expenses.filter(e => String(e.branchId) === String(filterBranch));
+    salaries = salaries.filter(s => String(s.branchId) === String(filterBranch));
+  }
+
+  const totalIncome = financials.reduce((sum, f) => sum + (parseInt(f.finalPaid || f.amount || f.finalAmount || 0)), 0);
+  const totalExpenses = expenses.reduce((sum, e) => sum + (parseInt(e.amount || 0)), 0);
+  const totalSalaries = salaries.reduce((sum, s) => sum + (parseInt(s.paidAmount || s.amount || 0)), 0);
+  const netBalance = totalIncome - totalExpenses - totalSalaries;
+  const genDate = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+
+  const pdfText = `%PDF-1.4
+1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj
+2 0 obj <</Type /Pages /Kids [3 0 R] /Count 1>> endobj
+3 0 obj <</Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources <</Font <</F1 4 0 R /F2 6 0 R>>>> /Contents 5 0 R>> endobj
+4 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold>> endobj
+6 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>> endobj
+5 0 obj <</Length 1300>> stream
+BT
+/F1 18 Tf
+40 800 TD
+(${orgName.toUpperCase()}) Tj
+0 -20 TD
+/F2 10 Tf
+(FINANCIAL LEDGER & AUDIT STATEMENT) Tj
+0 -15 TD
+(Generated: ${genDate}   |   Branch Scope: ${filterBranch.toUpperCase()}) Tj
+0 -15 TD
+(Tel: ${phone}   |   Email: ${email}) Tj
+0 -30 TD
+/F1 12 Tf
+(FINANCIAL SUMMARY & BALANCE SHEET:) Tj
+0 -20 TD
+/F2 10 Tf
+(Total Gross Income Received: Rs. ${totalIncome.toLocaleString('en-IN')}) Tj
+0 -15 TD
+(Total Operational Expenses: Rs. ${totalExpenses.toLocaleString('en-IN')}) Tj
+0 -15 TD
+(Total Staff Salaries Disbursed: Rs. ${totalSalaries.toLocaleString('en-IN')}) Tj
+0 -20 TD
+/F1 14 Tf
+(NET CLOSING CASH BALANCE: Rs. ${netBalance.toLocaleString('en-IN')}) Tj
+0 -30 TD
+/F1 12 Tf
+(KEY TRANSACTIONS LOG:) Tj
+0 -20 TD
+/F2 9 Tf
+(Ref ID          Type        Recipient / Note            Amount (Rs.)    Status) Tj
+0 -15 TD
+(--------------------------------------------------------------------------------) Tj
+0 -15 TD
+${financials.slice(0, 15).map(f => `(${String(f.id || 'N/A').substring(0, 15)}  Income   ${String(f.studentName || 'Student').substring(0, 20)}  Rs.${String(f.finalPaid || f.amount || 0)}  Paid)`).join('\n0 -15 TD\n')}
+0 -30 TD
+/F1 10 Tf
+(END OF STATEMENT - CONFIDENTIAL FINANCIAL REPORT) Tj
+0 -14 TD
+/F2 9 Tf
+(Page 1 of 1 - Computerized Statement Issued by ${appTitle}) Tj
+ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000010 00000 n 
+0000000060 00000 n 
+0000000117 00000 n 
+0000000237 00000 n 
+0000000305 00000 n 
+0000000385 00000 n 
+trailer <</Size 7 /Root 1 0 R>>
+startxref
+1500
+%%EOF`;
+
+  return Buffer.from(pdfText, 'utf-8');
+}
+
 // Robust Authenticated SMTP Transporter Helper (Universal support for Gmail, Hostinger, Zoho, Outlook, cPanel, Custom SMTP)
 function createSmtpTransporter(smtpConfig) {
   if (!smtpConfig || !smtpConfig.host) return null;
@@ -393,21 +569,44 @@ function formatSmtpError(err, host = '', port = '', encryption = '') {
   return `SMTP Mail Error: ${msg}`;
 }
 
-// Minimal Branded KAI Email Template Renderer (100% Light Theme - No dark headers/sections)
-function renderKaiEmailHtml({ title, subtitle, studentName, contentHtml, callToActionUrl, callToActionText }) {
+// Standardized KAI Email Design System (Category-Specific Color Accents & Responsive Layout)
+function renderKaiEmailHtml({ title, subtitle, studentName, contentHtml, callToActionUrl, callToActionText, category = 'general' }) {
   const logo = "https://www.karateacademyindia.com/logo.png";
+
+  const categoryAccents = {
+    'present': '#16a34a',
+    'absent': '#dc2626',
+    'paid': '#16a34a',
+    'fee': '#16a34a',
+    'receipt': '#16a34a',
+    'due': '#ea580c',
+    'overdue': '#dc2626',
+    'advanced_payment': '#0d9488',
+    'payslip': '#2563eb',
+    'staff_salary': '#2563eb',
+    'announcement': '#475569',
+    'admission_submitted': '#2563eb',
+    'admission_approved': '#16a34a',
+    'admission_rejected': '#dc2626',
+    'id_card': '#2563eb',
+    'general': '#dc2626'
+  };
+
+  const accentColor = categoryAccents[String(category).toLowerCase()] || '#dc2626';
+
   return `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px 12px; color: #0f172a; }
     .container { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
-    .header { background-color: #ffffff; padding: 28px 24px 20px 24px; text-align: center; border-top: 5px solid #dc2626; border-bottom: 1px solid #f1f5f9; }
+    .header { background-color: #ffffff; padding: 28px 24px 20px 24px; text-align: center; border-top: 5px solid ${accentColor}; border-bottom: 1px solid #f1f5f9; }
     .header img { height: 48px; margin-bottom: 10px; }
     .header h1 { color: #0f172a; font-size: 19px; margin: 0; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
-    .header p { color: #dc2626; font-size: 11px; margin: 5px 0 0 0; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .header p { color: ${accentColor}; font-size: 11px; margin: 5px 0 0 0; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
     .body { padding: 28px 24px; }
     .greeting { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 12px; }
     .content { font-size: 13px; line-height: 1.65; color: #334155; }
@@ -419,7 +618,9 @@ function renderKaiEmailHtml({ title, subtitle, studentName, contentHtml, callToA
     .badge-paid { background: #dcfce7; color: #166534; padding: 3px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; display: inline-block; }
     .badge-due { background: #fef3c7; color: #92400e; padding: 3px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; display: inline-block; }
     .badge-overdue { background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; display: inline-block; }
-    .cta-btn { display: inline-block; background-color: #dc2626; color: #ffffff !important; text-decoration: none; padding: 12px 26px; border-radius: 12px; font-weight: 800; font-size: 13px; margin-top: 18px; }
+    .badge-present { background: #dcfce7; color: #166534; padding: 3px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; display: inline-block; }
+    .badge-absent { background: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; display: inline-block; }
+    .cta-btn { display: inline-block; background-color: ${accentColor}; color: #ffffff !important; text-decoration: none; padding: 12px 26px; border-radius: 12px; font-weight: 800; font-size: 13px; margin-top: 18px; }
     .footer { background-color: #f8fafc; padding: 20px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0; line-height: 1.6; }
   </style>
 </head>
@@ -431,7 +632,7 @@ function renderKaiEmailHtml({ title, subtitle, studentName, contentHtml, callToA
       <p>${subtitle || 'Official Mat Portal Notification'}</p>
     </div>
     <div class="body">
-      <div class="greeting">Dear ${studentName || 'Athlete / Parent'},</div>
+      <div class="greeting">Dear ${studentName || 'Athlete / Parent / Staff'},</div>
       <div class="content">
         ${contentHtml}
       </div>
@@ -532,11 +733,21 @@ async function dispatchAutomatedEmail({
       studentName: cleanTargetName,
       contentHtml,
       callToActionUrl,
-      callToActionText
+      callToActionText,
+      category
     });
 
     let attachments = [];
-    if (meta && (meta.invoiceObj || meta.invoiceData || category === 'receipt' || category === 'admission_approved' || category === 'id_card' || category === 'due' || category === 'overdue' || category === 'fee' || category === 'staff_salary')) {
+    if (meta && (meta.salaryObj || category === 'payslip' || category === 'staff_salary')) {
+      const salObj = meta.salaryObj || meta.salaryData || { id: 'PAYSLIP-' + Date.now(), staffName: cleanTargetName, paidAmount: meta.amount || 0 };
+      const pdfBuf = createPdfPayslipBuffer(salObj);
+      const filename = `${salObj.id || 'Payslip'}_Payslip.pdf`;
+      attachments.push({
+        filename: filename,
+        content: pdfBuf,
+        contentType: 'application/pdf'
+      });
+    } else if (meta && (meta.invoiceObj || meta.invoiceData || category === 'receipt' || category === 'admission_approved' || category === 'id_card' || category === 'due' || category === 'overdue' || category === 'fee')) {
       const invObj = meta.invoiceObj || meta.invoiceData || { id: meta.invoiceId || 'KAISTD2026001A', studentName: cleanTargetName, finalPaid: meta.amount || 2500 };
       const pdfBuf = createPdfReceiptBuffer(invObj);
       const filename = `${invObj.id || 'Receipt'}_Receipt.pdf`;
@@ -1383,6 +1594,256 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: err.message }));
         }
       });
+      return;
+    }
+
+    // 7.6 Staff Salary Disbursement & Automatic PDF Payslip Endpoint (`/api/staff-salary`)
+    if (req.url === '/api/staff-salary' && req.method === 'POST') {
+      if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: '403 Forbidden. Only Managers and Admins can manage staff salaries.' }));
+        return;
+      }
+
+      let body = '';
+      req.on('data', chunk => body += chunk.toString());
+      req.on('end', async () => {
+        try {
+          const { staffId, staffName, staffEmail, month, paidAmount, paymentDate, paymentMethod, paymentRef, notes, branchId } = JSON.parse(body);
+
+          const dbData = readDbFile();
+          dbData.staffSalaries = dbData.staffSalaries || [];
+
+          // Prevent duplicate payslip/email for the same staff member and month
+          const cleanMonth = String(month || '').trim();
+          const cleanStaffId = String(staffId || '').trim();
+          const existingSalary = dbData.staffSalaries.find(s => String(s.staffId) === cleanStaffId && String(s.month).toLowerCase() === cleanMonth.toLowerCase() && s.status === 'Paid');
+
+          if (existingSalary) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: `Salary payslip for ${staffName} (${cleanMonth}) has already been paid and processed.` }));
+            return;
+          }
+
+          const salaryId = 'SAL-' + Date.now();
+          const salaryRecord = {
+            id: salaryId,
+            staffId: cleanStaffId,
+            staffName: staffName || 'Staff Member',
+            staffEmail: staffEmail || 'staff@conzex.com',
+            month: cleanMonth,
+            paidAmount: parseInt(paidAmount || 0),
+            paymentDate: paymentDate || new Date().toISOString().split('T')[0],
+            paymentMethod: paymentMethod || 'Bank Transfer',
+            paymentRef: paymentRef || 'N/A',
+            notes: notes || '',
+            branchId: branchId || 'HQ',
+            status: 'Paid',
+            timestamp: new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })
+          };
+
+          dbData.staffSalaries.unshift(salaryRecord);
+
+          // Record expense transaction in financials
+          dbData.financials = dbData.financials || [];
+          dbData.financials.unshift({
+            id: salaryId,
+            type: 'Expense',
+            category: 'Salaries',
+            description: `Staff Salary Disbursed: ${staffName} (${cleanMonth})`,
+            finalPaid: parseInt(paidAmount || 0),
+            amount: parseInt(paidAmount || 0),
+            date: salaryRecord.paymentDate,
+            paymentMethod: paymentRecordMethod = paymentMethod || 'Bank Transfer',
+            branchId: branchId || 'HQ',
+            status: 'Paid'
+          });
+
+          writeDbFile(dbData);
+
+          // Dispatch automatic Email with attached PDF Payslip
+          let emailResult = { success: true, message: 'Salary recorded without email.' };
+          if (staffEmail && staffEmail.includes('@')) {
+            emailResult = await dispatchAutomatedEmail({
+              category: 'payslip',
+              targetEmail: staffEmail,
+              targetName: staffName,
+              subject: `Official Monthly Salary Payslip (${cleanMonth}) - Karate Academy India`,
+              subtitle: 'Monthly Staff Salary Payslip',
+              contentHtml: `
+                <div class="card">
+                  <h4 style="margin:0 0 10px 0; color:#0f172a; font-size:15px;">Monthly Salary Disbursement</h4>
+                  <p style="margin:0 0 8px 0; font-size:13px; color:#334155;">Dear <strong>${staffName}</strong>,</p>
+                  <p style="margin:0 0 14px 0; font-size:13px; color:#334155;">Your salary payment for <strong>${cleanMonth}</strong> has been processed successfully. Attached to this email is your official computerized PDF payslip statement.</p>
+                  <table class="table">
+                    <tr><td class="label">Staff ID</td><td class="value">${cleanStaffId}</td></tr>
+                    <tr><td class="label">Salary Month</td><td class="value">${cleanMonth}</td></tr>
+                    <tr><td class="label">Net Amount Paid</td><td class="value">₹${parseInt(paidAmount || 0).toLocaleString('en-IN')}</td></tr>
+                    <tr><td class="label">Payment Method</td><td class="value">${paymentMethod || 'Bank Transfer'}</td></tr>
+                    <tr><td class="label">Status</td><td class="value"><span class="badge-paid">PAID & VERIFIED</span></td></tr>
+                  </table>
+                </div>
+              `,
+              triggeredBy: `${sessionUser.name} (${sessionUser.username})`,
+              preventDuplicateMinutes: 1,
+              meta: { salaryObj: salaryRecord }
+            });
+          }
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, message: 'Salary paid & payslip emailed successfully.', salaryRecord, emailResult }));
+        } catch (err) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: err.message }));
+        }
+      });
+      return;
+    }
+
+    // 7.7 Multiple Branch Management Endpoint (`/api/branches`)
+    if (req.url.startsWith('/api/branches')) {
+      if (!sessionUser) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: '401 Unauthorized.' }));
+        return;
+      }
+
+      if (req.method === 'GET') {
+        const dbData = readDbFile();
+        const defaultBranches = [
+          { id: 'HQ', name: 'Main Honbu Dojo', code: 'HQ', city: 'Jaipur', address: 'Central Dojo HQ', phone: '+91 70409 25257', status: 'active' },
+          { id: 'NORTH', name: 'North Branch Dojo', code: 'NORTH', city: 'Jaipur', address: 'North Martial Arts Center', phone: '+91 70409 25257', status: 'active' },
+          { id: 'SOUTH', name: 'South Branch Dojo', code: 'SOUTH', city: 'Jaipur', address: 'South Training Arena', phone: '+91 70409 25257', status: 'active' }
+        ];
+        dbData.branches = (dbData.branches && dbData.branches.length > 0) ? dbData.branches : defaultBranches;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, branches: dbData.branches }));
+        return;
+      }
+
+      if (req.method === 'POST') {
+        if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: '403 Forbidden.' }));
+          return;
+        }
+
+        let body = '';
+        req.on('data', chunk => body += chunk.toString());
+        req.on('end', () => {
+          try {
+            const branchObj = JSON.parse(body);
+            const dbData = readDbFile();
+            dbData.branches = dbData.branches || [];
+
+            const existingIdx = dbData.branches.findIndex(b => String(b.id) === String(branchObj.id));
+            if (existingIdx >= 0) {
+              dbData.branches[existingIdx] = { ...dbData.branches[existingIdx], ...branchObj };
+            } else {
+              const newBranch = {
+                id: branchObj.code || 'BRANCH_' + Date.now(),
+                name: branchObj.name || 'New Branch',
+                code: branchObj.code || 'BR',
+                city: branchObj.city || 'Jaipur',
+                address: branchObj.address || '',
+                phone: branchObj.phone || '+91 70409 25257',
+                status: branchObj.status || 'active'
+              };
+              dbData.branches.push(newBranch);
+            }
+            writeDbFile(dbData);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, branches: dbData.branches }));
+          } catch (e) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Invalid payload' }));
+          }
+        });
+        return;
+      }
+    }
+
+    // 7.8 Expense Management Endpoint (`/api/expenses`)
+    if (req.url.startsWith('/api/expenses')) {
+      if (!sessionUser) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: '401 Unauthorized.' }));
+        return;
+      }
+
+      if (req.method === 'GET') {
+        const dbData = readDbFile();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, expenses: dbData.expenses || [] }));
+        return;
+      }
+
+      if (req.method === 'POST') {
+        if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: '403 Forbidden.' }));
+          return;
+        }
+
+        let body = '';
+        req.on('data', chunk => body += chunk.toString());
+        req.on('end', () => {
+          try {
+            const exp = JSON.parse(body);
+            const dbData = readDbFile();
+            dbData.expenses = dbData.expenses || [];
+
+            const expId = exp.id || ('EXP-' + Date.now());
+            const expRecord = {
+              id: expId,
+              branchId: exp.branchId || 'HQ',
+              category: exp.category || 'Utilities',
+              amount: parseInt(exp.amount || 0),
+              paymentMethod: exp.paymentMethod || 'UPI',
+              vendor: exp.vendor || 'Vendor',
+              description: exp.description || '',
+              referenceNo: exp.referenceNo || 'N/A',
+              date: exp.date || new Date().toISOString().split('T')[0],
+              status: exp.status || 'Approved',
+              createdBy: sessionUser.name,
+              timestamp: new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })
+            };
+
+            const idx = dbData.expenses.findIndex(e => String(e.id) === String(expId));
+            if (idx >= 0) dbData.expenses[idx] = expRecord;
+            else dbData.expenses.unshift(expRecord);
+
+            writeDbFile(dbData);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, expense: expRecord, expenses: dbData.expenses }));
+          } catch (e) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Invalid payload' }));
+          }
+        });
+        return;
+      }
+    }
+
+    // 7.9 Financial Ledger PDF Report Generator (`/api/reports/financial-ledger-pdf`)
+    if (req.url.startsWith('/api/reports/financial-ledger-pdf') && req.method === 'GET') {
+      if (!sessionUser) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: '401 Unauthorized.' }));
+        return;
+      }
+
+      const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const branch = urlObj.searchParams.get('branch') || 'all';
+
+      const dbData = readDbFile();
+      const pdfBuf = createPdfFinancialLedgerBuffer(dbData, branch);
+
+      res.writeHead(200, {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="Financial_Ledger_Statement_${branch}.pdf"`
+      });
+      res.end(pdfBuf);
       return;
     }
 

@@ -1508,6 +1508,69 @@ function openUserProfileModal() {
   modal.classList.remove('hidden');
 }
 
+function calculateTenure(joiningDateStr) {
+  if (!joiningDateStr) return 'N/A';
+  const start = new Date(joiningDateStr);
+  const now = new Date();
+  if (isNaN(start.getTime())) return 'N/A';
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
+  let days = now.getDate() - start.getDate();
+  if (days < 0) {
+    months--;
+    const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    days += lastMonth.getDate();
+  }
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  const parts = [];
+  if (years > 0) parts.push(`${years} Year${years > 1 ? 's' : ''}`);
+  if (months > 0) parts.push(`${months} Month${months > 1 ? 's' : ''}`);
+  parts.push(`${days} Day${days !== 1 ? 's' : ''}`);
+  return parts.join(' ') || '0 Days';
+}
+
+function renderEmptyStateRow(colSpan, icon, title, message) {
+  return `
+    <tr>
+      <td colspan="${colSpan}" class="py-12 text-center text-slate-400">
+        <div class="flex flex-col items-center justify-center space-y-2">
+          <span class="material-symbols-outlined text-4xl text-slate-300">${icon || 'inbox'}</span>
+          <div class="font-extrabold text-sm text-slate-700">${title || 'No records found'}</div>
+          <p class="text-xs text-slate-400 max-w-sm">${message || 'There are no active records matching your filter criteria.'}</p>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+async function downloadFinancialLedgerPDF() {
+  const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
+  showToast('Generating Financial Ledger PDF Statement...');
+  try {
+    const res = await fetch(getApiUrl('/api/reports/financial-ledger-pdf?branch=all'), {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Financial_Ledger_Statement_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast('Financial Ledger PDF downloaded successfully.');
+      return;
+    }
+  } catch (e) {
+    console.warn('[FinancialPDF] Error:', e.message);
+  }
+  showToast('Failed to download Financial Ledger PDF');
+}
+
 // ==========================================
 // REALTIME DATABASE MANAGEMENT
 // ==========================================
@@ -1805,6 +1868,8 @@ async function renderAllViews() {
   try { renderDirectory(); } catch (e) { console.error('Directory error:', e); }
   try { await renderIDCards(); } catch (e) { console.error('ID Cards error:', e); }
   try { renderFinancials(); } catch (e) { console.error('Financials error:', e); }
+  try { renderExpenses(); } catch (e) { console.error('Expenses error:', e); }
+  try { renderBranches(); } catch (e) { console.error('Branches error:', e); }
   try { renderAdminUsersTable(); } catch (e) { console.error('Users table error:', e); }
   try { renderAdminStudentsTable(); } catch (e) { console.error('Admin students error:', e); }
   try { renderAdminLogsTable(); } catch (e) { console.error('Admin logs error:', e); }
@@ -1818,9 +1883,6 @@ function renderDashboard() {
 
   const totalEl = document.getElementById('stat-total-students');
   if (totalEl) totalEl.textContent = totalStudents;
-
-  const topStatus = document.getElementById('top-status-enrolled');
-  if (topStatus) topStatus.textContent = `Active (${totalStudents} Enrolled)`;
 
   const present = activeStudents.filter(s => s.status === 'present').length;
   const excused = activeStudents.filter(s => s.status === 'excused').length;
@@ -5914,3 +5976,169 @@ function setupStaffInvoiceFormHandler() {
     }
   });
 }
+
+// ==========================================
+// EXPENSE & BRANCH MANAGEMENT CONTROLLERS
+// ==========================================
+function renderExpenses() {
+  const tbody = document.getElementById('expenses-table-body');
+  if (!tbody) return;
+
+  const expenses = appState.expenses || [];
+  const query = (document.getElementById('expense-search-input')?.value || '').toLowerCase().trim();
+  const catFilter = document.getElementById('expense-category-filter')?.value || 'all';
+  const branchFilter = document.getElementById('expense-branch-filter')?.value || 'all';
+
+  let filtered = expenses.filter(e => {
+    if (catFilter !== 'all' && e.category !== catFilter) return false;
+    if (branchFilter !== 'all' && String(e.branchId) !== String(branchFilter)) return false;
+    if (query) {
+      const matchVendor = String(e.vendor || '').toLowerCase().includes(query);
+      const matchDesc = String(e.description || '').toLowerCase().includes(query);
+      const matchRef = String(e.referenceNo || e.id || '').toLowerCase().includes(query);
+      if (!matchVendor && !matchDesc && !matchRef) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = renderEmptyStateRow(7, 'receipt_long', 'No records found', 'No expense records match your current search or filter.');
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(e => `
+    <tr class="hover:bg-slate-50 transition">
+      <td class="py-3 px-6 font-mono font-bold text-slate-900">${e.id}</td>
+      <td class="py-3 px-6"><span class="px-2.5 py-1 bg-amber-50 text-amber-800 font-bold text-[10px] rounded-lg border border-amber-200">${e.category}</span></td>
+      <td class="py-3 px-6 font-semibold text-slate-900">${e.vendor || 'Payee'}</td>
+      <td class="py-3 px-6"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 font-mono text-[10px] rounded-lg font-bold">${e.branchId || 'HQ'}</span></td>
+      <td class="py-3 px-6 text-slate-600 font-mono">${e.date || 'N/A'}</td>
+      <td class="py-3 px-6 font-mono font-bold text-red-600">₹${parseInt(e.amount || 0).toLocaleString('en-IN')}</td>
+      <td class="py-3 px-6 text-right">
+        <button onclick="deleteExpense('${e.id}')" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-[10px] rounded-lg border border-red-200 transition">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderBranches() {
+  const container = document.getElementById('branches-container');
+  if (!container) return;
+
+  const branches = appState.branches || [
+    { id: 'HQ', name: 'Main Honbu Dojo', code: 'HQ', city: 'Jaipur', address: 'Central Dojo HQ', phone: '+91 70409 25257', status: 'active' },
+    { id: 'NORTH', name: 'North Branch Dojo', code: 'NORTH', city: 'Jaipur', address: 'North Martial Arts Center', phone: '+91 70409 25257', status: 'active' },
+    { id: 'SOUTH', name: 'South Branch Dojo', code: 'SOUTH', city: 'Jaipur', address: 'South Training Arena', phone: '+91 70409 25257', status: 'active' }
+  ];
+
+  if (branches.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 p-6">
+        <span class="material-symbols-outlined text-4xl text-slate-300 block mb-2">storefront</span>
+        <div class="font-extrabold text-sm text-slate-700">No records found</div>
+        <p class="text-xs text-slate-400">No active branches configured. Click "+ Create New Branch" to add your first branch.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = branches.map(b => {
+    const studentCount = appState.students.filter(s => (s.branchId || 'HQ') === b.id).length;
+    const staffCount = appState.users.filter(u => (u.branchId || 'HQ') === b.id).length;
+
+    return `
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 hover:shadow-md transition">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-emerald-600 text-2xl">storefront</span>
+            <div>
+              <h3 class="font-extrabold text-slate-900 text-sm">${b.name}</h3>
+              <span class="font-mono text-[10px] text-slate-400 font-bold">Code: ${b.code}</span>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold text-[10px] rounded-lg border border-emerald-200 uppercase">${b.status || 'Active'}</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center">
+            <span class="text-[10px] font-bold text-slate-400 block uppercase">Enrolled Students</span>
+            <strong class="text-sm font-extrabold text-slate-900">${studentCount}</strong>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center">
+            <span class="text-[10px] font-bold text-slate-400 block uppercase">Assigned Staff</span>
+            <strong class="text-sm font-extrabold text-slate-900">${staffCount}</strong>
+          </div>
+        </div>
+
+        <div class="text-xs space-y-1 text-slate-600">
+          <div><strong class="text-slate-800">City:</strong> ${b.city || 'Jaipur'}</div>
+          <div><strong class="text-slate-800">Address:</strong> ${b.address || 'Central Location'}</div>
+          <div><strong class="text-slate-800">Contact Phone:</strong> ${b.phone || '+91 70409 25257'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.openAddExpenseModal = function() {
+  if (appState.userRole === 'viewer') {
+    showLightbox({ title: 'Permission Denied', message: 'Viewer role is restricted.', type: 'error' });
+    return;
+  }
+  const vendor = prompt('Enter Expense Payee / Vendor Name:', 'Dojo Supplies');
+  if (!vendor) return;
+  const amountStr = prompt('Enter Expense Amount (₹):', '1500');
+  if (!amountStr) return;
+  const amount = parseInt(amountStr);
+  const category = prompt('Enter Expense Category (Utilities, Equipment, Salaries, Marketing, Maintenance, Misc):', 'Utilities') || 'Misc';
+  const branchId = prompt('Enter Branch Code (HQ, NORTH, SOUTH):', 'HQ') || 'HQ';
+  const description = prompt('Enter Description / Notes:', 'Operational expense payment') || '';
+
+  const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
+  fetch(getApiUrl('/api/expenses'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ category, amount, vendor, branchId, description, date: new Date().toISOString().split('T')[0] })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      appState.expenses = d.expenses;
+      renderExpenses();
+      showToast('Expense recorded successfully.');
+    }
+  }).catch(e => showToast('Error saving expense: ' + e.message));
+};
+
+window.openAddBranchModal = function() {
+  if (appState.userRole !== 'admin' && appState.userRole !== 'manager') {
+    showLightbox({ title: 'Permission Denied', message: 'Only Managers and Admins can create branches.', type: 'error' });
+    return;
+  }
+  const name = prompt('Enter New Branch Name:', 'East Branch Dojo');
+  if (!name) return;
+  const code = prompt('Enter Branch Code (e.g. EAST):', 'EAST');
+  if (!code) return;
+  const city = prompt('Enter City:', 'Jaipur') || 'Jaipur';
+  const address = prompt('Enter Address:', 'East Martial Arts Complex') || '';
+
+  const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
+  fetch(getApiUrl('/api/branches'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ name, code: code.trim().toUpperCase(), city, address, status: 'active' })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      appState.branches = d.branches;
+      renderBranches();
+      showToast('New branch created successfully.');
+    }
+  }).catch(e => showToast('Error creating branch: ' + e.message));
+};
+
+window.deleteExpense = function(expId) {
+  if (appState.userRole !== 'admin' && appState.userRole !== 'manager') return;
+  if (!confirm(`Are you sure you want to delete expense #${expId}?`)) return;
+  appState.expenses = (appState.expenses || []).filter(e => String(e.id) !== String(expId));
+  saveDatabase();
+  renderExpenses();
+  showToast('Expense deleted.');
+};

@@ -197,6 +197,16 @@
               <span class="material-symbols-outlined text-lg">payments</span>
               <span>Financial Ledger</span>
             </a>
+            <a href="#" data-tab="expenses" id="nav-expenses-link"
+              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-amber-600">receipt_long</span>
+              <span>Expense Management</span>
+            </a>
+            <a href="#" data-tab="branches" id="nav-branches-link"
+              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-emerald-600">storefront</span>
+              <span>Branch Management</span>
+            </a>
 
             <!-- STAFF USER MANAGEMENT LINK FOR MANAGERS -->
             <div id="bottom-manager-users-box" class="hidden">
@@ -385,13 +395,6 @@
             <span id="header-logs-badge"
               class="bg-red-600 text-white font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">0</span>
           </button>
-
-          <!-- STATUS PILL -->
-          <div
-            class="header-control-pill px-3.5 bg-white border border-slate-200 text-slate-700 hidden xl:flex items-center gap-2 shadow-sm">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Status: <strong class="text-slate-900" id="top-status-enrolled">Active (0 Enrolled)</strong></span>
-          </div>
 
           <!-- TOP-RIGHT ADMIN PROFILE BUTTON & DIRECT LOGOUT -->
           <button id="admin-profile-btn"
@@ -943,6 +946,14 @@
               </div>
             </div>
 
+            <!-- Download Financial Ledger PDF Report Button -->
+            <button id="btn-download-financial-pdf" onclick="downloadFinancialLedgerPDF()"
+              class="h-11 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0"
+              title="Download Professional Financial Ledger Audit Statement PDF">
+              <span class="material-symbols-outlined text-sm text-red-400">picture_as_pdf</span>
+              <span>Download PDF Report</span>
+            </button>
+
             <!-- Record Payment Button -->
             <button
               class="open-record-payment-modal action-btn-write h-11 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
@@ -973,6 +984,86 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODULE 7.5: EXPENSE MANAGEMENT VIEW        -->
+      <!-- ========================================== -->
+      <div id="view-expenses" class="tab-content space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Expense Management</h2>
+            <p class="text-xs text-slate-500">Track Operational Expenses, Bills, Vendor Invoices & Branch Disbursals</p>
+          </div>
+          <button onclick="openAddExpenseModal()" class="action-btn-write px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
+            <span class="material-symbols-outlined text-sm">add_circle</span>
+            <span>+ Add New Expense</span>
+          </button>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-3">
+          <div class="relative flex-1 w-full">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+            <input type="text" id="expense-search-input" placeholder="Search payee, vendor, reference #, description..."
+              class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none" />
+          </div>
+          <select id="expense-category-filter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none">
+            <option value="all">All Categories</option>
+            <option value="Utilities">Utilities & Rent</option>
+            <option value="Equipment">Martial Arts Equipment</option>
+            <option value="Salaries">Staff Salaries</option>
+            <option value="Marketing">Marketing & Ads</option>
+            <option value="Maintenance">Maintenance & Repairs</option>
+            <option value="Misc">Miscellaneous</option>
+          </select>
+          <select id="expense-branch-filter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none">
+            <option value="all">All Branches</option>
+            <option value="HQ">Main Honbu Dojo</option>
+            <option value="NORTH">North Branch</option>
+            <option value="SOUTH">South Branch</option>
+          </select>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-700">
+              <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-[11px] border-b border-slate-200">
+                <tr>
+                  <th class="py-3.5 px-6">Expense Ref #</th>
+                  <th class="py-3.5 px-6">Category</th>
+                  <th class="py-3.5 px-6">Payee / Vendor</th>
+                  <th class="py-3.5 px-6">Branch</th>
+                  <th class="py-3.5 px-6">Date</th>
+                  <th class="py-3.5 px-6">Amount</th>
+                  <th class="py-3.5 px-6 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="expenses-table-body" class="divide-y divide-slate-100 font-medium">
+                <!-- Dynamic -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODULE 7.6: MULTIPLE BRANCH MANAGEMENT VIEW -->
+      <!-- ========================================== -->
+      <div id="view-branches" class="tab-content space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Multiple Branch Management</h2>
+            <p class="text-xs text-slate-500">Configure Dojo Locations, Regional Training Facilities & Access Scoping</p>
+          </div>
+          <button onclick="openAddBranchModal()" class="action-btn-write px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
+            <span class="material-symbols-outlined text-sm">add_business</span>
+            <span>+ Create New Branch</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="branches-container">
+          <!-- Dynamic Branch Cards -->
+        </div>
       </div>
 
       <!-- ========================================== -->
