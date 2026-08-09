@@ -744,63 +744,76 @@ function clearSessionStore() {
 }
 
 // ==========================================
-// FIXED: AUTH CHECK WITH BETTER SESSION RESTORATION
+// FIXED: STRICT SERVER-VERIFIED AUTH CHECK
 // ==========================================
-function checkAuth() {
+async function checkAuth() {
   const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
-  const storedUser = localStorage.getItem('kai_user') || sessionStorage.getItem('kai_user');
 
-  if (token && storedUser) {
+  if (token) {
     try {
-      const user = JSON.parse(storedUser);
-      appState.currentUser = user;
-      appState.userRole = (user.role || 'viewer').toLowerCase();
-      appState.isAuthenticated = true;
+      // MANDATORY SERVER-SIDE SESSION VERIFICATION
+      const res = await fetch(getApiUrl('/api/verify-session'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ token })
+      });
 
-      // Ensure session is stored in both storage types for consistency
-      localStorage.setItem('kai_session', 'authenticated_' + Date.now());
-      localStorage.setItem('kai_token', token);
-      localStorage.setItem('kai_user', JSON.stringify(user));
-      sessionStorage.setItem('kai_session', 'authenticated_' + Date.now());
-      sessionStorage.setItem('kai_token', token);
-      sessionStorage.setItem('kai_user', JSON.stringify(user));
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.valid && data.user) {
+          appState.currentUser = data.user;
+          appState.userRole = (data.user.role || 'viewer').toLowerCase();
+          appState.isAuthenticated = true;
 
-      // Show app, hide login
-      const viewLogin = document.getElementById('view-login');
-      const appWrapper = document.getElementById('app-wrapper');
-      if (viewLogin) {
-        viewLogin.classList.add('hidden');
-        viewLogin.style.display = '';
-      }
-      if (appWrapper) {
-        appWrapper.classList.remove('hidden');
-        appWrapper.style.display = '';
-      }
+          // Update stored session tokens
+          localStorage.setItem('kai_session', 'authenticated_' + Date.now());
+          localStorage.setItem('kai_token', token);
+          localStorage.setItem('kai_user', JSON.stringify(data.user));
 
-      updateHeaderUserInfo();
-      applyRolePermissions();
+          // Show app, hide login
+          const viewLogin = document.getElementById('view-login');
+          const appWrapper = document.getElementById('app-wrapper');
+          if (viewLogin) {
+            viewLogin.classList.add('hidden');
+            viewLogin.style.display = '';
+          }
+          if (appWrapper) {
+            appWrapper.classList.remove('hidden');
+            appWrapper.style.display = '';
+          }
 
-      const currentHash = window.location.hash ? window.location.hash.replace('#', '') : '';
-      if (!currentHash || currentHash === 'login') {
-        if (appState.userRole === 'admin') {
-          switchAdminSection('branding', false);
-        } else {
-          switchTab('dashboard', false);
+          updateHeaderUserInfo();
+          applyRolePermissions();
+
+          const currentHash = window.location.hash ? window.location.hash.replace('#', '') : '';
+          if (!currentHash || currentHash === 'login') {
+            if (appState.userRole === 'admin') {
+              switchAdminSection('branding', false);
+            } else {
+              switchTab('dashboard', false);
+            }
+          } else if (currentHash === 'admin-settings') {
+            switchAdminSection(appState.activeAdminSec || 'branding', false);
+          } else {
+            switchTab(currentHash, false);
+          }
+          return true;
         }
-      } else if (currentHash === 'admin-settings') {
-        switchAdminSection(appState.activeAdminSec || 'branding', false);
-      } else {
-        switchTab(currentHash, false);
       }
-      return true;
     } catch (e) {
-      console.error('Session restoration error:', e);
+      console.warn('[CheckAuth] Server verification network warning:', e.message);
     }
   }
 
+  // Session verification failed or token is invalid -> Evict broken session state
+  clearSessionStore();
   appState.isAuthenticated = false;
   appState.currentUser = null;
   appState.userRole = 'viewer';
+
   const vLogin = document.getElementById('view-login');
   const aWrap = document.getElementById('app-wrapper');
   if (vLogin) {
@@ -1506,7 +1519,12 @@ async function loadDatabase() {
     const res = await fetch(getApiUrl('/api/db'), {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (res.ok) {
+    if (res.status === 401) {
+      console.warn('[DB] Server returned 401 Unauthorized. Evicting stale session...');
+      clearSessionStore();
+      triggerLogout(false);
+      return;
+    } else if (res.ok) {
       const data = await res.json();
       if (data.buildId && syncServerBuildVersion(data.buildId)) {
         return;
@@ -1515,7 +1533,7 @@ async function loadDatabase() {
       applyLoadedData(data);
       return;
     } else {
-      console.warn(`[DB] Server returned HTTP ${res.status} when loading DB, preserving active session & attempting cached fallback.`);
+      console.warn(`[DB] Server returned HTTP ${res.status} when loading DB, attempting cached fallback.`);
     }
   } catch (e) {
     console.warn('[DB] Network error loading DB, attempting cached fallback:', e.message);
