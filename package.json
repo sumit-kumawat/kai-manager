@@ -1,7 +1,7 @@
 {
   "name": "kai-manager",
   "version": "2.0.0",
-  "description": "Karate Academy India Management Portal CRM",
+  "description": "Karate Academy India Management Portal ERP",
   "main": "server.js",
   "type": "module",
   "scripts": {

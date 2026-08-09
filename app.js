@@ -1,5 +1,5 @@
 /**
- * KAI Manager - Karate Academy India CRM
+ * KAI Manager - Karate Academy India ERP
  * Production Application Controller & Admin Control Panel Engine
  */
 
@@ -36,6 +36,14 @@ let appState = {
   activityLogs: [],
   isAuthenticated: false
 };
+
+function getApiUrl(endpoint) {
+  if (!endpoint) return '';
+  if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
+    return 'http://localhost:3000' + endpoint;
+  }
+  return endpoint;
+}
 
 const syncChannel = 'BroadcastChannel' in window ? new BroadcastChannel('kai_manager_sync') : null;
 let cameraStream = null;
@@ -849,10 +857,10 @@ function applyRolePermissions() {
   const sendEmailBtns = [document.getElementById('header-send-email-btn'), document.getElementById('mobile-send-email-btn')];
 
   if (role === 'admin') {
-    // Admin sees System Administration + Logs + Admissions + Send Email
+    // Admin sees System Administration + Operational Console + Staff User Management
     adminSecNav?.classList.remove('hidden');
-    operationalSecNav?.classList.add('hidden');
-    bottomMgrBox?.classList.add('hidden');
+    operationalSecNav?.classList.remove('hidden');
+    bottomMgrBox?.classList.remove('hidden');
     financialsLink?.classList.remove('hidden');
     idcardsLink?.classList.remove('hidden');
 
@@ -970,7 +978,7 @@ function setupAuthHandlers() {
     try {
       console.log('Attempting login for:', userVal);
 
-      const res = await fetch('/api/login', {
+      const res = await fetch(getApiUrl('/api/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: userVal, password: passVal })
@@ -1356,7 +1364,7 @@ async function loadDatabase() {
   if (!token) return;
 
   try {
-    const res = await fetch('/api/db', {
+    const res = await fetch(getApiUrl('/api/db'), {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.ok) {
