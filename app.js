@@ -507,7 +507,7 @@ function highlightMatchText(text, query) {
 function renderSearchSuggestions(query, dropdownEl) {
   const q = query.toLowerCase();
 
-  const studentMatches = appState.students.filter(s => 
+  const studentMatches = appState.students.filter(s =>
     s.name?.toLowerCase().includes(q) ||
     s.studentId?.toLowerCase().includes(q) ||
     s.phone?.toLowerCase().includes(q) ||
@@ -669,7 +669,7 @@ function clearSessionStore() {
     fetch('/api/logout', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
-    }).catch(() => {});
+    }).catch(() => { });
   }
 
   localStorage.clear();
@@ -684,7 +684,7 @@ function clearSessionStore() {
       const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
       document.cookie = name.trim() + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // Complete memory state wipe
   appState.currentUser = null;
@@ -711,6 +711,9 @@ function clearSessionStore() {
   if (loginErr) loginErr.classList.add('hidden');
 }
 
+// ==========================================
+// FIXED: AUTH CHECK WITH BETTER SESSION RESTORATION
+// ==========================================
 function checkAuth() {
   const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
   const storedUser = localStorage.getItem('kai_user') || sessionStorage.getItem('kai_user');
@@ -722,6 +725,7 @@ function checkAuth() {
       appState.userRole = (user.role || 'viewer').toLowerCase();
       appState.isAuthenticated = true;
 
+      // Ensure session is stored in both storage types for consistency
       localStorage.setItem('kai_session', 'authenticated_' + Date.now());
       localStorage.setItem('kai_token', token);
       localStorage.setItem('kai_user', JSON.stringify(user));
@@ -729,6 +733,7 @@ function checkAuth() {
       sessionStorage.setItem('kai_token', token);
       sessionStorage.setItem('kai_user', JSON.stringify(user));
 
+      // Show app, hide login
       const viewLogin = document.getElementById('view-login');
       const appWrapper = document.getElementById('app-wrapper');
       if (viewLogin) viewLogin.classList.add('hidden');
@@ -749,7 +754,7 @@ function checkAuth() {
       } else {
         switchTab(currentHash, false);
       }
-      return;
+      return true;
     } catch (e) {
       console.error('Session restoration error:', e);
     }
@@ -760,6 +765,7 @@ function checkAuth() {
   appState.userRole = 'viewer';
   document.getElementById('view-login')?.classList.remove('hidden');
   document.getElementById('app-wrapper')?.classList.add('hidden');
+  return false;
 }
 
 function triggerLogout(isInactivity = false) {
@@ -795,7 +801,7 @@ function triggerLogout(isInactivity = false) {
 function updateHeaderUserInfo() {
   if (!appState.currentUser) return;
   const user = appState.currentUser;
-  
+
   const headerName = document.getElementById('header-user-display');
   if (headerName) headerName.textContent = user.username || user.name || 'user';
 
@@ -944,6 +950,9 @@ function applyRolePermissions() {
   }
 }
 
+// ==========================================
+// FIXED: LOGIN FORM HANDLER
+// ==========================================
 function setupAuthHandlers() {
   const loginForm = document.getElementById('login-form');
   const loginErr = document.getElementById('login-error');
@@ -953,7 +962,14 @@ function setupAuthHandlers() {
     const userVal = document.getElementById('login-username').value.trim();
     const passVal = document.getElementById('login-password').value.trim();
 
+    // Clear previous error
+    if (loginErr) {
+      loginErr.classList.add('hidden');
+    }
+
     try {
+      console.log('Attempting login for:', userVal);
+
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -961,7 +977,10 @@ function setupAuthHandlers() {
       });
 
       const data = await res.json();
+      console.log('Login response:', data);
+
       if (res.ok && data.success && data.token && data.user) {
+        // Store session tokens
         localStorage.setItem('kai_session', 'authenticated_' + Date.now());
         localStorage.setItem('kai_token', data.token);
         localStorage.setItem('kai_user', JSON.stringify(data.user));
@@ -986,7 +1005,7 @@ function setupAuthHandlers() {
 
         await loadDatabase();
 
-        // Enforce view routing per role immediately
+        // Route to appropriate view
         const currentHash = (window.location.hash || '').replace(/^#/, '');
         if (!currentHash || currentHash === 'login') {
           if (appState.userRole === 'admin') {
@@ -1012,8 +1031,9 @@ function setupAuthHandlers() {
         }
       }
     } catch (err) {
+      console.error('Login error:', err);
       if (loginErr) {
-        loginErr.textContent = err.message || 'Login failed due to connection error.';
+        loginErr.textContent = err.message || 'Login failed due to connection error. Please check your internet connection.';
         loginErr.classList.remove('hidden');
       }
     }
@@ -1143,7 +1163,7 @@ function setupManagerSecurityModal() {
         });
         const data = await res.json();
         if (res.ok && data.success) verified = true;
-      } catch (err) {}
+      } catch (err) { }
     }
 
     if (verified) {
@@ -1314,7 +1334,7 @@ function openUserProfileModal() {
 
   document.getElementById('prof-display-name').textContent = user.name || user.username;
   document.getElementById('prof-display-username').textContent = `@${user.username}`;
-  
+
   const roleBadge = document.getElementById('prof-role-badge');
   if (roleBadge) {
     roleBadge.textContent = user.role.toUpperCase();
@@ -1349,13 +1369,13 @@ async function loadDatabase() {
       checkAuth();
       return;
     }
-  } catch (e) {}
+  } catch (e) { }
 
   const cached = localStorage.getItem('kai_db_cache');
   if (cached) {
     try {
       applyLoadedData(JSON.parse(cached));
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -1413,7 +1433,7 @@ async function saveDatabase() {
         activityLogs: appState.activityLogs
       })
     });
-  } catch (e) {}
+  } catch (e) { }
 }
 
 function setupSyncChannel() {
@@ -1503,7 +1523,7 @@ function updateSidebarNavHighlight(tabId, adminSec) {
   const opLinks = document.querySelectorAll('#operational-sidebar-nav [data-tab]');
   opLinks.forEach(link => {
     const isTarget = link.getAttribute('data-tab') === tabId;
-    link.className = isTarget 
+    link.className = isTarget
       ? 'sidebar-nav-item sidebar-nav-active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition'
       : 'sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition';
   });
@@ -1512,7 +1532,7 @@ function updateSidebarNavHighlight(tabId, adminSec) {
   const mgrLinks = document.querySelectorAll('#bottom-manager-users-box [data-tab]');
   mgrLinks.forEach(link => {
     const isTarget = tabId === 'manager-users';
-    link.className = isTarget 
+    link.className = isTarget
       ? 'sidebar-nav-item sidebar-nav-staff-active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition'
       : 'sidebar-nav-item sidebar-nav-staff-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition';
   });
@@ -1521,7 +1541,7 @@ function updateSidebarNavHighlight(tabId, adminSec) {
   const adminLinks = document.querySelectorAll('#administrative-sidebar-section [data-admin-sec]');
   adminLinks.forEach(link => {
     const isTarget = (tabId === 'admin-settings' && link.getAttribute('data-admin-sec') === adminSec);
-    link.className = isTarget 
+    link.className = isTarget
       ? 'sidebar-nav-item sidebar-nav-active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition'
       : 'sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition';
   });
@@ -1530,7 +1550,7 @@ function updateSidebarNavHighlight(tabId, adminSec) {
   const mobLinks = document.querySelectorAll('nav.lg\\:hidden [data-mob-tab]');
   mobLinks.forEach(link => {
     const isTarget = link.getAttribute('data-mob-tab') === tabId;
-    link.className = isTarget 
+    link.className = isTarget
       ? 'flex flex-col items-center gap-1 p-2 rounded-xl text-red-600 font-extrabold'
       : 'flex flex-col items-center gap-1 p-2 rounded-xl text-slate-500 font-medium hover:text-slate-900';
   });
@@ -1618,7 +1638,7 @@ async function renderAllViews() {
   try { renderAdminUsersTable(); } catch (e) { console.error('Users table error:', e); }
   try { renderAdminStudentsTable(); } catch (e) { console.error('Admin students error:', e); }
   try { renderAdminLogsTable(); } catch (e) { console.error('Admin logs error:', e); }
-  try { if (appState.activeAdminSec === 'emails') loadAdminEmailLogs(); } catch (e) {}
+  try { if (appState.activeAdminSec === 'emails') loadAdminEmailLogs(); } catch (e) { }
 }
 
 // 1. Executive Dashboard
@@ -1862,7 +1882,7 @@ function setStudentStatus(idStr, status, targetDate) {
         date: dateStr,
         time: new Date().toLocaleTimeString('en-IN', { timeStyle: 'short' })
       })
-    }).catch(() => {});
+    }).catch(() => { });
   }
 
   logActivity(`Attendance Marked (${dateStr}): ${student.name}`, `${student.studentId} marked ${status.toUpperCase()}`, 'attendance');
@@ -2031,7 +2051,7 @@ function setupAttendanceTrackerEvents() {
 // ==========================================
 // SEND EMAIL MODAL CONTROLLER (FOR ALL ROLES)
 // ==========================================
-window.openSendEmailModal = function(studentId = null, defaultCategory = null) {
+window.openSendEmailModal = function (studentId = null, defaultCategory = null) {
   const role = appState.userRole;
   if (role === 'viewer') {
     showLightbox({ title: 'Permission Denied', message: 'Viewer role is restricted from dispatching emails.', type: 'error' });
@@ -2151,7 +2171,7 @@ window.openSendEmailModal = function(studentId = null, defaultCategory = null) {
   modal.classList.remove('hidden');
 };
 
-window.closeSendEmailModal = function() {
+window.closeSendEmailModal = function () {
   const modal = document.getElementById('send-email-modal');
   if (modal) modal.classList.add('hidden');
 };
@@ -2349,7 +2369,7 @@ function filterAdminEmailLogs() {
   }).join('');
 }
 
-window.openEmailPreviewModal = function(logId) {
+window.openEmailPreviewModal = function (logId) {
   const log = allAdminEmailLogs.find(l => String(l.id) === String(logId));
   if (!log) return;
 
@@ -2385,12 +2405,12 @@ window.openEmailPreviewModal = function(logId) {
   modal?.classList.remove('hidden');
 };
 
-window.closeEmailPreviewModal = function() {
+window.closeEmailPreviewModal = function () {
   const modal = document.getElementById('email-preview-modal');
   modal?.classList.add('hidden');
 };
 
-window.retryFailedEmail = async function(logId) {
+window.retryFailedEmail = async function (logId) {
   showToast('Retrying email dispatch...');
   try {
     const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
@@ -2413,7 +2433,7 @@ window.retryFailedEmail = async function(logId) {
   }
 };
 
-window.clearAllEmailLogs = async function() {
+window.clearAllEmailLogs = async function () {
   if (!confirm('Are you sure you want to clear all email history logs? This action cannot be undone.')) return;
   try {
     const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
@@ -2477,7 +2497,7 @@ async function toggleCameraScanner() {
       video.classList.remove('hidden');
       placeholder?.classList.add('hidden');
       if (btn) btn.innerHTML = `<span class="material-symbols-outlined text-sm">videocam_off</span><span>Stop Camera Scanner</span>`;
-      
+
       startLiveQRFrameScanner();
     }
   } catch (err) {
@@ -2851,7 +2871,7 @@ async function openStudentDetailsModal(studentIdStr) {
   document.getElementById('sd-header-photo').src = student.avatar || DEFAULT_AVATAR;
   document.getElementById('sd-header-name').textContent = student.name;
   document.getElementById('sd-header-id').textContent = student.studentId;
-  
+
   const beltEl = document.getElementById('sd-header-belt');
   if (beltEl) {
     beltEl.textContent = student.belt;
@@ -2887,7 +2907,7 @@ async function openStudentDetailsModal(studentIdStr) {
   }
 
   document.getElementById('sd-plan-fee').textContent = `₹${(student.monthlyFee || 2500).toLocaleString('en-IN')}`;
-  
+
   const studentInvoices = appState.financials.filter(f => String(f.studentId) === String(student.studentId));
   const totalPaid = studentInvoices.reduce((sum, f) => sum + (f.finalPaid || f.amount || 0), 0);
   document.getElementById('sd-total-paid').textContent = `₹${totalPaid.toLocaleString('en-IN')}`;
@@ -3027,7 +3047,7 @@ function deleteStudent(idStr) {
     });
     return;
   }
-  
+
   const student = appState.students.find(s => String(s.id) === String(idStr));
   if (!student) return;
 
@@ -3428,13 +3448,13 @@ function openReceiptModal(invoiceId) {
 
     const btnDownload = document.getElementById('btn-download-receipt-pdf');
     if (btnDownload) btnDownload.onclick = () => downloadReceiptPDF(inv.id);
-    
+
     const btnPrint = document.getElementById('btn-print-receipt');
     if (btnPrint) btnPrint.onclick = () => printReceipt(inv.id);
-    
+
     const btnWhatsapp = document.getElementById('btn-send-whatsapp');
     if (btnWhatsapp) btnWhatsapp.onclick = () => shareReceiptWhatsApp(inv);
-    
+
     const btnEmail = document.getElementById('btn-send-email');
     if (btnEmail) btnEmail.onclick = () => shareReceiptEmail(inv);
 
@@ -3502,7 +3522,7 @@ async function shareReceiptWhatsApp(inv) {
       showToast('Receipt PDF shared via WhatsApp');
       return;
     }
-  } catch (e) {}
+  } catch (e) { }
 
   downloadReceiptPDF(inv.id);
   const student = appState.students.find(s => String(s.studentId) === String(inv.studentId));
@@ -3527,7 +3547,7 @@ async function shareReceiptEmail(inv) {
       showToast('Receipt PDF shared via Email');
       return;
     }
-  } catch (e) {}
+  } catch (e) { }
 
   downloadReceiptPDF(inv.id);
   const student = appState.students.find(s => String(s.studentId) === String(inv.studentId));
@@ -3733,7 +3753,7 @@ function loadSmtpConfigForm() {
   }
 }
 
-window.applySmtpPreset = function(provider) {
+window.applySmtpPreset = function (provider) {
   const hostEl = document.getElementById('smtp-host');
   const portEl = document.getElementById('smtp-port');
   const encEl = document.getElementById('smtp-encryption');
@@ -3924,7 +3944,7 @@ function setupPhotoUploader() {
 function generateKAIStudentId() {
   const year = new Date().getFullYear();
   const prefix = `KAISTD${year}`;
-  
+
   let maxSeq = 0;
   const idRegex = new RegExp(`^(?:KAISTD|KAI)${year}(\\d+)$`, 'i');
 
@@ -3967,7 +3987,7 @@ function generateKAIStudentId() {
 function generateKAIStaffId() {
   const year = new Date().getFullYear();
   const prefix = `KAISTF${year}`;
-  
+
   let maxSeq = 0;
   const idRegex = new RegExp(`^KAISTF${year}(\\d+)$`, 'i');
 
@@ -3989,9 +4009,9 @@ function generateKAIStaffId() {
 // INVOICE NUMBER GENERATION: STUDENT_ID + ALPHABETIC AUTO-INCREMENT (KAISTD202601A, KAISTD202601B...)
 function generateKAIInvoiceNo(studentId) {
   const sid = studentId || generateKAIStudentId();
-  
+
   // Find all existing invoices associated with this student
-  const existingInvoices = (appState.financials || []).filter(inv => 
+  const existingInvoices = (appState.financials || []).filter(inv =>
     String(inv.studentId) === String(sid) || String(inv.id).startsWith(sid)
   );
 
@@ -4026,8 +4046,8 @@ function generateKAIInvoiceNo(studentId) {
 // STAFF SALARY INVOICE NUMBER GENERATION: STAFF_ID + ALPHABETIC AUTO-INCREMENT (KAISTF202601A, KAISTF202601B...)
 function generateKAIStaffInvoiceNo(staffId) {
   const stfId = staffId || generateKAIStaffId();
-  
-  const existingInvoices = (appState.staffFinancials || appState.financials || []).filter(inv => 
+
+  const existingInvoices = (appState.staffFinancials || appState.financials || []).filter(inv =>
     String(inv.staffId) === String(stfId) || String(inv.id).startsWith(stfId)
   );
 
@@ -4057,27 +4077,6 @@ function generateKAIStaffInvoiceNo(staffId) {
   }
 
   return `${stfId}${suffixStr || 'A'}`;
-}
-      if (/^[A-Z]+$/.test(suffix)) {
-        let val = 0;
-        for (let i = 0; i < suffix.length; i++) {
-          val = val * 26 + (suffix.charCodeAt(i) - 64);
-        }
-        if (val - 1 > maxSuffixVal) maxSuffixVal = val - 1;
-      }
-    }
-  });
-
-  const nextIndex = maxSuffixVal + 1;
-  let num = nextIndex + 1;
-  let suffixStr = '';
-  while (num > 0) {
-    const rem = (num - 1) % 26;
-    suffixStr = String.fromCharCode(65 + rem) + suffixStr;
-    num = Math.floor((num - 1) / 26);
-  }
-
-  return `${sid}${suffixStr || 'A'}`;
 }
 
 async function dispatchAutoEmailNotification(category, payload) {
@@ -4208,7 +4207,7 @@ function setupFormsAndCalculators() {
 
     document.getElementById('calc-reg-display').textContent = `₹${regFee.toLocaleString('en-IN')}`;
     document.getElementById('calc-orig').textContent = `₹${planFee.toLocaleString('en-IN')}`;
-    
+
     const unifRow = document.getElementById('calc-uniform-row');
     if (unifRow) {
       if (uniformCheck?.checked) {
@@ -4274,7 +4273,7 @@ function setupFormsAndCalculators() {
     const finalFee = (planFee + regFee + uniformFee) - discVal;
 
     const studentId = generateKAIStudentId();
-    const invoiceId = generateKAIInvoiceNo();
+    const invoiceId = generateKAIInvoiceNo(studentId);
 
     const newStudent = {
       id: Date.now(),
@@ -4331,7 +4330,7 @@ function setupFormsAndCalculators() {
     document.getElementById('photo-preview-img').src = DEFAULT_AVATAR;
 
     showLightbox({ title: 'Student Registered', message: `Registered ${name}! Assigned Unique Student ID ${studentId}.`, type: 'success' });
-    
+
     if (appState.userRole !== 'receptionist') {
       openReceiptModal(invoiceId);
     }
@@ -4423,7 +4422,7 @@ function setupFormsAndCalculators() {
       const disc = parseInt(payDiscInput.value || 0);
       const finalPaid = orig - disc;
       const method = document.getElementById('pay-method').value;
-      const invoiceId = generateKAIInvoiceNo();
+      const invoiceId = generateKAIInvoiceNo(student.studentId);
 
       const invRecord = {
         id: invoiceId,
@@ -4572,7 +4571,7 @@ function setupAdminSettingsForms() {
   });
 
   // Clear All Logs Handler (Global & Event-driven)
-  window.clearAllAdminLogs = function() {
+  window.clearAllAdminLogs = function () {
     if (appState.userRole !== 'admin') {
       showLightbox({ title: 'Permission Denied', message: 'Only Admin can clear system activity logs.', type: 'error' });
       return;
@@ -4860,7 +4859,7 @@ async function loadPendingAdmissions() {
       appState.pendingAdmissions = data.admissions || [];
 
       const count = currentPendingAdmissionsList.length;
-      
+
       const headBadge = document.getElementById('header-admissions-badge');
       const mobBadge = document.getElementById('mobile-admissions-badge');
       const modalBadge = document.getElementById('adm-modal-count-badge');
@@ -5181,7 +5180,7 @@ async function rejectAdmission(admissionId) {
   if (appState.userRole !== 'admin' && appState.userRole !== 'manager') return;
 
   const reason = prompt('Please enter the reason for rejecting this admission application:') || 'Application details did not meet requirements.';
-  
+
   try {
     const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
     const res = await fetch('/api/admissions/reject', {
@@ -5593,7 +5592,7 @@ async function confirmCsvImport() {
 // ==========================================
 // HOLIDAY ATTENDANCE NOTICE CONTROLLER
 // ==========================================
-window.openHolidayNoticeModal = function() {
+window.openHolidayNoticeModal = function () {
   if (appState.userRole === 'viewer') {
     showLightbox({ title: 'Permission Denied', message: 'Viewer role is read-only.', type: 'error' });
     return;
@@ -5604,7 +5603,7 @@ window.openHolidayNoticeModal = function() {
   modal?.classList.remove('hidden');
 };
 
-window.closeHolidayNoticeModal = function() {
+window.closeHolidayNoticeModal = function () {
   document.getElementById('holiday-notice-modal')?.classList.add('hidden');
 };
 
@@ -5646,19 +5645,19 @@ function setupHolidayNoticeFormHandler() {
 // ==========================================
 // STAFF SALARY INVOICE CONTROLLER
 // ==========================================
-window.openStaffInvoiceModal = function(userId) {
+window.openStaffInvoiceModal = function (userId) {
   const staff = appState.users.find(u => String(u.id) === String(userId));
   if (!staff) return;
 
   const modal = document.getElementById('staff-invoice-modal');
   document.getElementById('staff-invoice-user-id').value = staff.id;
   document.getElementById('staff-invoice-name').value = staff.name;
-  
+
   if (!staff.staffId) {
     staff.staffId = generateKAIStaffId();
   }
   document.getElementById('staff-invoice-id').value = staff.staffId;
-  
+
   const currentMonthStr = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
   document.getElementById('staff-invoice-month').value = currentMonthStr;
   document.getElementById('staff-invoice-amount').value = staff.monthlySalary || 15000;
@@ -5666,7 +5665,7 @@ window.openStaffInvoiceModal = function(userId) {
   modal?.classList.remove('hidden');
 };
 
-window.closeStaffInvoiceModal = function() {
+window.closeStaffInvoiceModal = function () {
   document.getElementById('staff-invoice-modal')?.classList.add('hidden');
 };
 

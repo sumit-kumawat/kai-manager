@@ -46,13 +46,18 @@ function writeDbFile(data) {
 
 // Hydrate in-memory activeSessions map from db.json on startup
 function hydrateActiveSessions() {
-  const dbData = readDbFile();
-  if (dbData.sessions && Array.isArray(dbData.sessions)) {
-    dbData.sessions.forEach(s => {
-      if (s.token && s.user) {
-        activeSessions.set(s.token, s.user);
-      }
-    });
+  try {
+    const dbData = readDbFile();
+    if (dbData.sessions && Array.isArray(dbData.sessions)) {
+      dbData.sessions.forEach(s => {
+        if (s.token && s.user) {
+          activeSessions.set(s.token, s.user);
+        }
+      });
+      console.log(`[Server] Hydrated ${activeSessions.size} active sessions from db.json`);
+    }
+  } catch (e) {
+    console.warn('[Server] Error hydrating sessions:', e.message);
   }
 }
 
@@ -429,7 +434,7 @@ async function dispatchAutomatedEmail({
   // Duplicate suppression check if enabled
   if (preventDuplicateMinutes > 0) {
     const cutoffTime = Date.now() - (preventDuplicateMinutes * 60 * 1000);
-    const existingRecent = dbData.emailLogs.find(log => 
+    const existingRecent = dbData.emailLogs.find(log =>
       log.recipientEmail === cleanTargetEmail &&
       log.category === category &&
       log.subject === subject &&
@@ -567,48 +572,55 @@ const server = http.createServer((req, res) => {
           const dbData = readDbFile();
           const usersList = dbData.users || [];
 
-          // Find matching user in db.json by username, email, or role alias
+          console.log('[Server] Login attempt for:', cleanUser);
+
+          // Find matching user in db.json
           let foundUser = usersList.find(u => {
             if (!u || u.status === 'disabled') return false;
             const uName = (u.username || '').toLowerCase();
             const uEmail = (u.email || '').toLowerCase();
-            const uRole = (u.role || '').toLowerCase();
             const target = cleanUser.toLowerCase();
 
-            const isMatch = (uName === target) || (uEmail === target) || (uRole === target);
-            return isMatch && (u.password === cleanPass || cleanPass === '123');
+            const isMatch = (uName === target) || (uEmail === target);
+            return isMatch && u.password === cleanPass;
           });
 
+          // Fallback: Check role-based default credentials
           if (!foundUser) {
             const lowerUser = cleanUser.toLowerCase();
-            if ((lowerUser === 'admin' || lowerUser === 'admin@conzex.com') && (cleanPass === 'admin' || cleanPass === '123')) {
-              foundUser = usersList.find(u => u.role === 'admin') || {
-                username: 'admin',
-                name: 'KAI Administrator',
-                email: 'admin@conzex.com',
-                role: 'admin'
-              };
-            } else if ((lowerUser === 'manager' || lowerUser === 'manager@conzex.com') && (cleanPass === '123' || cleanPass === 'manager')) {
-              foundUser = usersList.find(u => u.role === 'manager') || {
-                username: 'manager',
-                name: 'KAI Manager',
-                email: 'manager@conzex.com',
-                role: 'manager'
-              };
-            } else if ((lowerUser === 'receptionist' || lowerUser === 'receptionist@conzex.com') && (cleanPass === '123' || cleanPass === 'receptionist')) {
-              foundUser = usersList.find(u => u.role === 'receptionist') || {
-                username: 'receptionist',
-                name: 'KAI Receptionist',
-                email: 'receptionist@conzex.com',
-                role: 'receptionist'
-              };
-            } else if ((lowerUser === 'viewer' || lowerUser === 'viewer@conzex.com') && (cleanPass === '123' || cleanPass === 'viewer')) {
-              foundUser = usersList.find(u => u.role === 'viewer') || {
-                username: 'viewer',
-                name: 'KAI Portal Viewer',
-                email: 'viewer@conzex.com',
-                role: 'viewer'
-              };
+            const defaultUsers = {
+              'admin': { role: 'admin', name: 'KAI Administrator', pass: 'admin' },
+              'manager': { role: 'manager', name: 'KAI Manager', pass: '123' },
+              'receptionist': { role: 'receptionist', name: 'KAI Receptionist', pass: '123' },
+              'viewer': { role: 'viewer', name: 'KAI Portal Viewer', pass: '123' }
+            };
+
+            const defaultUser = defaultUsers[lowerUser];
+            if (defaultUser && cleanPass === defaultUser.pass) {
+              // Check if user exists in db
+              foundUser = usersList.find(u => u.role === defaultUser.role);
+              if (!foundUser) {
+                // Create user if it doesn't exist
+                const newUser = {
+                  id: Date.now(),
+                  username: lowerUser,
+                  password: defaultUser.pass,
+                  name: defaultUser.name,
+                  email: `${lowerUser}@conzex.com`,
+                  role: defaultUser.role,
+                  status: 'active'
+                };
+                dbData.users.push(newUser);
+                writeDbFile(dbData);
+                foundUser = newUser;
+                console.log('[Server] Created default user:', lowerUser);
+              } else {
+                // Ensure password matches default
+                if (foundUser.password !== defaultUser.pass) {
+                  foundUser.password = defaultUser.pass;
+                  writeDbFile(dbData);
+                }
+              }
             }
           }
 
@@ -623,7 +635,7 @@ const server = http.createServer((req, res) => {
 
             activeSessions.set(token, sessionUser);
 
-            // Persist session to db.json to guarantee survival across server restarts
+            // Persist session to db.json
             dbData.sessions = dbData.sessions || [];
             dbData.sessions = dbData.sessions.filter(s => s.user.username !== sessionUser.username);
             dbData.sessions.unshift({
@@ -631,8 +643,10 @@ const server = http.createServer((req, res) => {
               user: sessionUser,
               createdAt: Date.now()
             });
-            if (dbData.sessions.length > 50) dbData.sessions = dbData.sessions.slice(0, 50);
+            if (dbData.sessions.length > 100) dbData.sessions = dbData.sessions.slice(0, 100);
             writeDbFile(dbData);
+
+            console.log('[Server] Login successful for:', sessionUser.username, 'role:', sessionUser.role);
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
@@ -641,10 +655,12 @@ const server = http.createServer((req, res) => {
               user: sessionUser
             }));
           } else {
+            console.log('[Server] Login failed for:', cleanUser);
             res.writeHead(401, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ success: false, error: 'Invalid username or password' }));
           }
         } catch (e) {
+          console.error('[Server] Login error:', e);
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Invalid payload' }));
         }
@@ -734,7 +750,7 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: 'Failed to read database' }));
           return;
         }
-        
+
         try {
           const dbObj = JSON.parse(rawData);
 
@@ -1591,7 +1607,7 @@ const server = http.createServer((req, res) => {
               triggeredBy: 'Online Admission Portal',
               preventDuplicateMinutes: 5,
               meta: { applicationId }
-            }).catch(() => {});
+            }).catch(() => { });
           }
 
           res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -1750,7 +1766,7 @@ const server = http.createServer((req, res) => {
               triggeredBy: `Manager Approval (${sessionUser.username})`,
               preventDuplicateMinutes: 1,
               meta: { studentId, invoiceId, admissionId: admission.id }
-            }).catch(() => {});
+            }).catch(() => { });
           }
 
           res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -1829,7 +1845,7 @@ const server = http.createServer((req, res) => {
               triggeredBy: `Manager Rejection (${sessionUser.username})`,
               preventDuplicateMinutes: 1,
               meta: { admissionId: admission.id }
-            }).catch(() => {});
+            }).catch(() => { });
           }
 
           res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -1971,7 +1987,7 @@ const server = http.createServer((req, res) => {
               triggeredBy: `Payroll Generation (${sessionUser.username})`,
               preventDuplicateMinutes: 0,
               meta: { invoiceObj: payslipEntry }
-            }).catch(() => {});
+            }).catch(() => { });
           }
 
           res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -2023,7 +2039,7 @@ const server = http.createServer((req, res) => {
                 triggeredBy: `Holiday Notice (${sessionUser.username})`,
                 preventDuplicateMinutes: 60,
                 meta: { holidayName: reasonStr, date: dateStr }
-              }).catch(() => {});
+              }).catch(() => { });
             }
           });
 
@@ -2114,4 +2130,9 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`[Server] KAI Manager RBAC & SMTP Server running at http://localhost:${PORT}`);
+  console.log('[Server] Default login credentials:');
+  console.log('  Admin: admin / admin');
+  console.log('  Manager: manager / 123');
+  console.log('  Receptionist: receptionist / 123');
+  console.log('  Viewer: viewer / 123');
 });
