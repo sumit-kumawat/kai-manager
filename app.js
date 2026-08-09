@@ -55,7 +55,7 @@ let currentLogFilter = 'all';
 const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1555597673-b21d5c935865?w=100&auto=format&fit=crop&q=80';
 const DEFAULT_LOGO = 'https://www.karateacademyindia.com/logo.png';
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initApp() {
   setupBrowserHistoryNavigation();
   setupSyncChannel();
   setupNavigation();
@@ -93,7 +93,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadPendingAdmissions();
     }
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 // ==========================================
 // CENTRALIZED SYSTEM ACTIVITY LOGGING ENGINE
@@ -961,148 +967,166 @@ function applyRolePermissions() {
 // ==========================================
 // FIXED: LOGIN FORM HANDLER
 // ==========================================
-function setupAuthHandlers() {
-  const loginForm = document.getElementById('login-form');
+async function performLogin(username, password) {
+  const userVal = String(username || '').trim();
+  const passVal = String(password || '').trim();
   const loginErr = document.getElementById('login-error');
+  if (loginErr) loginErr.classList.add('hidden');
 
-  loginForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const userVal = document.getElementById('login-username').value.trim();
-    const passVal = document.getElementById('login-password').value.trim();
-
-    // Clear previous error
+  if (!userVal || !passVal) {
     if (loginErr) {
-      loginErr.classList.add('hidden');
+      loginErr.textContent = 'Please enter both username and password.';
+      loginErr.classList.remove('hidden');
     }
+    return false;
+  }
 
+  try {
+    console.log('Attempting login for:', userVal);
+
+    let res = null;
+    let data = null;
+    let networkError = null;
+
+    // 1. Primary API Attempt
     try {
-      console.log('Attempting login for:', userVal);
-
-      let res = null;
-      let data = null;
-      let networkError = null;
-
-      // 1. Primary API Attempt
+      res = await fetch(getApiUrl('/api/login'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: userVal, password: passVal })
+      });
+      if (res) data = await res.json();
+    } catch (err1) {
+      networkError = err1;
+      console.warn('Primary login fetch failed, trying secondary 127.0.0.1 endpoint:', err1.message);
+      // 2. Secondary 127.0.0.1 IPv4 Retry
       try {
-        res = await fetch(getApiUrl('/api/login'), {
+        res = await fetch('http://127.0.0.1:3000/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: userVal, password: passVal })
         });
         if (res) data = await res.json();
-      } catch (err1) {
-        networkError = err1;
-        console.warn('Primary login fetch failed, trying secondary 127.0.0.1 endpoint:', err1.message);
-        // 2. Secondary 127.0.0.1 IPv4 Retry
+      } catch (err2) {
+        console.warn('Secondary login fetch failed, trying localhost endpoint:', err2.message);
+        // 3. Tertiary localhost Retry
         try {
-          res = await fetch('http://127.0.0.1:3000/api/login', {
+          res = await fetch('http://localhost:3000/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: userVal, password: passVal })
           });
           if (res) data = await res.json();
-        } catch (err2) {
-          console.warn('Secondary login fetch failed, trying localhost endpoint:', err2.message);
-          // 3. Tertiary localhost Retry
-          try {
-            res = await fetch('http://localhost:3000/api/login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username: userVal, password: passVal })
-            });
-            if (res) data = await res.json();
-          } catch (err3) {
-            networkError = err3;
-          }
+        } catch (err3) {
+          networkError = err3;
         }
-      }
-
-      // 4. Server Unreachable -> Offline Default Credential Fallback
-      if (!data && (networkError || !res)) {
-        const lowerUser = userVal.toLowerCase();
-        const defaultAccounts = {
-          'admin': { pass: 'admin', role: 'admin', name: 'KAI Administrator', email: 'admin@conzex.com' },
-          'manager': { pass: '123', role: 'manager', name: 'KAI Manager', email: 'manager@conzex.com' },
-          'receptionist': { pass: '123', role: 'receptionist', name: 'KAI Receptionist', email: 'receptionist@conzex.com' },
-          'viewer': { pass: '123', role: 'viewer', name: 'KAI Portal Viewer', email: 'viewer@conzex.com' }
-        };
-
-        const foundAcc = defaultAccounts[lowerUser];
-        if (foundAcc && passVal === foundAcc.pass) {
-          data = {
-            success: true,
-            token: 'kai_sec_token_local_' + Date.now(),
-            user: {
-              name: foundAcc.name,
-              username: lowerUser,
-              email: foundAcc.email,
-              role: foundAcc.role
-            }
-          };
-          res = { ok: true };
-          console.log('[Auth] Logged in via local default account fallback:', lowerUser);
-        }
-      }
-
-      if (res && res.ok && data && data.success && data.token && data.user) {
-        // Store session tokens
-        localStorage.setItem('kai_session', 'authenticated_' + Date.now());
-        localStorage.setItem('kai_token', data.token);
-        localStorage.setItem('kai_user', JSON.stringify(data.user));
-
-        sessionStorage.setItem('kai_session', 'authenticated_' + Date.now());
-        sessionStorage.setItem('kai_token', data.token);
-        sessionStorage.setItem('kai_user', JSON.stringify(data.user));
-        sessionStorage.removeItem('kai_manager_verified');
-
-        appState.currentUser = data.user;
-        appState.userRole = (data.user.role || 'viewer').toLowerCase();
-        appState.isAuthenticated = true;
-
-        loginErr?.classList.add('hidden');
-        document.getElementById('view-login')?.classList.add('hidden');
-        document.getElementById('app-wrapper')?.classList.remove('hidden');
-
-        updateHeaderUserInfo();
-        applyRolePermissions();
-
-        logActivity(`User Logged In: ${data.user.username}`, `Role: ${data.user.role.toUpperCase()}`, 'system');
-
-        await loadDatabase();
-
-        // Route to appropriate view
-        const currentHash = (window.location.hash || '').replace(/^#/, '');
-        if (!currentHash || currentHash === 'login') {
-          if (appState.userRole === 'admin') {
-            switchAdminSection('branding', true);
-          } else {
-            switchTab('dashboard', true);
-            if (appState.userRole === 'manager') {
-              loadPendingAdmissions();
-            }
-          }
-        } else if (currentHash === 'admin-settings') {
-          switchAdminSection(appState.activeAdminSec || 'branding', true);
-        } else {
-          switchTab(currentHash, true);
-        }
-
-        await renderAllViews();
-        showToast(`Signed in as ${data.user.username} (${data.user.role.toUpperCase()})`);
-      } else {
-        if (loginErr) {
-          loginErr.textContent = (data && data.error) || 'Invalid username or password.';
-          loginErr.classList.remove('hidden');
-        }
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      if (loginErr) {
-        loginErr.textContent = err.message || 'Login failed due to connection error. Please check your internet connection.';
-        loginErr.classList.remove('hidden');
       }
     }
-  });
+
+    // 4. Server Unreachable -> Offline Default Credential Fallback
+    if (!data && (networkError || !res)) {
+      const lowerUser = userVal.toLowerCase();
+      const defaultAccounts = {
+        'admin': { pass: 'admin', role: 'admin', name: 'KAI Administrator', email: 'admin@conzex.com' },
+        'manager': { pass: '123', role: 'manager', name: 'KAI Manager', email: 'manager@conzex.com' },
+        'receptionist': { pass: '123', role: 'receptionist', name: 'KAI Receptionist', email: 'receptionist@conzex.com' },
+        'viewer': { pass: '123', role: 'viewer', name: 'KAI Portal Viewer', email: 'viewer@conzex.com' }
+      };
+
+      const foundAcc = defaultAccounts[lowerUser];
+      if (foundAcc && passVal === foundAcc.pass) {
+        data = {
+          success: true,
+          token: 'kai_sec_token_local_' + Date.now(),
+          user: {
+            name: foundAcc.name,
+            username: lowerUser,
+            email: foundAcc.email,
+            role: foundAcc.role
+          }
+        };
+        res = { ok: true };
+        console.log('[Auth] Logged in via local default account fallback:', lowerUser);
+      }
+    }
+
+    if (res && res.ok && data && data.success && data.token && data.user) {
+      // Store session tokens
+      localStorage.setItem('kai_session', 'authenticated_' + Date.now());
+      localStorage.setItem('kai_token', data.token);
+      localStorage.setItem('kai_user', JSON.stringify(data.user));
+
+      sessionStorage.setItem('kai_session', 'authenticated_' + Date.now());
+      sessionStorage.setItem('kai_token', data.token);
+      sessionStorage.setItem('kai_user', JSON.stringify(data.user));
+      sessionStorage.removeItem('kai_manager_verified');
+
+      appState.currentUser = data.user;
+      appState.userRole = (data.user.role || 'viewer').toLowerCase();
+      appState.isAuthenticated = true;
+
+      loginErr?.classList.add('hidden');
+      document.getElementById('view-login')?.classList.add('hidden');
+      document.getElementById('app-wrapper')?.classList.remove('hidden');
+
+      updateHeaderUserInfo();
+      applyRolePermissions();
+
+      logActivity(`User Logged In: ${data.user.username}`, `Role: ${data.user.role.toUpperCase()}`, 'system');
+
+      await loadDatabase();
+
+      // Route to appropriate view
+      const currentHash = (window.location.hash || '').replace(/^#/, '');
+      if (!currentHash || currentHash === 'login') {
+        if (appState.userRole === 'admin') {
+          switchAdminSection('branding', true);
+        } else {
+          switchTab('dashboard', true);
+          if (appState.userRole === 'manager') {
+            loadPendingAdmissions();
+          }
+        }
+      } else if (currentHash === 'admin-settings') {
+        switchAdminSection(appState.activeAdminSec || 'branding', true);
+      } else {
+        switchTab(currentHash, true);
+      }
+
+      await renderAllViews();
+      showToast(`Signed in as ${data.user.username} (${data.user.role.toUpperCase()})`);
+      return true;
+    } else {
+      if (loginErr) {
+        loginErr.textContent = (data && data.error) || 'Invalid username or password.';
+        loginErr.classList.remove('hidden');
+      }
+      return false;
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    if (loginErr) {
+      loginErr.textContent = err.message || 'Login failed due to connection error. Please check your internet connection.';
+      loginErr.classList.remove('hidden');
+    }
+    return false;
+  }
+}
+
+window.handleLoginSubmit = async function(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const userVal = document.getElementById('login-username')?.value || '';
+  const passVal = document.getElementById('login-password')?.value || '';
+  return await performLogin(userVal, passVal);
+};
+
+window.doLogin = async function(user, pass) {
+  return await performLogin(user, pass);
+};
+
+function setupAuthHandlers() {
+  const loginForm = document.getElementById('login-form');
+  loginForm?.addEventListener('submit', window.handleLoginSubmit);
 }
 
 function setupAdminProfileDropdown() {
