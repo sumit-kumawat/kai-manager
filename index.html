@@ -1,0 +1,2478 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title id="html-title">KAI Manager - Karate Academy India CRM</title>
+  <meta name="description" content="Official CRM and Academy Management System for Karate Academy India."/>
+  <link id="html-favicon" rel="icon" type="image/png" href="https://www.karateacademyindia.com/logo.png"/>
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  
+  <!-- Tailwind CSS Engine -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "kai-red": "#d90429",
+            "kai-red-hover": "#b90322",
+            "kai-dark": "#0f172a",
+            "surface": "#f8fafc",
+            "border-light": "#e2e8f0"
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Custom Light Theme & Production Styles -->
+  <link href="styles.css" rel="stylesheet"/>
+
+  <!-- JS Libraries for QR, PDF, Canvas & Camera Scanning -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased pb-24 lg:pb-8 min-h-screen">
+
+  <!-- ========================================== -->
+  <!-- VIEW 0: LOGIN VIEW (AUTHENTICATION)        -->
+  <!-- ========================================== -->
+  <div id="view-login" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-4">
+    <div class="bg-white/95 backdrop-blur-md w-full max-w-md rounded-2xl shadow-2xl border border-white/40 p-8 space-y-6">
+      <div class="flex flex-col items-center text-center space-y-2">
+        <div class="w-16 h-16 rounded-2xl bg-white p-2 flex items-center justify-center shadow border border-slate-200 mb-1 cursor-pointer" title="Refresh Page" onclick="location.reload()">
+          <img id="login-logo" src="https://www.karateacademyindia.com/logo.png" alt="KAI Logo" class="max-w-full max-h-full object-contain" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1555597673-b21d5c935865?w=100&auto=format&fit=crop&q=80';"/>
+        </div>
+        <h1 class="font-extrabold text-2xl text-slate-900 tracking-tight flex items-center justify-center gap-2">
+          <span id="login-app-title">KAI Manager</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 font-bold" id="login-app-version">v1.0</span>
+        </h1>
+        <p class="text-xs text-slate-500 font-medium" id="login-app-subtitle">Karate Academy India • Portal Access</p>
+      </div>
+
+      <form id="login-form" class="space-y-4">
+        <div id="inactivity-logout-alert" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-2">
+          <span class="material-symbols-outlined text-base text-amber-600">timer_off</span>
+          <span>You were automatically logged out due to 10 minutes of inactivity.</span>
+        </div>
+
+        <div id="login-error" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold text-center">
+          Invalid username or password.
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Username or Email</label>
+          <input type="text" id="login-username" required placeholder="e.g. support@conzex.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none"/>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none"/>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-sm">login</span>
+          <span>Sign In to Portal</span>
+        </button>
+
+        <div class="pt-2 border-t border-slate-100 text-center">
+          <a href="/admission" class="text-xs font-extrabold text-red-600 hover:text-red-700 inline-flex items-center gap-1.5 p-2 rounded-xl hover:bg-red-50 transition">
+            <span class="material-symbols-outlined text-sm">how_to_reg</span>
+            <span>New Student? Open Public Admission Form</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- PUBLIC LOGIN PAGE FOOTER WITH CONZEX ROUNDED ICON -->
+    <footer class="mt-8 text-center bg-slate-900/80 backdrop-blur-md px-5 py-2 rounded-full border border-white/10 shadow-lg">
+      <a href="https://www.conzex.com?utm_source=chatgpt.com" target="_blank" rel="noopener" class="conzex-rainbow-text font-normal text-xs tracking-wide inline-flex items-center gap-1.5 hover:opacity-80 transition">
+        <img src="https://files.conzex.com/api/files/public/f32f130c-199c-4d0b-8fd5-4134757a71d9/icon-rounded.png" alt="Conzex Icon" class="w-4 h-4 object-contain inline-block shrink-0"/>
+        <span>Conzex Global Private Limited</span>
+      </a>
+    </footer>
+  </div>
+
+  <!-- MAIN AUTHENTICATED WRAPPER -->
+  <div id="app-wrapper" class="hidden lg:pl-80 min-h-screen flex flex-col">
+
+    <!-- ========================================== -->
+    <!-- DESKTOP LIGHT SIDEBAR DRAWER (ROLE-SCOPED) -->
+    <!-- ========================================== -->
+    <nav class="hidden lg:flex h-full w-80 bg-white text-slate-900 fixed inset-y-0 left-0 z-40 flex-col border-r border-slate-200 justify-between">
+      <div class="flex flex-col h-full overflow-hidden">
+        <!-- Logo Header -->
+        <div class="h-20 border-b border-slate-200 px-6 flex items-center gap-3 cursor-pointer group shrink-0" id="sidebar-logo-container" title="Click to refresh portal data">
+          <div class="w-11 h-11 rounded-xl bg-white p-1 flex items-center justify-center shadow-sm border border-slate-200 group-hover:border-red-500 transition">
+            <img id="nav-logo" src="https://www.karateacademyindia.com/logo.png" alt="KAI Logo" class="max-w-full max-h-full object-contain" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1555597673-b21d5c935865?w=100&auto=format&fit=crop&q=80';"/>
+          </div>
+          <div>
+            <h1 class="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5 group-hover:text-red-600 transition">
+              <span id="nav-app-title">KAI Manager</span>
+              <span id="app-version-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 font-bold">v1.0</span>
+            </h1>
+            <p class="text-xs text-slate-500 font-medium" id="nav-app-subtitle">Karate Academy India</p>
+          </div>
+        </div>
+
+        <div class="p-6 overflow-y-auto flex-1 space-y-4">
+          
+          <!-- MAIN OPERATIONAL SIDEBAR NAV (OPERATIONAL CONSOLE FOR ALL ROLES) -->
+          <div id="operational-sidebar-nav" class="space-y-1">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 flex items-center gap-1">
+              <span>Operational Console</span>
+            </div>
+            <a href="#" data-tab="dashboard" class="sidebar-nav-item sidebar-nav-active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition">
+              <span class="material-symbols-outlined text-lg">dashboard</span>
+              <span>Dashboard</span>
+            </a>
+            <a href="#" data-tab="attendance" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">fact_check</span>
+              <span>Attendance Tracker</span>
+            </a>
+            <a href="#" data-tab="kiosk" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
+              <span>Scan for Attendance</span>
+            </a>
+            <a href="#" data-tab="schedule" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">calendar_month</span>
+              <span>Training Schedule</span>
+            </a>
+            <a href="#" data-tab="directory" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">groups</span>
+              <span>Student Directory</span>
+            </a>
+            <a href="#" data-tab="idcards" id="nav-idcards-link" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">badge</span>
+              <span>Student ID Cards</span>
+            </a>
+            <a href="#" data-tab="financials" id="nav-financials-link" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">payments</span>
+              <span>Financial Ledger</span>
+            </a>
+            
+            <!-- STAFF USER MANAGEMENT LINK FOR MANAGERS -->
+            <div id="bottom-manager-users-box" class="hidden">
+              <a href="#" data-tab="manager-users" id="nav-manager-users-link" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+                <span class="material-symbols-outlined text-lg text-blue-600">manage_accounts</span>
+                <span>Staff User Management</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- ROOT ADMIN SYSTEM ADMINISTRATION SECTION (ONLY VISIBLE TO ADMIN) -->
+          <div id="administrative-sidebar-section" class="hidden space-y-1">
+            <div class="text-[10px] font-bold text-amber-600 uppercase tracking-wider px-3 mb-2 flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">shield</span>
+              <span>System Administration</span>
+            </div>
+            <a href="#" data-tab="admin-settings" data-admin-sec="branding" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">tune</span>
+              <span>Branding & App Config</span>
+            </a>
+            <a href="#" data-tab="admin-settings" data-admin-sec="users" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">manage_accounts</span>
+              <span>RBAC Staff Management</span>
+            </a>
+            <a href="#" data-tab="admin-settings" data-admin-sec="students" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">groups</span>
+              <span>RBAC Student Management</span>
+            </a>
+            <a href="#" data-tab="admin-settings" data-admin-sec="fees" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">payments</span>
+              <span>Tuition Fees Config</span>
+            </a>
+            <a href="#" data-tab="admin-settings" data-admin-sec="smtp" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">mail</span>
+              <span>SMTP Config Manager</span>
+            </a>
+            <a href="#" data-tab="admin-settings" data-admin-sec="emails" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">outgoing_mail</span>
+              <span>Email Logs & Queue</span>
+            </a>
+            <a href="#" data-tab="admin-settings" data-admin-sec="logs" class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">notifications</span>
+              <span>Logs Manager</span>
+            </a>
+          </div>
+
+        </div>
+
+        <!-- BOTTOM SIDEBAR SECTION: CONZEX BRAND FOOTER -->
+        <div class="p-4 border-t border-slate-200 shrink-0">
+          <div class="text-center">
+            <a href="https://www.conzex.com?utm_source=chatgpt.com" target="_blank" rel="noopener" class="conzex-rainbow-text text-xs tracking-wide inline-flex items-center gap-1.5">
+              <img src="https://files.conzex.com/api/files/public/f32f130c-199c-4d0b-8fd5-4134757a71d9/icon-rounded.png" alt="Conzex Icon" class="w-4 h-4 object-contain inline-block shrink-0"/>
+              <span>A Conzex Global Product</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- MOBILE HEADER (UNIFORM ALIGNED HEIGHT H-16)-->
+    <!-- ========================================== -->
+    <header class="lg:hidden sticky top-0 z-30 bg-white border-b border-slate-200 px-3 h-16 flex items-center justify-between shadow-sm gap-2">
+      <!-- Logo + Brand Box -->
+      <div class="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm cursor-pointer h-9 shrink-0" onclick="location.reload()">
+        <div class="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center bg-white">
+          <img src="https://www.karateacademyindia.com/logo.png" alt="KAI Logo" class="max-w-full max-h-full object-contain" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1555597673-b21d5c935865?w=100&auto=format&fit=crop&q=80';"/>
+        </div>
+        <span class="font-extrabold text-xs text-slate-900 pr-1">KAI</span>
+      </div>
+
+      <!-- Mobile Search Input with Clear Button -->
+      <div class="flex-1 relative h-9">
+        <input id="mobile-search-input" type="text" placeholder="Search..." class="w-full h-9 pl-8 pr-7 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium focus:ring-1 focus:ring-red-600 focus:bg-white focus:outline-none"/>
+        <span class="material-symbols-outlined absolute left-2.5 top-2 text-slate-400 text-sm pointer-events-none">search</span>
+        <button id="mobile-search-clear-btn" class="search-clear-btn hidden !right-1.5 !w-5 !h-5" type="button" title="Clear search">
+          <span class="material-symbols-outlined text-xs font-bold">close</span>
+        </button>
+        <div id="mobile-search-dropdown" class="hidden absolute left-0 right-0 top-10 bg-white rounded-2xl shadow-2xl border border-slate-200 py-3 z-50 max-h-80 overflow-y-auto text-xs"></div>
+      </div>
+
+      <!-- Control Buttons (Send Email, Admissions, Logs, Profile & Logout) -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button onclick="openSendEmailModal()" id="mobile-send-email-btn" class="h-9 px-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center gap-1" title="Send Email Notification">
+          <span class="material-symbols-outlined text-lg">forward_to_inbox</span>
+        </button>
+        <button onclick="openPendingAdmissionsModal()" id="mobile-admissions-btn" class="hidden h-9 px-2 rounded-xl bg-red-50 text-red-600 border border-red-200 flex items-center gap-1 relative" title="Pending Online Admissions">
+          <span class="material-symbols-outlined text-lg">how_to_reg</span>
+          <span id="mobile-admissions-badge" class="bg-red-600 text-white font-mono text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">0</span>
+        </button>
+        <button onclick="openActivityLogsModal()" id="mobile-logs-btn" class="h-9 px-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 flex items-center gap-1 relative" title="System Activity Logs">
+          <span class="material-symbols-outlined text-lg text-red-600">notifications</span>
+          <span id="mobile-logs-count-badge" class="bg-red-600 text-white font-mono text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">0</span>
+        </button>
+        <button id="mobile-profile-btn" class="h-9 w-9 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 flex items-center justify-center">
+          <span class="material-symbols-outlined text-lg">account_circle</span>
+        </button>
+        <button onclick="triggerLogout()" class="h-9 w-9 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 flex items-center justify-center font-bold text-xs" title="Sign out of portal">
+          <span class="material-symbols-outlined text-base">logout</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- DESKTOP STICKY HEADER (EXACT 80PX / H-20 ALIGNMENT) -->
+    <!-- ========================================== -->
+    <header class="hidden lg:block sticky top-0 z-30 bg-white/95 backdrop-blur-md px-6 h-20 border-b border-slate-200">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 h-full">
+        <!-- MODERN 50% WIDER GLOBAL SEARCH INPUT WITH SHORTCUT BADGE & CLEAR BUTTON -->
+        <div class="modern-search-wrapper relative w-full max-w-xl xl:max-w-2xl">
+          <span class="material-symbols-outlined absolute left-4 top-2.5 text-slate-400 text-lg pointer-events-none">search</span>
+          <input id="global-search-input" type="text" placeholder="Search students, IDs, invoices, phone numbers, parents, belt ranks..." class="modern-search-input"/>
+          <div class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            <kbd class="search-kbd-badge hidden sm:inline-block">⌘K</kbd>
+            <button id="global-search-clear-btn" class="search-clear-btn hidden" type="button" title="Clear search">
+              <span class="material-symbols-outlined text-xs font-bold">close</span>
+            </button>
+          </div>
+          
+          <!-- LIVE SUGGESTIONS DROPDOWN -->
+          <div id="global-search-results-dropdown" class="hidden absolute left-0 right-0 top-12 bg-white rounded-2xl shadow-2xl border border-slate-200 py-3 z-50 max-h-96 overflow-y-auto text-xs space-y-3"></div>
+        </div>
+
+        <div class="flex items-center gap-2.5 relative shrink-0">
+          <!-- SEND EMAIL BUTTON (MANAGER, RECEPTIONIST & ADMIN) -->
+          <button onclick="openSendEmailModal()" id="header-send-email-btn" class="header-control-pill px-3.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-1.5 shadow-sm transition" title="Send Outbound Email Notification">
+            <span class="material-symbols-outlined text-base text-blue-600">forward_to_inbox</span>
+            <span>Send Email</span>
+          </button>
+
+          <!-- MANAGER / ADMIN PENDING ADMISSIONS NOTIFICATION BUTTON -->
+          <button onclick="openPendingAdmissionsModal()" id="header-admissions-btn" class="hidden header-control-pill px-3.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 flex items-center gap-1.5 shadow-sm transition" title="Pending Online Admission Applications">
+            <span class="material-symbols-outlined text-base text-red-600 animate-pulse">how_to_reg</span>
+            <span>Admissions</span>
+            <span id="header-admissions-badge" class="bg-red-600 text-white font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">0</span>
+          </button>
+
+          <!-- SYSTEM ACTIVITY LOGS HEADER BUTTON -->
+          <button onclick="openActivityLogsModal()" id="header-logs-btn" class="header-control-pill px-3.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1.5 shadow-sm transition">
+            <span class="material-symbols-outlined text-base text-red-600">notifications</span>
+            <span>Logs</span>
+            <span id="header-logs-badge" class="bg-red-600 text-white font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">0</span>
+          </button>
+
+          <!-- STATUS PILL -->
+          <div class="header-control-pill px-3.5 bg-white border border-slate-200 text-slate-700 hidden xl:flex items-center gap-2 shadow-sm">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Status: <strong class="text-slate-900" id="top-status-enrolled">Active (0 Enrolled)</strong></span>
+          </div>
+
+          <!-- TOP-RIGHT ADMIN PROFILE BUTTON & DIRECT LOGOUT -->
+          <button id="admin-profile-btn" class="header-control-pill px-3.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 flex items-center gap-2 transition shadow-sm">
+            <span class="material-symbols-outlined text-xl text-slate-700">account_circle</span>
+            <span class="text-xs font-mono font-bold hidden sm:inline" id="header-user-display">admin</span>
+            <span id="header-role-badge" class="role-badge role-admin">Admin</span>
+            <span class="material-symbols-outlined text-sm text-slate-400">arrow_drop_down</span>
+          </button>
+
+          <!-- DIRECT LOGOUT BUTTON NEXT TO USERNAME -->
+          <button id="direct-header-logout-btn" onclick="triggerLogout()" class="header-control-pill px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 flex items-center gap-1.5 font-extrabold text-xs transition shadow-sm" title="Sign out of portal">
+            <span class="material-symbols-outlined text-base">logout</span>
+            <span class="hidden sm:inline">Logout</span>
+          </button>
+
+          <!-- ADMIN PROFILE DROPDOWN MENU -->
+          <div id="admin-profile-dropdown" class="hidden absolute right-0 top-12 w-60 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 text-xs">
+            <div class="px-4 py-2 border-b border-slate-100">
+              <div class="font-extrabold text-slate-900" id="dropdown-user-name">KAI Administrator</div>
+              <div class="text-[10px] text-slate-400" id="dropdown-user-email">support@conzex.com</div>
+              <div class="mt-1"><span id="dropdown-user-role-badge" class="role-badge role-admin">Admin</span></div>
+            </div>
+            <a href="#" id="menu-view-profile" class="flex items-center gap-2.5 px-4 py-2.5 text-slate-700 hover:bg-slate-50 font-bold">
+              <span class="material-symbols-outlined text-red-600 text-base">person</span>
+              <span>View Profile</span>
+            </a>
+            <a href="#" id="menu-reset-password" class="flex items-center gap-2.5 px-4 py-2.5 text-slate-700 hover:bg-slate-50 font-bold border-t border-slate-100">
+              <span class="material-symbols-outlined text-amber-600 text-base">lock_reset</span>
+              <span>Reset Password</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN SCROLLABLE VIEW CONTAINER (GLOBAL SINGLE 70% DESKTOP STANDARD: MAX-W-5XL) -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 flex-1 w-full">
+
+      <!-- ========================================== -->
+      <!-- MODULE 1: DASHBOARD VIEW (CLEAN CONTENT)   -->
+      <!-- ========================================== -->
+      <div id="view-dashboard" class="tab-content active space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <span class="text-xs font-bold text-red-600 uppercase tracking-wider" id="dash-subtitle">Karate Academy India</span>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5" id="dash-title">Academy Executive Dashboard</h2>
+            <p class="text-xs text-slate-500">Real-Time Student Roster & Attendance Analytics</p>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button class="open-record-payment-modal action-btn-write px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">payments</span>
+              <span>Record Payment</span>
+            </button>
+            <button class="open-add-student-modal action-btn-write px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">person_add</span>
+              <span>Register Student</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- DYNAMIC DASHBOARD STATS GRID -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="main-dash-stats-grid">
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="stat-total-students-card">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Students</span>
+              <span class="material-symbols-outlined text-slate-400 text-lg">groups</span>
+            </div>
+            <h3 id="stat-total-students" class="text-3xl font-extrabold text-slate-900">0</h3>
+            <p class="text-xs text-slate-500">Active Karate Athletes</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="stat-attendance-card">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Today's Attendance</span>
+              <span class="material-symbols-outlined text-emerald-600 text-lg">fact_check</span>
+            </div>
+            <h3 id="stat-attendance-rate" class="text-3xl font-extrabold text-slate-900">0%</h3>
+            <p id="stat-attendance-counts" class="text-xs text-slate-500 font-medium">
+              <span class="text-emerald-700 font-bold" id="stat-present-count">0 Present</span> • 
+              <span class="text-red-600 font-bold" id="stat-absent-count">0 Absent</span>
+            </p>
+          </div>
+
+          <!-- RECEPTIONIST / MANAGER: NEW ADMISSIONS THIS MONTH -->
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="stat-new-admissions-card">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">New Admissions</span>
+              <span class="material-symbols-outlined text-blue-600 text-lg">person_add</span>
+            </div>
+            <h3 id="stat-new-admissions" class="text-3xl font-extrabold text-blue-700">0</h3>
+            <p class="text-xs text-slate-500">Enrolled This Month</p>
+          </div>
+
+          <!-- RECEPTIONIST / MANAGER: PENDING ADMISSIONS APPLICATION -->
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2 cursor-pointer hover:border-red-400 transition" id="stat-pending-admissions-card" onclick="openPendingAdmissionsModal()">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Admissions</span>
+              <span class="material-symbols-outlined text-amber-600 text-lg">pending_actions</span>
+            </div>
+            <h3 id="stat-pending-admissions" class="text-3xl font-extrabold text-amber-600">0</h3>
+            <p class="text-xs text-slate-500 font-medium">Applications To Verify</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="stat-revenue-card">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Earnings</span>
+              <span class="material-symbols-outlined text-emerald-600 text-lg">payments</span>
+            </div>
+            <h3 id="stat-monthly-revenue" class="text-3xl font-extrabold text-emerald-700">₹0</h3>
+            <p class="text-xs text-slate-500">Collected Tuition Fees</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="stat-dues-card">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Dues</span>
+              <span class="material-symbols-outlined text-red-600 text-lg">account_balance_wallet</span>
+            </div>
+            <h3 id="stat-total-dues-display" class="text-3xl font-extrabold text-red-600">₹0</h3>
+            <p class="text-xs text-slate-500">Outstanding Balances</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="stat-belt-card">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Belt Candidates</span>
+              <span class="material-symbols-outlined text-amber-600 text-lg">military_tech</span>
+            </div>
+            <h3 id="stat-belt-candidates" class="text-3xl font-extrabold text-slate-900">0 Ready</h3>
+            <p class="text-xs text-slate-500">Evaluation Ready</p>
+          </div>
+        </div>
+
+        <!-- CLEAN FULL-WIDTH RECENT STUDENT ATTENDANCE LOG SECTION -->
+        <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+              <span class="material-symbols-outlined text-red-600">fact_check</span>
+              <span>Recent Student Attendance Roster</span>
+            </h3>
+            <a href="#" data-tab="attendance" class="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1">
+              <span>View Full Tracker</span>
+              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+          </div>
+
+          <div id="dash-attendance-list" class="divide-y divide-slate-100">
+            <!-- Dynamic Attendance Roster -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODULE 2: ATTENDANCE TRACKER VIEW          -->
+      <!-- ========================================== -->
+      <div id="view-attendance" class="tab-content space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Attendance Tracker</h2>
+            <p class="text-xs text-slate-500">Live Mat Check-In & Student Attendance Roster</p>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button id="send-holiday-notice-btn" onclick="openHolidayNoticeModal()" class="action-btn-write px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm" title="Dispatch Academy Holiday Alert Email Notice">
+              <span class="material-symbols-outlined text-sm text-amber-600">beach_access</span>
+              <span>Send Holiday Notice</span>
+            </button>
+            <button id="export-attendance-csv" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">download</span>
+              <span>Export CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- FILTERS & DATE SELECTOR BAR -->
+        <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3 w-full md:w-auto flex-wrap">
+            <div class="flex items-center gap-1.5">
+              <label class="text-xs font-bold text-slate-600">Date:</label>
+              <input type="date" id="attendance-date" class="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+              <button id="btn-attendance-today" type="button" class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition">Today</button>
+            </div>
+
+            <!-- In-Table Search Input -->
+            <div class="relative flex-1 sm:w-60">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm pointer-events-none">search</span>
+              <input type="text" id="attendance-search-input" placeholder="Search athlete or ID..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none"/>
+            </div>
+
+            <!-- Belt Filter -->
+            <select id="attendance-belt-filter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none">
+              <option value="all">All Belt Ranks</option>
+              <option value="White Belt">White Belt</option>
+              <option value="Yellow Belt">Yellow Belt</option>
+              <option value="Orange Belt">Orange Belt</option>
+              <option value="Green Belt">Green Belt</option>
+              <option value="Blue Belt">Blue Belt</option>
+              <option value="Purple Belt">Purple Belt</option>
+              <option value="Brown Belt">Brown Belt</option>
+              <option value="Black Belt">Black Belt</option>
+            </select>
+          </div>
+          
+          <div class="flex items-center gap-3 text-xs font-bold shrink-0 flex-wrap">
+            <span class="text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">Present: <strong id="count-present">0</strong></span>
+            <span class="text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">Excused: <strong id="count-excused">0</strong></span>
+            <span class="text-red-700 bg-red-50 px-3 py-1.5 rounded-xl border border-red-200">Absent: <strong id="count-absent">0</strong></span>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto table-scroll-container">
+            <table class="w-full text-left text-xs text-slate-700">
+              <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-[11px] border-b border-slate-200 sticky top-0 z-10">
+                <tr>
+                  <th class="py-3.5 px-6">Student</th>
+                  <th class="py-3.5 px-6">Student ID</th>
+                  <th class="py-3.5 px-6">Rank</th>
+                  <th class="py-3.5 px-6">Status</th>
+                  <th class="py-3.5 px-6 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="attendance-table-body" class="divide-y divide-slate-100 font-medium">
+                <!-- Dynamic -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODULE 3: SCAN FOR ATTENDANCE VIEW         -->
+      <!-- ========================================== -->
+      <div id="view-kiosk" class="tab-content space-y-6">
+        
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold text-red-600 uppercase tracking-wider">KAI Kiosk System</span>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">Scan for Attendance</h2>
+            <p class="text-xs text-slate-500">Scan Student ID Card QR codes using device camera or manual input.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="toggle-camera-btn" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">videocam</span>
+              <span>Toggle Camera Scanner</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <div class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden flex flex-col items-center justify-center border-2 border-dashed border-red-500 shadow-inner">
+              <video id="qr-video" class="hidden w-full h-full object-cover" autoplay playsinline muted></video>
+              <canvas id="qr-canvas" class="hidden"></canvas>
+              
+              <div id="camera-placeholder" class="flex flex-col items-center text-center p-6 space-y-3">
+                <span class="material-symbols-outlined text-red-500 text-6xl animate-pulse">qr_code_scanner</span>
+                <p class="text-sm font-bold text-white" id="camera-status-text">Starting camera scanner automatically...</p>
+                <button id="retry-camera-btn" onclick="toggleCameraScanner()" class="hidden px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700">Retry Camera</button>
+              </div>
+
+              <div class="scanner-line"></div>
+            </div>
+
+            <div class="pt-2 flex items-center gap-2">
+              <input type="text" id="manual-qr-input" placeholder="e.g. KAI202601" class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-red-600"/>
+              <button id="manual-qr-submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">Log Attendance</button>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <h3 class="font-extrabold text-sm text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-red-600">verified</span>
+                <span>Last Scanned Result</span>
+              </h3>
+
+              <div id="kiosk-last-result" class="text-center p-6 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                <p class="text-xs text-slate-500 font-medium">No QR code scanned yet in this session.</p>
+              </div>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
+              <h3 class="font-extrabold text-sm text-slate-900">Today's Attendance Scan Log</h3>
+              <div id="kiosk-recent-list" class="divide-y divide-slate-100 text-xs">
+                <!-- Dynamic -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODULE 4: TRAINING SCHEDULE VIEW           -->
+      <!-- ========================================== -->
+      <div id="view-schedule" class="tab-content space-y-6">
+        
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold text-red-600 uppercase tracking-wider">Karate Academy India</span>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">Weekly Training Schedule</h2>
+          <p class="text-xs text-slate-500">Official Martial Arts Training Hours: <strong>4:00 PM – 8:00 PM</strong></p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-800">
+              <thead class="bg-slate-100 text-slate-700 uppercase font-extrabold text-[11px] border-b border-slate-200">
+                <tr>
+                  <th class="py-4 px-6 w-36">Day</th>
+                  <th class="py-4 px-6">Training Session</th>
+                  <th class="py-4 px-6">Program / Focus</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-medium">
+                <tr class="hover:bg-slate-50">
+                  <td class="py-4 px-6 font-bold text-slate-900">Monday</td>
+                  <td class="py-4 px-6 font-bold text-red-600 flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">sports_martial_arts</span><span>Kata Training</span></td>
+                  <td class="py-4 px-6 text-slate-600">Athlete Development</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-4 px-6 font-bold text-slate-900">Tuesday</td>
+                  <td class="py-4 px-6 font-bold text-red-600 flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">sports_kabaddi</span><span>Kumite Training</span></td>
+                  <td class="py-4 px-6 text-slate-600">Athlete Development</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-4 px-6 font-bold text-slate-900">Wednesday</td>
+                  <td class="py-4 px-6 font-bold text-red-600 flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">sports_kabaddi</span><span>Kumite Training</span></td>
+                  <td class="py-4 px-6 text-slate-600">Athlete Development</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-4 px-6 font-bold text-slate-900">Thursday</td>
+                  <td class="py-4 px-6 font-bold text-red-600 flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">sports_martial_arts</span><span>Kata Training</span></td>
+                  <td class="py-4 px-6 text-slate-600">Athlete Development</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-4 px-6 font-bold text-slate-900">Friday</td>
+                  <td class="py-4 px-6 font-bold text-red-600 flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">fitness_center</span><span>Mobility & Stretching</span></td>
+                  <td class="py-4 px-6 text-slate-600">Performance Assessment</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-4 px-6 font-bold text-slate-900">Saturday</td>
+                  <td class="py-4 px-6 font-bold text-red-600 flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">fitness_center</span><span>Mobility & Stretching</span></td>
+                  <td class="py-4 px-6 text-slate-600">Performance Assessment</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-4 px-6 font-bold text-slate-900">Sunday</td>
+                  <td class="py-4 px-6 font-bold text-red-600 flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">shield</span><span>Cross-Training (All Branches)</span></td>
+                  <td class="py-4 px-6 text-slate-600">Self-Defense Training</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODULE 5: STUDENT DIRECTORY VIEW          -->
+      <!-- ========================================== -->
+      <div id="view-directory" class="tab-content space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Student Directory</h2>
+            <p class="text-xs text-slate-500">Registered Karate Academy India Athletes Roster</p>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <input type="file" id="students-csv-file-input" accept=".csv" class="hidden"/>
+            <button id="btn-import-students-csv" class="action-btn-write px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition flex items-center gap-1.5 shadow-sm" title="Bulk Import Students from CSV">
+              <span class="material-symbols-outlined text-sm text-blue-600">upload_file</span>
+              <span>Import CSV</span>
+            </button>
+            <button id="btn-export-students-csv" class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition flex items-center gap-1.5 shadow-sm" title="Export Student Roster to CSV">
+              <span class="material-symbols-outlined text-sm text-emerald-600">download</span>
+              <span>Export CSV</span>
+            </button>
+            <button class="open-add-student-modal action-btn-write px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">person_add</span>
+              <span>+ Add New Student</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SEARCH & FILTER TOOLBAR -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-3">
+          <div class="relative flex-1 w-full">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+            <input type="text" id="dir-search-input" placeholder="Search by athlete name, Student ID (KAI2026XX), phone, email..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <select id="dir-belt-filter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-red-600 focus:outline-none">
+              <option value="all">All Belt Ranks</option>
+              <option value="White Belt">White Belt</option>
+              <option value="Yellow Belt">Yellow Belt</option>
+              <option value="Orange Belt">Orange Belt</option>
+              <option value="Green Belt">Green Belt</option>
+              <option value="Blue Belt">Blue Belt</option>
+              <option value="Purple Belt">Purple Belt</option>
+              <option value="Brown Belt">Brown Belt</option>
+              <option value="Black Belt">Black Belt</option>
+            </select>
+            <select id="dir-status-filter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-red-600 focus:outline-none">
+              <option value="all">All Accounts</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Inactive Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="table-scroll-container">
+            <table class="w-full text-left text-xs text-slate-700 table-auto">
+              <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-[11px] border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-3 sm:px-4">Student ID</th>
+                  <th class="py-3 px-3 sm:px-4">Athlete Name</th>
+                  <th class="py-3 px-3 sm:px-4">Belt Rank</th>
+                  <th class="py-3 px-3 sm:px-4 hidden md:table-cell">Contact</th>
+                  <th class="py-3 px-3 sm:px-4">Status</th>
+                  <th class="py-3 px-3 sm:px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="student-directory-table-body" class="divide-y divide-slate-100 font-medium">
+                <!-- Dynamic Tabular Student Roster -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODULE 6: STUDENT DIGITAL ID CARDS VIEW    -->
+      <!-- ========================================== -->
+      <div id="view-idcards" class="tab-content space-y-6">
+        
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Student Digital ID Cards</h2>
+            <p class="text-xs text-slate-500">Auto-generated Student ID cards with scannable QR codes and PNG download support.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center" id="id-cards-container">
+          <!-- Dynamic CR80 Cards -->
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODULE 7: FINANCIAL LEDGER VIEW            -->
+      <!-- ========================================== -->
+      <div id="view-financials" class="tab-content space-y-6">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Financial Ledger</h2>
+            <p class="text-xs text-slate-500">Tuition Payments, Receipts & Invoices</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Total Earnings Metric Pill -->
+            <div class="h-11 px-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 shadow-sm">
+              <span class="material-symbols-outlined text-emerald-600 text-lg">account_balance_wallet</span>
+              <div>
+                <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block leading-tight">Total Earnings</span>
+                <strong id="ledger-total-earnings" class="text-xs font-extrabold text-emerald-950 leading-tight">₹0</strong>
+              </div>
+            </div>
+
+            <!-- Total Dues Metric Pill -->
+            <div class="h-11 px-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2.5 shadow-sm">
+              <span class="material-symbols-outlined text-amber-600 text-lg">pending_actions</span>
+              <div>
+                <span class="text-[10px] font-bold text-amber-700 uppercase tracking-wider block leading-tight">Total Dues</span>
+                <strong id="ledger-total-dues" class="text-xs font-extrabold text-amber-950 leading-tight">₹0</strong>
+              </div>
+            </div>
+
+            <!-- Record Payment Button -->
+            <button class="open-record-payment-modal action-btn-write h-11 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
+              <span class="material-symbols-outlined text-sm">payments</span>
+              <span>Record Payment</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-700">
+              <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-[11px] border-b border-slate-200">
+                <tr>
+                  <th class="py-3.5 px-6">Invoice #</th>
+                  <th class="py-3.5 px-6">Student Name</th>
+                  <th class="py-3.5 px-6">Original Fee</th>
+                  <th class="py-3.5 px-6">Discount</th>
+                  <th class="py-3.5 px-6">Final Paid</th>
+                  <th class="py-3.5 px-6">Status</th>
+                  <th class="py-3.5 px-6 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="financials-table-body" class="divide-y divide-slate-100 font-medium">
+                <!-- Dynamic -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODULE 8: MANAGER USER MANAGEMENT VIEW     -->
+      <!-- ========================================== -->
+      <div id="view-manager-users" class="tab-content space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+          <span class="text-xs font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">manage_accounts</span>
+            <span>Manager Account Console</span>
+          </span>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Staff User Account Management</h2>
+          <p class="text-xs text-slate-500">Manage Operational Staff Accounts (Manager, Receptionist, and Viewer users only).</p>
+        </div>
+
+        <div id="manager-users-container" class="space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-base text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">manage_accounts</span>
+                <span>Staff Accounts Roster</span>
+              </div>
+              <span class="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded border border-blue-200">Manager Access</span>
+            </h3>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Create New Staff Account</h4>
+              
+              <form id="manager-create-user-form" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Full Name *</label>
+                  <input type="text" id="mgr-usr-name" required placeholder="e.g. Vikram Sharma" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Username *</label>
+                  <input type="text" id="mgr-usr-username" required placeholder="e.g. vikram_staff" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Email Address *</label>
+                  <input type="email" id="mgr-usr-email" required placeholder="e.g. vikram@karateacademyindia.com" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Password *</label>
+                  <input type="password" id="mgr-usr-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium"/>
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="font-bold text-slate-900 block mb-1.5 text-xs tracking-wide">Assign Staff Operational Role *</label>
+                  <div class="relative">
+                    <select id="mgr-usr-role" class="w-full px-4 py-3 bg-white border-2 border-slate-300 hover:border-blue-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 rounded-xl font-bold text-slate-900 text-xs shadow-sm appearance-none pr-10 transition">
+                      <option value="receptionist" class="py-2 font-semibold">Receptionist — Attendance Tracker, Kiosk Scanner & ID Cards</option>
+                      <option value="viewer" class="py-2 font-semibold">Viewer — Read-Only Operational Access</option>
+                      <option value="manager" class="py-2 font-semibold">Manager — Full Operational Management (Students, Fees, Attendance)</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3.5 top-3 pointer-events-none text-slate-500 text-xl">expand_more</span>
+                  </div>
+                </div>
+                <div class="sm:col-span-2 pt-1">
+                  <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">person_add</span>
+                    <span>Create Staff User</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- User List Table -->
+            <div class="overflow-x-auto border border-slate-200 rounded-xl">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+                  <tr>
+                    <th class="py-2.5 px-4">User</th>
+                    <th class="py-2.5 px-4">Username</th>
+                    <th class="py-2.5 px-4">Role</th>
+                    <th class="py-2.5 px-4">Status</th>
+                    <th class="py-2.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="manager-users-table-body" class="divide-y divide-slate-100 font-medium">
+                  <!-- Dynamic Staff List -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODULE 9: SIMPLIFIED ADMIN CONTROL PANEL   -->
+      <!-- ========================================== -->
+      <div id="view-admin-settings" class="tab-content space-y-6">
+        
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+          <span class="text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">admin_panel_settings</span>
+            <span>Admin Control Panel (Restricted to Root Admin)</span>
+          </span>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight" id="admin-section-title">Branding & Application Configuration</h2>
+          <p class="text-xs text-slate-500">System level settings for Branding, RBAC User Roles, and Tuition Fees.</p>
+        </div>
+
+        <!-- Clean Admin Content Sections Driven Directly via Sidebar Navigation -->
+        <div class="space-y-6">
+          
+          <!-- Area 1: App Branding & Config -->
+          <div id="admin-sec-branding" class="admin-tab-area p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-base text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-red-600">tune</span>
+              <span>1. Branding & Application Configuration</span>
+            </h3>
+
+            <form id="admin-config-form" class="space-y-3 text-xs">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Application Title</label>
+                  <input type="text" id="cfg-app-title" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-red-600"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Application Version</label>
+                  <input type="text" id="cfg-app-version" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-red-600"/>
+                </div>
+              </div>
+
+              <div>
+                <label class="font-semibold text-slate-700 block mb-1">Application Subtitle</label>
+                <input type="text" id="cfg-app-subtitle" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600"/>
+              </div>
+
+              <div>
+                <label class="font-semibold text-slate-700 block mb-1">Logo Image URL</label>
+                <input type="url" id="cfg-logo-url" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600"/>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">Save Branding Configuration</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Area 2: User & Role Management Module -->
+          <div id="admin-sec-users" class="admin-tab-area hidden p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-base text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-red-600">manage_accounts</span>
+                <span>2. RBAC & User Management</span>
+              </div>
+              <span class="text-[10px] bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded border border-red-200">Admin Control</span>
+            </h3>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Create New Portal User Account</h4>
+              
+              <form id="admin-create-user-form" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Full Name *</label>
+                  <input type="text" id="usr-name" required placeholder="e.g. Vikram Sharma" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Username *</label>
+                  <input type="text" id="usr-username" required placeholder="e.g. vikram_mgr" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Email Address *</label>
+                  <input type="email" id="usr-email" required placeholder="e.g. vikram@conzex.com" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Password *</label>
+                  <input type="password" id="usr-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium"/>
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="font-bold text-slate-900 block mb-1.5 text-xs tracking-wide">Assign System Role *</label>
+                  <div class="relative">
+                    <select id="usr-role" class="w-full px-4 py-3 bg-white border-2 border-slate-300 hover:border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-100 rounded-xl font-bold text-slate-900 text-xs shadow-sm appearance-none pr-10 transition">
+                      <option value="manager" class="py-2 font-semibold">Manager — Full Operational Access (Students, Fees, Attendance, Ledger)</option>
+                      <option value="receptionist" class="py-2 font-semibold">Receptionist — Attendance Tracker, Kiosk Scanner & ID Cards</option>
+                      <option value="viewer" class="py-2 font-semibold">Viewer — Read-Only Access</option>
+                      <option value="admin" id="usr-role-admin-option" class="py-2 font-semibold">Admin — Complete Unrestricted System Administration</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3.5 top-3 pointer-events-none text-slate-500 text-xl">expand_more</span>
+                  </div>
+                </div>
+                <div class="sm:col-span-2 pt-1">
+                  <button type="submit" class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">person_add</span>
+                    <span>Create User & Assign Role</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- User List Table -->
+            <div class="overflow-x-auto border border-slate-200 rounded-xl">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+                  <tr>
+                    <th class="py-2.5 px-4">User</th>
+                    <th class="py-2.5 px-4">Username</th>
+                    <th class="py-2.5 px-4">Role</th>
+                    <th class="py-2.5 px-4">Status</th>
+                    <th class="py-2.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-table-body" class="divide-y divide-slate-100 font-medium">
+                  <!-- Dynamic Users List -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Area 3: Tuition Fees Management -->
+          <div id="admin-sec-fees" class="admin-tab-area hidden p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-base text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-600">payments</span>
+              <span>3. Tuition Fees Management</span>
+            </h3>
+
+            <form id="admin-fees-form" class="space-y-3 text-xs">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Registration Fee (₹)</label>
+                  <input type="number" id="cfg-reg-fee" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-emerald-600"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Monthly Plan Fee (₹)</label>
+                  <input type="number" id="cfg-monthly-fee" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-emerald-600"/>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Quarterly Plan Fee (₹)</label>
+                  <input type="number" id="cfg-quarterly-fee" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-emerald-600"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Half-Yearly Plan Fee (₹)</label>
+                  <input type="number" id="cfg-halfyearly-fee" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-emerald-600"/>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">Save Fee Structure</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Area 4: RBAC Student Management -->
+          <div id="admin-sec-students" class="admin-tab-area hidden p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-base text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-red-600">groups</span>
+                <span>4. RBAC Student Management (Root Roster)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="open-add-student-modal action-btn-write px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">person_add</span>
+                  <span>Register Student</span>
+                </button>
+              </div>
+            </h3>
+            
+            <div id="admin-students-container" class="space-y-4">
+              <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+                    <tr>
+                      <th class="py-2.5 px-4">Student ID</th>
+                      <th class="py-2.5 px-4">Name & Contact</th>
+                      <th class="py-2.5 px-4">Belt Rank</th>
+                      <th class="py-2.5 px-4">Status</th>
+                      <th class="py-2.5 px-4 text-right">Root Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-students-table-body" class="divide-y divide-slate-100 font-medium">
+                    <!-- Dynamic -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Area 5: SMTP Config Manager -->
+          <div id="admin-sec-smtp" class="admin-tab-area hidden p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
+            <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">mail</span>
+                <span>5. SMTP Email Configuration & Dispatch Manager</span>
+              </h3>
+              <span class="text-[11px] text-slate-400 font-medium">Configure outbound receipts and admission notification emails</span>
+            </div>
+
+            <!-- Quick Provider Presets -->
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Quick Provider Presets</label>
+              <div class="flex items-center gap-2 flex-wrap text-xs">
+                <button type="button" onclick="applySmtpPreset('gmail')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl border border-red-200 transition flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-xs">mail</span>
+                  <span>Gmail / Google</span>
+                </button>
+                <button type="button" onclick="applySmtpPreset('hostinger')" class="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-xl border border-purple-200 transition flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-xs">dns</span>
+                  <span>Hostinger</span>
+                </button>
+                <button type="button" onclick="applySmtpPreset('zoho')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl border border-emerald-200 transition flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-xs">inbox</span>
+                  <span>Zoho Mail</span>
+                </button>
+                <button type="button" onclick="applySmtpPreset('outlook')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl border border-blue-200 transition flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-xs">cloud</span>
+                  <span>Outlook / Office 365</span>
+                </button>
+                <button type="button" onclick="applySmtpPreset('custom')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-xs">settings</span>
+                  <span>Custom cPanel / Domain</span>
+                </button>
+              </div>
+            </div>
+
+            <form id="admin-smtp-config-form" class="space-y-4 text-xs">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">SMTP Host Server *</label>
+                  <input type="text" id="smtp-host" required placeholder="e.g. smtp.gmail.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">SMTP Port *</label>
+                  <input type="number" id="smtp-port" required placeholder="587 or 465" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Encryption Protocol *</label>
+                  <select id="smtp-encryption" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <option value="ssl">SSL (Port 465 - Recommended for Gmail/Hostinger/Zoho)</option>
+                    <option value="tls">TLS / STARTTLS (Port 587 - Recommended for Outlook/Custom)</option>
+                    <option value="none">None / Plain (Port 25)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">SMTP Username / Email *</label>
+                  <input type="email" id="smtp-user" required placeholder="e.g. info@karateacademyindia.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">SMTP Password / App Password *</label>
+                  <input type="password" id="smtp-pass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+                </div>
+              </div>
+
+              <!-- GOOGLE / GMAIL APP PASSWORD HELPER BANNER -->
+              <div class="p-4 bg-blue-50/80 border border-blue-200 rounded-2xl text-xs space-y-2 text-blue-950" id="smtp-gmail-guide-box">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span class="font-bold flex items-center gap-1.5 text-blue-900">
+                    <span class="material-symbols-outlined text-base text-blue-600">key</span>
+                    <span>Using Gmail / Google Workspace? Generate an App Password:</span>
+                  </span>
+                  <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-[11px] inline-flex items-center gap-1 transition shadow-sm shrink-0">
+                    <span>Open Google App Passwords</span>
+                    <span class="material-symbols-outlined text-xs">open_in_new</span>
+                  </a>
+                </div>
+                <p class="text-[11px] text-blue-800 leading-relaxed">
+                  Google requires a <strong>16-character App Password</strong> (e.g. <code class="bg-blue-100 px-1 py-0.5 rounded font-mono font-bold">abcd efgh ijkl mnop</code>) when 2-Step Verification is active on your Google account. Create an app password for <em>"KAI Manager"</em> and paste the 16 letters into the SMTP Password field above.
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Sender Display Name</label>
+                  <input type="text" id="smtp-from-name" placeholder="e.g. Karate Academy India" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+                </div>
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Sender Email Address</label>
+                  <input type="email" id="smtp-from-email" placeholder="e.g. info@karateacademyindia.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between pt-3 border-t border-slate-100 gap-3 flex-wrap">
+                <button type="button" id="btn-test-smtp-config" class="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                  <span class="material-symbols-outlined text-sm">send</span>
+                  <span>Send Test Email</span>
+                </button>
+                <button type="submit" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">Save SMTP Configuration</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Area 6: Email History, Queue & Template Manager -->
+          <div id="admin-sec-emails" class="admin-tab-area hidden p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
+            <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-blue-600">outgoing_mail</span>
+                  <span>6. Email Delivery Logs, Queue & History Console</span>
+                </h3>
+                <p class="text-[11px] text-slate-400 font-medium mt-0.5">Live monitoring of outbound receipts, ID cards, dues, attendance alerts, and admission emails</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="loadAdminEmailLogs()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                  <span class="material-symbols-outlined text-sm">refresh</span>
+                  <span>Refresh</span>
+                </button>
+                <button type="button" onclick="clearAllEmailLogs()" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-xs rounded-xl transition flex items-center gap-1 shadow-sm">
+                  <span class="material-symbols-outlined text-sm">delete_sweep</span>
+                  <span>Clear Logs</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Metric Summary Stats Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Dispatches</div>
+                <div class="text-xl font-extrabold text-slate-900 mt-1" id="email-stat-total">0</div>
+              </div>
+              <div class="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-xl">
+                <div class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Delivered (Sent)</div>
+                <div class="text-xl font-extrabold text-emerald-700 mt-1" id="email-stat-sent">0</div>
+              </div>
+              <div class="p-3.5 bg-red-50/60 border border-red-200 rounded-xl">
+                <div class="text-[11px] font-bold text-red-700 uppercase tracking-wider">Failed Delivery</div>
+                <div class="text-xl font-extrabold text-red-700 mt-1" id="email-stat-failed">0</div>
+              </div>
+              <div class="p-3.5 bg-blue-50/60 border border-blue-200 rounded-xl">
+                <div class="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Success Rate</div>
+                <div class="text-xl font-extrabold text-blue-700 mt-1" id="email-stat-rate">100%</div>
+              </div>
+            </div>
+
+            <!-- Filters & Search Toolbar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <select id="email-filter-status" onchange="filterAdminEmailLogs()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
+                  <option value="all">All Delivery Statuses</option>
+                  <option value="sent">Delivered (Sent)</option>
+                  <option value="failed">Failed Delivery</option>
+                  <option value="pending">Pending / Queued</option>
+                </select>
+                <select id="email-filter-category" onchange="filterAdminEmailLogs()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
+                  <option value="all">All Categories</option>
+                  <option value="id_card">ID Card Delivery</option>
+                  <option value="receipt">Fee Payment Receipt</option>
+                  <option value="due">Tuition Due Notice</option>
+                  <option value="overdue">Overdue Notice</option>
+                  <option value="attendance_present">Attendance (Present)</option>
+                  <option value="attendance_absent">Attendance (Absent)</option>
+                  <option value="admission_received">Admission Submitted</option>
+                  <option value="admission_rejected">Admission Status</option>
+                  <option value="custom">Custom Notice</option>
+                </select>
+              </div>
+              <div class="relative w-full sm:w-64">
+                <span class="material-symbols-outlined absolute left-3 top-2 text-slate-400 text-base">search</span>
+                <input type="text" id="email-search-input" oninput="filterAdminEmailLogs()" placeholder="Search recipient, email, subject..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+              </div>
+            </div>
+
+            <!-- Logs Table -->
+            <div class="overflow-x-auto border border-slate-200 rounded-xl">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+                  <tr>
+                    <th class="py-2.5 px-4">Date & Time</th>
+                    <th class="py-2.5 px-4">Recipient</th>
+                    <th class="py-2.5 px-4">Event / Category</th>
+                    <th class="py-2.5 px-4">Subject</th>
+                    <th class="py-2.5 px-4">Status</th>
+                    <th class="py-2.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-email-logs-table-body" class="divide-y divide-slate-100 font-medium">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Area 7: System & Audit Logs Manager -->
+          <div id="admin-sec-logs" class="admin-tab-area hidden p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-base text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-600">notifications</span>
+                <span>6. System Activity & Audit Logs Manager</span>
+              </div>
+              <button id="btn-admin-clear-logs" onclick="clearAllAdminLogs()" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-xs rounded-xl transition flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">delete_sweep</span>
+                <span>Clear All Logs</span>
+              </button>
+            </h3>
+
+            <div class="overflow-x-auto border border-slate-200 rounded-xl">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+                  <tr>
+                    <th class="py-2.5 px-4">Timestamp</th>
+                    <th class="py-2.5 px-4">Activity Title</th>
+                    <th class="py-2.5 px-4">Details</th>
+                    <th class="py-2.5 px-4 text-right">Category</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-logs-table-body" class="divide-y divide-slate-100 font-medium">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- MOBILE FIXED BOTTOM NAVIGATION BAR -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 flex items-center justify-around py-2 px-2 shadow-lg">
+      <a href="#" data-tab="dashboard" data-mob-tab="dashboard" class="flex flex-col items-center gap-1 p-2 rounded-xl text-red-600 font-extrabold">
+        <span class="material-symbols-outlined text-xl">dashboard</span>
+        <span class="text-[10px]">Dashboard</span>
+      </a>
+      <a href="#" data-tab="attendance" data-mob-tab="attendance" class="flex flex-col items-center gap-1 p-2 rounded-xl text-slate-500 font-medium hover:text-slate-900">
+        <span class="material-symbols-outlined text-xl">fact_check</span>
+        <span class="text-[10px]">Attendance</span>
+      </a>
+      <a href="#" data-tab="kiosk" data-mob-tab="kiosk" class="flex flex-col items-center gap-1 p-2 rounded-xl text-slate-500 font-medium hover:text-slate-900">
+        <span class="material-symbols-outlined text-xl">qr_code_scanner</span>
+        <span class="text-[10px]">Scan</span>
+      </a>
+      <a href="#" data-tab="schedule" data-mob-tab="schedule" class="flex flex-col items-center gap-1 p-2 rounded-xl text-slate-500 font-medium hover:text-slate-900">
+        <span class="material-symbols-outlined text-xl">calendar_month</span>
+        <span class="text-[10px]">Schedule</span>
+      </a>
+      <a href="#" data-tab="directory" data-mob-tab="directory" class="flex flex-col items-center gap-1 p-2 rounded-xl text-slate-500 font-medium hover:text-slate-900">
+        <span class="material-symbols-outlined text-xl">groups</span>
+        <span class="text-[10px]">Students</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: SYSTEM ACTIVITY LOGS LIGHTBOX MODAL (STABLE 460PX CONTAINER) -->
+  <!-- ========================================== -->
+  <div id="activity-logs-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh] h-[580px] modal-box">
+      <div class="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="material-symbols-outlined text-red-500 text-2xl">notifications</span>
+          <div>
+            <h3 class="font-extrabold text-base text-white">System Activity Logs</h3>
+            <p class="text-xs text-slate-400">Complete Audit Trail of Application Operations</p>
+          </div>
+        </div>
+        <button id="close-logs-modal" class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Filter Buttons -->
+      <div class="p-3 bg-slate-100 border-b border-slate-200 flex items-center gap-1.5 text-xs font-bold overflow-x-auto shrink-0">
+        <button data-log-filter="all" class="log-filter-btn px-3 py-1.5 rounded-lg bg-slate-900 text-white">All Logs</button>
+        <button data-log-filter="attendance" class="log-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-600 hover:bg-slate-200">Attendance</button>
+        <button data-log-filter="enrollment" class="log-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-600 hover:bg-slate-200">Students</button>
+        <button data-log-filter="payment" class="log-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-600 hover:bg-slate-200">Financials</button>
+        <button data-log-filter="system" class="log-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-600 hover:bg-slate-200">System & Users</button>
+      </div>
+
+      <!-- FLEX SCROLLABLE LOGS CONTAINER -->
+      <div class="p-5 overflow-y-auto flex-1 space-y-3 text-xs min-h-0" id="logs-modal-container">
+        <!-- Dynamic Logs List -->
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end shrink-0 z-10">
+        <button id="btn-close-logs-modal" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">Close Logs</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: EXPANDED STUDENT DETAILS LIGHTBOX   -->
+  <!-- ========================================== -->
+  <div id="student-details-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[700px] max-h-[92vh] modal-box">
+      
+      <!-- Modal Header -->
+      <div class="p-6 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-4">
+          <img id="sd-header-photo" src="" alt="Student" class="w-14 h-14 rounded-full object-cover border-2 border-red-500 shadow"/>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-extrabold text-lg text-white" id="sd-header-name">Student Name</h3>
+              <span id="sd-header-belt" class="belt-badge text-[10px] py-0.5 px-2">Belt</span>
+            </div>
+            <div class="text-xs text-slate-400 font-mono flex items-center gap-2 mt-0.5">
+              <span>ID: <strong class="text-red-400" id="sd-header-id">KAI202601</strong></span>
+              <span>•</span>
+              <span id="sd-header-status" class="status-badge status-active text-[9px]">Active</span>
+            </div>
+          </div>
+        </div>
+        <button id="close-sd-modal" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex border-b border-slate-200 bg-slate-100 text-xs font-bold px-6 gap-2 shrink-0 overflow-x-auto">
+        <button data-sd-tab="profile" class="sd-tab-btn px-4 py-3 border-b-2 border-red-600 text-red-600 flex items-center gap-1.5 font-bold">
+          <span class="material-symbols-outlined text-sm">person</span>
+          <span>Profile & Contact</span>
+        </button>
+        <button data-sd-tab="fees" id="sd-tab-btn-fees" class="sd-tab-btn px-4 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-1.5 font-bold">
+          <span class="material-symbols-outlined text-sm">payments</span>
+          <span>Fees & Payments</span>
+        </button>
+        <button data-sd-tab="idcard" class="sd-tab-btn px-4 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-1.5 font-bold">
+          <span class="material-symbols-outlined text-sm">badge</span>
+          <span>Digital ID Card</span>
+        </button>
+        <button data-sd-tab="attendance" class="sd-tab-btn px-4 py-3 border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-1.5 font-bold">
+          <span class="material-symbols-outlined text-sm">fact_check</span>
+          <span>Attendance History</span>
+        </button>
+      </div>
+
+      <!-- Scrollable Expanded Tab Content Body (H-[530PX]) -->
+      <div class="p-6 overflow-y-auto flex-1 h-[530px] space-y-6 text-xs text-slate-700">
+        
+        <!-- Tab 1: Profile & Contact -->
+        <div id="sd-tab-profile" class="sd-tab-content space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Personal Information</span>
+              <div class="space-y-1.5">
+                <div class="flex justify-between"><span class="text-slate-500">Gender:</span> <strong id="sd-gender" class="text-slate-900">Male</strong></div>
+                <div class="flex justify-between"><span class="text-slate-500">Date of Birth:</span> <strong id="sd-dob" class="text-slate-900">2012-05-14</strong></div>
+                <div class="flex justify-between"><span class="text-slate-500">Registration Date:</span> <strong id="sd-joindate" class="text-slate-900">2026-01-10</strong></div>
+                <div class="flex justify-between"><span class="text-slate-500">Account Status:</span> <strong id="sd-account-status" class="text-slate-900">ACTIVE</strong></div>
+              </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Primary Contact</span>
+              <div class="space-y-1.5">
+                <div class="flex justify-between"><span class="text-slate-500">Contact Person:</span> <strong id="sd-contact-name" class="text-slate-900">Rahul Sharma</strong></div>
+                <div class="flex justify-between"><span class="text-slate-500">Phone Number:</span> <strong id="sd-phone" class="font-mono text-slate-900">+91 98765 43210</strong></div>
+                <div class="flex justify-between"><span class="text-slate-500">Email Address:</span> <strong id="sd-email" class="text-slate-900">athlete@example.com</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Full Residential Address</span>
+            <p id="sd-full-address" class="font-medium text-slate-800 leading-relaxed">Flat / House No., Street Name, Landmark, City, State, PIN Code</p>
+          </div>
+
+          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Emergency Contact</span>
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="font-bold text-slate-900" id="sd-emerg-name">Rajesh Sharma</div>
+                <div class="text-[10px] text-slate-500" id="sd-emerg-rel">Father / Guardian</div>
+              </div>
+              <div class="font-mono font-bold text-red-600" id="sd-emerg-phone">+91 98765 00000</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Fees & Payments -->
+        <div id="sd-tab-fees" class="sd-tab-content hidden space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Enrolled Plan Fee</span>
+              <div class="text-xl font-extrabold text-slate-900 mt-1" id="sd-plan-fee">₹2,500</div>
+            </div>
+            <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200">
+              <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Total Paid Fees</span>
+              <div class="text-xl font-extrabold text-emerald-800 mt-1" id="sd-total-paid">₹3,500</div>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="font-extrabold text-slate-900">Payment & Invoice History</h4>
+            <div class="border border-slate-200 rounded-xl overflow-hidden">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px]">
+                  <tr>
+                    <th class="py-2.5 px-4">Invoice #</th>
+                    <th class="py-2.5 px-4">Date</th>
+                    <th class="py-2.5 px-4">Method</th>
+                    <th class="py-2.5 px-4">Paid</th>
+                    <th class="py-2.5 px-4 text-right">Receipt</th>
+                  </tr>
+                </thead>
+                <tbody id="sd-invoices-list" class="divide-y divide-slate-100 font-medium">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Digital ID Card -->
+        <div id="sd-tab-idcard" class="sd-tab-content hidden space-y-4">
+          <div class="flex justify-center" id="sd-idcard-mount">
+            <!-- Dynamic Printable ID Card Mount -->
+          </div>
+        </div>
+
+        <!-- Tab 4: Attendance History -->
+        <div id="sd-tab-attendance" class="sd-tab-content hidden space-y-4">
+          <div class="space-y-2">
+            <h4 class="font-extrabold text-slate-900">Athlete Attendance Log</h4>
+            <div class="border border-slate-200 rounded-xl overflow-hidden">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px]">
+                  <tr>
+                    <th class="py-2.5 px-4">Date</th>
+                    <th class="py-2.5 px-4">Time</th>
+                    <th class="py-2.5 px-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="sd-attendance-list" class="divide-y divide-slate-100 font-medium">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+        <div id="sd-status-toggle-box">
+          <!-- Active/Inactive Toggle Button -->
+        </div>
+        <button id="btn-close-sd-modal" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">Close Details</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: EDIT STUDENT PROFILE MODAL          -->
+  <!-- ========================================== -->
+  <div id="edit-student-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[680px] max-h-[92vh] modal-box">
+      <div class="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-amber-500 text-2xl">edit_square</span>
+          <div>
+            <h3 class="font-extrabold text-base text-white">Edit Student Profile</h3>
+            <p class="text-xs text-slate-400">Update complete athlete onboarding and registration records</p>
+          </div>
+        </div>
+        <button id="close-edit-student-modal" class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="edit-student-form" class="p-6 overflow-y-auto flex-1 space-y-5 text-xs">
+        <input type="hidden" id="edit-student-id-hidden"/>
+        
+        <div class="space-y-3">
+          <h4 class="font-extrabold text-slate-900 uppercase tracking-wider text-[11px] border-b border-slate-100 pb-2">1. Personal & Contact Information</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Full Student Name *</label>
+              <input type="text" id="edit-student-name" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Gender *</label>
+              <select id="edit-student-gender" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Date of Birth *</label>
+              <input type="date" id="edit-student-dob" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Belt Rank *</label>
+              <select id="edit-student-belt" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                <option value="White Belt">White Belt</option>
+                <option value="Yellow Belt">Yellow Belt</option>
+                <option value="Orange Belt">Orange Belt</option>
+                <option value="Green Belt">Green Belt</option>
+                <option value="Blue Belt">Blue Belt</option>
+                <option value="Purple Belt">Purple Belt</option>
+                <option value="Brown Belt">Brown Belt</option>
+                <option value="Black Belt">Black Belt</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Primary Contact Phone *</label>
+              <input type="tel" id="edit-student-phone" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Primary Contact Email *</label>
+              <input type="email" id="edit-student-email" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="font-extrabold text-slate-900 uppercase tracking-wider text-[11px] border-b border-slate-100 pb-2">2. Emergency Contact & Full Address</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Emergency Contact Person</label>
+              <input type="text" id="edit-student-emerg-name" placeholder="Guardian / Parent Name" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"/>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Emergency Contact Phone</label>
+              <input type="tel" id="edit-student-emerg-phone" placeholder="Emergency Number" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-medium"/>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="font-semibold text-slate-700 block mb-1">Full Residential Address *</label>
+              <input type="text" id="edit-student-address" required placeholder="House/Flat No, Building, Street" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"/>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">City *</label>
+              <input type="text" id="edit-student-city" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"/>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">State / Pincode</label>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="edit-student-state" placeholder="State" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"/>
+                <input type="text" id="edit-student-pincode" placeholder="Pincode" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-medium"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="font-extrabold text-slate-900 uppercase tracking-wider text-[11px] border-b border-slate-100 pb-2">3. Membership Plan & Account Status</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Membership Plan</label>
+              <select id="edit-student-plan" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium">
+                <option value="Monthly Plan">Monthly Plan</option>
+                <option value="Quarterly Plan (3 Months)">Quarterly Plan (3 Months)</option>
+                <option value="Half-Yearly Plan (6 Months)">Half-Yearly Plan (6 Months)</option>
+                <option value="Annual Plan (12 Months)">Annual Plan (12 Months)</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Monthly Fee (₹)</label>
+              <input type="number" id="edit-student-monthly-fee" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold"/>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Account Status</label>
+              <select id="edit-student-status" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold">
+                <option value="active">Active (Mat Access Allowed)</option>
+                <option value="inactive">Inactive (Deactivated)</option>
+              </select>
+            </div>
+            <div class="sm:col-span-3">
+              <label class="font-semibold text-slate-700 block mb-1">Profile Photo URL</label>
+              <input type="url" id="edit-student-avatar" placeholder="https://..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0 rounded-xl">
+          <button type="button" id="btn-cancel-edit-student" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl">Cancel</button>
+          <button type="submit" class="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: RESET PASSWORD DIALOG MODAL        -->
+  <!-- ========================================== -->
+  <div id="reset-password-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-600">lock_reset</span>
+          <span>Reset Account Password</span>
+        </h3>
+        <button id="close-reset-pass-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="reset-password-form" class="space-y-3.5 text-xs">
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Current Password *</label>
+          <input type="password" id="reset-old-pass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none"/>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">New Password *</label>
+          <input type="password" id="reset-new-pass" required placeholder="Minimum 6 characters" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none"/>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Confirm New Password *</label>
+          <input type="password" id="reset-confirm-pass" required placeholder="Re-enter new password" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none"/>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="btn-cancel-reset-pass" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: MANAGER PASSWORD VERIFICATION      -->
+  <!-- ========================================== -->
+  <div id="manager-verify-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-600">lock_reset</span>
+          <span>Manager Security Verification</span>
+        </h3>
+        <button id="close-mgr-verify-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 font-medium">
+        Re-enter your Manager account password to open User Account Management for this session.
+      </div>
+
+      <form id="mgr-verify-form" class="space-y-4 text-xs">
+        <div id="mgr-verify-error" class="hidden p-2.5 bg-red-50 border border-red-200 rounded-xl text-red-700 font-bold text-center">
+          Incorrect Manager password. Please try again.
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Manager Password</label>
+          <input type="password" id="mgr-verify-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-blue-600 focus:outline-none"/>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="btn-cancel-mgr-verify" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow">Verify & Access</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ENTERPRISE LIGHTBOX FEEDBACK SYSTEM -->
+  <!-- ========================================== -->
+  <div id="kai-lightbox-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box">
+      <div class="flex items-start gap-4">
+        <div id="lb-icon-box" class="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-2xl" id="lb-icon">info</span>
+        </div>
+        <div class="space-y-1 overflow-hidden flex-1">
+          <h3 class="font-extrabold text-base text-slate-900 tracking-tight" id="lb-title">System Message</h3>
+          <p class="text-xs text-slate-600 font-medium leading-relaxed" id="lb-message">Notification details...</p>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 text-xs font-bold" id="lb-actions">
+        <button id="lb-btn-cancel" class="hidden px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition">Cancel</button>
+        <button id="lb-btn-confirm" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow transition">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: DYNAMIC USER PROFILE MODAL          -->
+  <!-- ========================================== -->
+  <div id="user-profile-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-red-600">account_circle</span>
+          <span>User Profile</span>
+        </h3>
+        <button id="close-user-profile-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+        <div class="w-14 h-14 rounded-full bg-red-100 text-red-600 font-extrabold text-xl flex items-center justify-center border-2 border-red-200 shrink-0">
+          <span class="material-symbols-outlined text-3xl">person</span>
+        </div>
+        <div class="overflow-hidden space-y-1">
+          <h4 class="font-extrabold text-base text-slate-900" id="prof-display-name">User Name</h4>
+          <div class="text-xs font-mono font-bold text-slate-500" id="prof-display-username">@username</div>
+          <div class="flex items-center gap-2 pt-0.5">
+            <span id="prof-role-badge" class="role-badge role-admin">ADMIN</span>
+            <span id="prof-status-badge" class="status-badge status-active">ACTIVE</span>
+          </div>
+        </div>
+      </div>
+
+      <form id="user-profile-form" class="space-y-3 text-xs">
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Full Name</label>
+          <input type="text" id="prof-input-name" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900"/>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Email Address</label>
+          <input type="email" id="prof-input-email" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900"/>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Username (Read-Only)</label>
+          <input type="text" id="prof-input-username" readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-mono text-slate-500 cursor-not-allowed"/>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" id="btn-cancel-profile" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-200">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow">Save Profile Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 1: ADD NEW STUDENT FORM              -->
+  <!-- ========================================== -->
+  <div id="add-student-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 max-h-[90vh] overflow-y-auto modal-box">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-red-600">person_add</span>
+          <span>Register New Student (KAI Format)</span>
+        </h3>
+        <button id="close-add-student-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="add-student-form" class="space-y-3.5 text-xs">
+        
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+          <label class="font-semibold text-slate-800 block text-xs">Student Profile Photo</label>
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+              <img id="photo-preview-img" src="https://images.unsplash.com/photo-1555597673-b21d5c935865?w=100&auto=format&fit=crop&q=80" alt="Preview" class="w-full h-full object-cover"/>
+            </div>
+            <div class="space-y-1.5 flex-1">
+              <input type="file" id="new-student-photo-file" accept="image/png, image/jpeg, image/jpg" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-red-50 file:text-red-600 hover:file:bg-red-100"/>
+              <input type="url" id="new-student-photo-url" placeholder="e.g. https://domain.com/photo.jpg" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEPARATE NAME TEXTBOXES: FIRST NAME, MIDDLE NAME (OPTIONAL), LAST NAME -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">First Name *</label>
+            <input type="text" id="new-student-first-name" required placeholder="e.g. Rahul" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none transition"/>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Middle Name <span class="text-slate-400 font-normal">(Optional)</span></label>
+            <input type="text" id="new-student-middle-name" placeholder="e.g. Kumar" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none transition"/>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Last Name *</label>
+            <input type="text" id="new-student-last-name" required placeholder="e.g. Sharma" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none transition"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Belt Rank *</label>
+            <select id="new-student-belt" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
+              <option value="White Belt">White Belt</option>
+              <option value="Yellow Belt">Yellow Belt</option>
+              <option value="Orange Belt">Orange Belt</option>
+              <option value="Green Belt">Green Belt</option>
+              <option value="Blue Belt">Blue Belt</option>
+              <option value="Purple Belt">Purple Belt</option>
+              <option value="Brown Belt">Brown Belt</option>
+              <option value="Black Belt">Black Belt</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Gender</label>
+            <select id="new-student-gender" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Date of Birth</label>
+            <input type="date" id="new-student-dob" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900"/>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+          <label class="font-semibold text-slate-800 block text-[11px] uppercase tracking-wider">Residential Address</label>
+          <input type="text" id="new-student-address" placeholder="e.g. Flat / House No., Street Name, Area, Landmark" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl"/>
+          <div class="grid grid-cols-3 gap-2">
+            <input type="text" id="new-student-city" placeholder="e.g. New Delhi" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl"/>
+            <input type="text" id="new-student-state" placeholder="e.g. Delhi" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl"/>
+            <input type="text" id="new-student-pincode" placeholder="e.g. 110001" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl"/>
+          </div>
+        </div>
+
+        <!-- MANDATORY PRIMARY CONTACT PHONE AND MANDATORY PRIMARY CONTACT EMAIL -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <label class="font-semibold text-slate-800 block text-[11px] uppercase tracking-wider">Primary Contact *</label>
+            <input type="text" id="new-student-contact-name" placeholder="Contact Person Name" class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl"/>
+            <input type="text" id="new-student-contact-phone" required placeholder="Primary Contact Phone *" class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl font-bold"/>
+            <input type="email" id="new-student-contact-email" required placeholder="Primary Contact Email *" class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl font-bold"/>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <label class="font-semibold text-slate-800 block text-[11px] uppercase tracking-wider">Emergency Contact</label>
+            <input type="text" id="new-student-emerg-name" placeholder="e.g. Rajesh Sharma" class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl"/>
+            <input type="text" id="new-student-emerg-phone" placeholder="e.g. +91 98765 00000" class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl"/>
+            <input type="text" id="new-student-emerg-rel" placeholder="e.g. Father / Mother" class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl"/>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+          <h4 class="font-semibold text-slate-900 uppercase tracking-wider text-[11px]">Membership Plan & Fee Calculator</h4>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Select Membership</label>
+              <select id="new-student-plan" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-900">
+                <option value="2500">Monthly Plan (₹2,500)</option>
+                <option value="7000">Quarterly Plan (₹7,000)</option>
+                <option value="13000">Half-Yearly Plan (₹13,000)</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Discount Amount (₹)</label>
+              <input type="number" id="new-student-discount" value="0" min="0" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-900"/>
+            </div>
+          </div>
+
+          <!-- UNIFORM FEE LINE ITEM CHECKBOX -->
+          <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200">
+            <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-xs">
+              <input type="checkbox" id="new-student-uniform-check" checked class="rounded text-red-600 focus:ring-red-600 w-4 h-4"/>
+              <span>Karate Uniform Kit Fee</span>
+            </label>
+            <span class="font-extrabold text-slate-900 text-xs">+ ₹2,500</span>
+          </div>
+
+          <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs space-y-1">
+            <div class="flex justify-between text-slate-600"><span>Registration Fee (One-Time):</span> <strong id="calc-reg-display">₹1,000</strong></div>
+            <div class="flex justify-between text-slate-600"><span>Membership Plan Fee:</span> <strong id="calc-orig">₹2,500</strong></div>
+            <div class="flex justify-between text-slate-600" id="calc-uniform-row"><span>Karate Uniform Fee:</span> <strong>+ ₹2,500</strong></div>
+            <div class="flex justify-between text-red-600"><span>Discount Applied:</span> <strong id="calc-disc">- ₹0</strong></div>
+            <div class="flex justify-between text-slate-900 font-extrabold text-sm border-t border-slate-100 pt-1">
+              <span>Final Total Payable:</span> <strong id="calc-final" class="text-red-600">₹6,000</strong>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition">
+          Generate KAI Student ID & Complete Enrollment
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 2: RECORD PAYMENT FORM               -->
+  <!-- ========================================== -->
+  <div id="record-payment-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600">payments</span>
+          <span>Record Student Fee Payment</span>
+        </h3>
+        <button id="close-record-payment-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="record-payment-form" class="space-y-3.5 text-xs">
+        <div class="space-y-1.5 relative">
+          <label class="font-semibold text-slate-700 block mb-1">Search & Select Student *</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-base">search</span>
+            <input type="text" id="pay-student-search-input" placeholder="Search student name or Student ID (e.g. Sumit / KAI202601)..." class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-emerald-600 focus:outline-none"/>
+          </div>
+          <input type="hidden" id="pay-student-selected-id"/>
+          <div id="pay-student-suggestions-dropdown" class="hidden absolute left-0 right-0 top-16 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 max-h-56 overflow-y-auto text-xs space-y-1"></div>
+          
+          <select id="pay-student-select" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 mt-2">
+            <!-- Dynamic -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Original Fee (₹)</label>
+            <input type="number" id="pay-orig-amount" value="2500" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900"/>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Discount (₹)</label>
+            <input type="number" id="pay-discount-amount" value="0" min="0" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900"/>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+          <span class="font-semibold text-slate-700">Final Payment Amount:</span>
+          <span id="pay-final-amount" class="text-base font-extrabold text-emerald-700">₹2,500</span>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Payment Method</label>
+          <select id="pay-method" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
+            <option value="UPI / GPay">UPI / GPay / Paytm</option>
+            <option value="Cash">Cash Receipt</option>
+            <option value="Credit Card">Credit / Debit Card</option>
+            <option value="Net Banking">Net Banking</option>
+          </select>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">
+          Generate Official Invoice & Receipt
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 3: PAYMENT RECEIPT DIALOG MODAL      -->
+  <!-- ========================================== -->
+  <div id="payment-receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 max-h-[95vh] overflow-y-auto modal-box">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600">receipt_long</span>
+          <span>Official KAI Payment Receipt</span>
+        </h3>
+        <button id="close-receipt-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div id="receipt-card-wrapper">
+        <!-- Dynamic -->
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 text-xs font-bold">
+        <button id="btn-download-receipt-pdf" class="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">download</span>
+          <span>Download PDF</span>
+        </button>
+        <button id="btn-print-receipt" class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">print</span>
+          <span>Print</span>
+        </button>
+        <button id="btn-send-whatsapp" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">chat</span>
+          <span>WhatsApp</span>
+        </button>
+        <button id="btn-send-email" class="py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">mail</span>
+          <span>Email</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: MANAGER PENDING ADMISSIONS REVIEW   -->
+  <!-- ========================================== -->
+  <div id="pending-admissions-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[740px] max-h-[92vh] modal-box">
+      
+      <!-- Modal Header -->
+      <div class="p-6 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-red-600/30 border border-red-500/50 flex items-center justify-center text-red-400">
+            <span class="material-symbols-outlined text-2xl">how_to_reg</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg text-white flex items-center gap-2">
+              <span>Online Student Admissions</span>
+              <span id="adm-modal-count-badge" class="bg-red-600 text-white font-mono text-[10px] font-extrabold px-2 py-0.5 rounded-full">0 Pending</span>
+            </h3>
+            <p class="text-xs text-slate-400">Manager Verification & Document Verification Workflow</p>
+          </div>
+        </div>
+        <button id="close-admissions-modal" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body (Two-Column Layout) -->
+      <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        
+        <!-- Left: Applications List -->
+        <div class="w-full md:w-80 border-r border-slate-200 bg-slate-50 flex flex-col shrink-0 overflow-hidden">
+          <div class="p-3 border-b border-slate-200 bg-slate-100 flex items-center justify-between text-xs font-bold text-slate-600">
+            <span>Pending Applications</span>
+            <button onclick="loadPendingAdmissions()" class="text-slate-500 hover:text-red-600" title="Refresh List">
+              <span class="material-symbols-outlined text-base">refresh</span>
+            </button>
+          </div>
+          <div id="admissions-list-container" class="p-3 overflow-y-auto flex-1 space-y-2">
+            <!-- Dynamic Applications Cards -->
+          </div>
+        </div>
+
+        <!-- Right: Selected Application Detail & Actions -->
+        <div class="flex-1 p-6 overflow-y-auto bg-white space-y-6" id="admission-detail-pane">
+          <div class="h-full flex flex-col items-center justify-center text-slate-400 space-y-2 py-16">
+            <span class="material-symbols-outlined text-5xl">fact_check</span>
+            <p class="text-xs font-bold">Select an admission application from the left list to review</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: DOCUMENT PREVIEW LIGHTBOX           -->
+  <!-- ========================================== -->
+  <div id="doc-preview-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[700px] max-h-[92vh] modal-box">
+      <div class="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-red-500">description</span>
+          <span class="font-extrabold text-sm" id="doc-preview-title">Document Preview</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <a id="doc-preview-download-btn" href="#" download="document" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">download</span>
+            <span>Download</span>
+          </a>
+          <button id="close-doc-preview-modal" class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </div>
+      <div class="flex-1 p-4 bg-slate-100 flex items-center justify-center overflow-auto" id="doc-preview-body">
+        <!-- Dynamic Document Preview -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: BULK CSV IMPORT PREVIEW & REVIEW    -->
+  <!-- ========================================== -->
+  <div id="csv-import-review-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[720px] max-h-[92vh] modal-box">
+      
+      <!-- Header -->
+      <div class="p-6 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-blue-400">
+            <span class="material-symbols-outlined text-2xl">table_view</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg text-white">Bulk Student CSV Import Verification</h3>
+            <p class="text-xs text-slate-400">Review and validate student records before committing to the database roster</p>
+          </div>
+        </div>
+        <button id="close-csv-modal" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Stats Pill Bar -->
+      <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-4 text-xs shrink-0 flex-wrap">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 font-bold text-slate-700">
+            Total Rows: <strong id="csv-total-count" class="text-slate-900">0</strong>
+          </span>
+          <span class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 font-bold text-emerald-800 flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">check_circle</span>
+            <span>Valid: <strong id="csv-valid-count">0</strong></span>
+          </span>
+          <span class="px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 font-bold text-red-800 flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">error</span>
+            <span>Errors: <strong id="csv-error-count">0</strong></span>
+          </span>
+        </div>
+
+        <div class="text-[11px] text-slate-500 font-medium">
+          Assigned IDs: Auto-generated sequential format (<strong class="font-mono text-red-600">KAI2026XX</strong>)
+        </div>
+      </div>
+
+      <!-- Tabular Review Area -->
+      <div class="flex-1 p-6 overflow-y-auto space-y-4">
+        <div class="table-scroll-container border border-slate-200 rounded-2xl">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100 text-slate-600 uppercase font-bold text-[10px]">
+              <tr>
+                <th class="py-3 px-3">Status</th>
+                <th class="py-3 px-3">Full Name</th>
+                <th class="py-3 px-3">Belt Rank</th>
+                <th class="py-3 px-3">Phone</th>
+                <th class="py-3 px-3">Email</th>
+                <th class="py-3 px-3">Gender</th>
+                <th class="py-3 px-3">DOB</th>
+                <th class="py-3 px-3">Validation Message</th>
+              </tr>
+            </thead>
+            <tbody id="csv-review-table-body" class="divide-y divide-slate-100 font-medium">
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Footer Action Buttons -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+        <button id="btn-cancel-csv-import" class="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-sm transition">
+          Cancel
+        </button>
+        <button id="btn-confirm-csv-import" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-lg transition flex items-center gap-2">
+          <span class="material-symbols-outlined text-base">cloud_upload</span>
+          <span id="btn-confirm-csv-label">Confirm & Import Valid Students</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: SEND EMAIL DISPATCH DIALOG          -->
+  <!-- ========================================== -->
+  <div id="send-email-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] modal-box animate-in">
+      
+      <!-- Modal Header -->
+      <div class="p-6 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600 shadow-sm">
+            <span class="material-symbols-outlined text-2xl">forward_to_inbox</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg text-slate-900">Send Email Notification</h3>
+            <p class="text-xs text-slate-500" id="send-email-modal-subtitle">Dispatch official KAI email to student, parent, or custom address</p>
+          </div>
+        </div>
+        <button onclick="closeSendEmailModal()" class="p-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 transition shadow-sm">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body Form -->
+      <form id="header-send-email-form" class="p-6 overflow-y-auto space-y-4 text-xs">
+        
+        <!-- Recipient Type & Target Selection -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Recipient Student / Athlete *</label>
+            <select id="send-email-student-select" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <option value="">-- Choose Athlete / Parent --</option>
+              <option value="__custom__">Custom Email Address</option>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Email Category / Template *</label>
+            <select id="send-email-category-select" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <!-- Dynamically populated based on active role -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Custom Recipient Details (When Custom Email is selected or athlete auto-populates) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Recipient Name *</label>
+            <input type="text" id="send-email-target-name" required placeholder="e.g. Rahul Sharma" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Recipient Email Address *</label>
+            <input type="email" id="send-email-target-email" required placeholder="e.g. parent@example.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+          </div>
+        </div>
+
+        <!-- Subject Line -->
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Subject Line *</label>
+          <input type="text" id="send-email-subject" required placeholder="e.g. Official Update from Karate Academy India" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+        </div>
+
+        <!-- Email Body Content -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="font-bold text-slate-700">Message Content (Plain Text / HTML) *</label>
+            <span class="text-[10px] text-slate-400 font-medium">Rendered with clean light-theme template</span>
+          </div>
+          <textarea id="send-email-body" rows="6" required placeholder="Write email body message..." class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 text-xs focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none leading-relaxed"></textarea>
+        </div>
+
+        <!-- Live Light Theme Preview Box -->
+        <div class="p-3.5 bg-blue-50/60 border border-blue-200 rounded-2xl space-y-1">
+          <div class="flex items-center gap-1.5 text-blue-900 font-bold text-[11px]">
+            <span class="material-symbols-outlined text-sm text-blue-600">verified</span>
+            <span>Sender: Karate Academy India Official Mailer</span>
+          </div>
+          <p class="text-[11px] text-blue-800">
+            Dispatches through your configured authenticated SMTP server. All logs are recorded in the Activity Manager.
+          </p>
+        </div>
+
+        <!-- Footer Submit Button -->
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+          <button type="button" onclick="closeSendEmailModal()" class="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-sm transition">
+            Cancel
+          </button>
+          <button type="submit" id="btn-dispatch-email-submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">send</span>
+            <span id="btn-dispatch-email-label">Dispatch Email</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: INTERACTIVE EMAIL PREVIEW MODAL     -->
+  <!-- ========================================== -->
+  <div id="email-preview-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] modal-box">
+      <div class="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-400">
+            <span class="material-symbols-outlined text-xl">preview</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base text-white">Email Preview</h3>
+            <p class="text-[11px] text-slate-400 font-mono" id="email-preview-subject-header">Subject line</p>
+          </div>
+        </div>
+        <button onclick="closeEmailPreviewModal()" class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto bg-slate-100 flex-1 flex justify-center" id="email-preview-container">
+        <!-- Rendered Email Card Container -->
+      </div>
+      <div class="p-4 bg-white border-t border-slate-200 flex items-center justify-between gap-3 text-xs shrink-0">
+        <div class="text-slate-500 text-[11px]" id="email-preview-meta-info">Recipient: info@example.com</div>
+        <button type="button" onclick="closeEmailPreviewModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-sm transition">
+          Close Preview
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ACADEMY HOLIDAY NOTICE MODAL        -->
+  <!-- ========================================== -->
+  <div id="holiday-notice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-600">beach_access</span>
+          <span>Send Academy Holiday Notice</span>
+        </h3>
+        <button onclick="closeHolidayNoticeModal()" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="holiday-notice-form" class="space-y-3.5 text-xs">
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Holiday Title / Reason *</label>
+          <input type="text" id="holiday-name-input" required placeholder="e.g. National Festival / Annual Academy Holiday" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none"/>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Holiday Date *</label>
+          <input type="date" id="holiday-date-input" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-amber-600 focus:outline-none"/>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Resumption Message / Notes</label>
+          <textarea id="holiday-notes-input" rows="2" placeholder="Regular training sessions will resume on the next working day." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-amber-600 focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="closeHolidayNoticeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">send</span>
+            <span>Dispatch Holiday Alert</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: GENERATE STAFF SALARY INVOICE MODAL -->
+  <!-- ========================================== -->
+  <div id="staff-invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container" data-dismissible="true">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-600">receipt_long</span>
+          <span>Generate Staff Salary Invoice</span>
+        </h3>
+        <button onclick="closeStaffInvoiceModal()" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="staff-invoice-form" class="space-y-3.5 text-xs">
+        <input type="hidden" id="staff-invoice-user-id"/>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Staff Member</label>
+          <input type="text" id="staff-invoice-name" readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-900"/>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Staff ID</label>
+          <input type="text" id="staff-invoice-id" readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-mono font-bold text-blue-600"/>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Payroll Period / Month *</label>
+          <input type="text" id="staff-invoice-month" required placeholder="e.g. August 2026" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-blue-600 focus:outline-none"/>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Disbursed Salary Amount (₹) *</label>
+          <input type="number" id="staff-invoice-amount" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"/>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="closeStaffInvoiceModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">payments</span>
+            <span>Generate & Send Salary Payslip</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HIDDEN PRINT CONTAINER FOR MEDIA PRINT -->
+  <div id="print-section"></div>
+
+  <!-- Application Controller JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>

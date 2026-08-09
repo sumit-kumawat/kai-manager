@@ -1,0 +1,15 @@
+{
+  "name": "kai-manager",
+  "version": "2.0.0",
+  "description": "Karate Academy India Management Portal CRM",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}

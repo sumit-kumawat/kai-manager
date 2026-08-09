@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Student Admission - Karate Academy India</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://www.karateacademyindia.com/logo.png">
+
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    body {
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-red-500 selection:text-white">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center shadow-sm border border-slate-200">
+          <img src="https://www.karateacademyindia.com/logo.png" alt="KAI Logo" class="max-w-full max-h-full object-contain" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1555597673-b21d5c935865?w=100';"/>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-2">
+            <span>KARATE ACADEMY INDIA</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-red-200 bg-red-50 text-red-600 font-bold uppercase">Admissions 2026</span>
+          </h1>
+          <p class="text-xs text-slate-500 font-medium">Official Online Athlete Enrollment Portal</p>
+        </div>
+      </div>
+
+      <a href="/" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-1.5 border border-slate-200">
+        <span class="material-symbols-outlined text-sm">login</span>
+        <span>Staff Login</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN ADMISSION CONTAINER -->
+  <main class="max-w-4xl mx-auto px-4 py-8 flex-1 w-full space-y-6">
+
+    <!-- HERO BANNER -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+      <div class="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 flex items-center justify-center pointer-events-none">
+        <span class="material-symbols-outlined text-[180px]">sports_martial_arts</span>
+      </div>
+      <div class="relative z-10 space-y-2 max-w-2xl">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600/30 border border-red-500/40 text-red-300 text-xs font-bold uppercase tracking-wider">
+          <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
+          <span>New Admissions Open</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Join Karate Academy India</h2>
+        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+          Fill out the admission registration form below. After submission, your application will be verified by the Academy Manager to generate your permanent Student ID (<span class="font-mono text-red-400 font-bold">KAI2026XX</span>) and Digital Mat Pass.
+        </p>
+      </div>
+    </div>
+
+    <!-- ADMISSION FORM CONTAINER -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+      
+      <form id="public-admission-form" class="space-y-8">
+
+        <!-- SECTION 1: ATHLETE PERSONAL INFORMATION -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+            <span class="material-symbols-outlined text-red-600">person</span>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">1. Athlete Personal Information</h3>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">First Name *</label>
+              <input type="text" id="adm-first-name" required placeholder="e.g. Aryan" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Middle Name</label>
+              <input type="text" id="adm-middle-name" placeholder="e.g. Ramesh" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Last Name *</label>
+              <input type="text" id="adm-last-name" required placeholder="e.g. Sharma" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Gender *</label>
+              <select id="adm-gender" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-red-600 focus:outline-none">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Date of Birth *</label>
+              <input type="date" id="adm-dob" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Blood Group</label>
+              <select id="adm-blood-group" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-red-600 focus:outline-none">
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Current Belt / Experience Level *</label>
+              <select id="adm-belt" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-red-600 focus:outline-none">
+                <option value="White Belt">Beginner / White Belt (New Enrolment)</option>
+                <option value="Yellow Belt">Yellow Belt</option>
+                <option value="Orange Belt">Orange Belt</option>
+                <option value="Green Belt">Green Belt</option>
+                <option value="Blue Belt">Blue Belt</option>
+                <option value="Purple Belt">Purple Belt</option>
+                <option value="Brown Belt">Brown Belt</option>
+                <option value="Black Belt">Black Belt</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Preferred Training Batch / Plan *</label>
+              <select id="adm-plan" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-red-600 focus:outline-none">
+                <option value="Monthly">Monthly Membership (₹2,500/mo)</option>
+                <option value="Quarterly">Quarterly Plan (3 Months - ₹7,000)</option>
+                <option value="Half-Yearly">Half-Yearly Plan (6 Months - ₹13,000)</option>
+                <option value="Annual">Annual Plan (12 Months - ₹24,000)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Medical Conditions / Allergies / Notes (If any)</label>
+            <input type="text" id="adm-medical" placeholder="e.g. None / Asthma / Previous injuries" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+          </div>
+        </div>
+
+        <!-- SECTION 2: PRIMARY CONTACT & ADDRESS -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+            <span class="material-symbols-outlined text-red-600">contact_phone</span>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">2. Primary Contact & Residential Address</h3>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Parent / Guardian Name *</label>
+              <input type="text" id="adm-parent-name" required placeholder="e.g. Ramesh Sharma" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Primary Mobile Phone (10 Digits) *</label>
+              <input type="text" id="adm-phone" required pattern="[0-9]{10}" placeholder="e.g. 9876543210" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Primary Email Address *</label>
+              <input type="email" id="adm-email" required placeholder="e.g. parent@example.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Emergency Contact Person *</label>
+              <input type="text" id="adm-emerg-name" required placeholder="e.g. Sunita Sharma" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Emergency Contact Phone *</label>
+              <input type="text" id="adm-emerg-phone" required placeholder="e.g. 9876543211" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Street Address *</label>
+            <input type="text" id="adm-address" required placeholder="Flat No., Building Name, Street / Area" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">City *</label>
+              <input type="text" id="adm-city" required value="Pune" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">State *</label>
+              <input type="text" id="adm-state" required value="MH" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Pincode *</label>
+              <input type="text" id="adm-pincode" required value="411033" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: GOVERNMENT ID & PHOTO UPLOAD -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+            <span class="material-symbols-outlined text-red-600">badge</span>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">3. Government ID & ID Card Photograph</h3>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Government ID Proof Type *</label>
+              <select id="adm-govid-type" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-red-600 focus:outline-none">
+                <option value="Aadhaar Card">Aadhaar Card (UIDAI)</option>
+                <option value="Passport">Passport</option>
+                <option value="Birth Certificate">Birth Certificate</option>
+                <option value="School ID">School / College ID Card</option>
+                <option value="PAN Card">PAN Card</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Government ID Number *</label>
+              <input type="text" id="adm-govid-num" required placeholder="e.g. 1234 5678 9012" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            </div>
+          </div>
+
+          <!-- PHOTO UPLOAD CONTAINER WITH LIVE PREVIEW -->
+          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+              <div class="w-24 h-24 rounded-2xl overflow-hidden border-2 border-red-500 bg-white shadow-sm shrink-0 flex items-center justify-center">
+                <img id="photo-preview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Preview" class="w-full h-full object-cover"/>
+              </div>
+              <div class="flex-1 space-y-1.5 text-center sm:text-left">
+                <label class="block text-xs font-extrabold text-slate-900">Student Profile / Passport Photo * (For Digital ID Card)</label>
+                <p class="text-[11px] text-slate-500">Upload a clear front-facing photograph (JPG or PNG, max 5MB).</p>
+                <input type="file" id="adm-photo-file" accept="image/*" class="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: DOCUMENT ATTACHMENTS (UP TO 5 ATTACHMENTS) -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-red-600">attach_file</span>
+              <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">4. Document Attachments</h3>
+            </div>
+            <span class="text-xs font-bold text-slate-500">1 Mandatory + Up to 4 Optional (Max 5)</span>
+          </div>
+
+          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <span class="text-xs font-bold text-slate-800">Upload Verification Documents</span>
+                <p class="text-[11px] text-slate-500">Aadhaar Card, Birth Certificate, School ID, or Medical Fitness Certificate (PDF, PNG, JPG, max 5MB each).</p>
+              </div>
+              <label class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow cursor-pointer transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">upload_file</span>
+                <span>+ Add Document</span>
+                <input type="file" id="adm-doc-file" accept="application/pdf,image/*" class="hidden"/>
+              </label>
+            </div>
+
+            <!-- DYNAMIC ATTACHED DOCUMENTS LIST -->
+            <div id="attached-docs-list" class="space-y-2 pt-2">
+              <div class="text-xs text-slate-400 italic py-2 text-center" id="no-docs-text">No documents attached yet. At least 1 document is required.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 5: SECURITY CAPTCHA & DECLARATION -->
+        <div class="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-200">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-red-600">security</span>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">5. Security Verification & Declaration</h3>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
+            <div class="flex items-center gap-2 font-mono font-extrabold text-sm text-slate-900 bg-slate-100 px-4 py-2.5 rounded-xl border border-slate-200 shrink-0">
+              <span id="captcha-question">Loading CAPTCHA...</span>
+              <button type="button" id="btn-refresh-captcha" class="text-slate-400 hover:text-red-600" title="Reload CAPTCHA">
+                <span class="material-symbols-outlined text-base">refresh</span>
+              </button>
+            </div>
+            <input type="hidden" id="captcha-token"/>
+            <input type="number" id="captcha-answer" required placeholder="Enter answer" class="w-full sm:w-48 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 font-bold focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+          </div>
+
+          <label class="flex items-start gap-3 cursor-pointer pt-2">
+            <input type="checkbox" id="adm-declaration" required class="w-4 h-4 mt-0.5 text-red-600 rounded border-slate-300 focus:ring-red-500"/>
+            <span class="text-xs text-slate-600 font-medium leading-relaxed">
+              I hereby declare that the information provided above is true and correct. I agree to abide by the rules, discipline, and training guidelines of <strong>Karate Academy India</strong>.
+            </span>
+          </label>
+        </div>
+
+        <!-- ERROR MESSAGE CONTAINER -->
+        <div id="form-error-box" class="hidden p-4 rounded-2xl bg-red-50 border border-red-200 text-xs font-bold text-red-700 flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg shrink-0">error</span>
+          <span id="form-error-text"></span>
+        </div>
+
+        <!-- SUBMIT BUTTON -->
+        <div class="pt-2 flex items-center justify-end gap-3">
+          <button type="submit" id="btn-submit-admission" class="w-full sm:w-auto px-8 py-3.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-base">send</span>
+            <span>Submit Admission Application</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  </main>
+
+  <!-- SUCCESS CONFIRMATION MODAL -->
+  <div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-8 max-w-lg w-full text-center space-y-4">
+      <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
+        <span class="material-symbols-outlined text-3xl">check_circle</span>
+      </div>
+      <h3 class="text-xl font-extrabold text-slate-900">Application Submitted!</h3>
+      <p class="text-xs text-slate-600 leading-relaxed" id="success-msg-text">
+        Your admission application has been received and queued for Academy Manager review.
+      </p>
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
+        <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Application Reference ID</span>
+        <div class="font-mono text-base font-extrabold text-red-600" id="success-app-id">KAI-ADM-2026-0001</div>
+      </div>
+      <div class="pt-2">
+        <button onclick="window.location.reload()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">
+          Done / Submit Another Application
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>
+        <strong>Karate Academy India Management Portal</strong> • Official Mat Registration
+      </div>
+      <div>
+        <a href="https://www.conzex.com?utm_source=chatgpt.com" target="_blank" rel="noopener" class="conzex-rainbow-text font-bold inline-flex items-center gap-1">
+          <img src="https://files.conzex.com/api/files/public/f32f130c-199c-4d0b-8fd5-4134757a71d9/icon-rounded.png" alt="Conzex" class="w-3.5 h-3.5 inline-block"/>
+          <span>Conzex Global Private Limited</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CLIENT-SIDE APPLICATION SCRIPT -->
+  <script>
+    let attachedDocuments = [];
+    let currentPhotoBase64 = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+
+    // Fetch CAPTCHA Challenge from Server
+    async function loadCaptcha() {
+      try {
+        const res = await fetch('/api/public/captcha');
+        const data = await res.json();
+        if (data.success && data.token) {
+          document.getElementById('captcha-question').textContent = `Please solve: ${data.question} = ?`;
+          document.getElementById('captcha-token').value = data.token;
+          document.getElementById('captcha-answer').value = '';
+        }
+      } catch (e) {
+        document.getElementById('captcha-question').textContent = 'Please solve: 5 + 3 = ?';
+      }
+    }
+
+    document.getElementById('btn-refresh-captcha')?.addEventListener('click', loadCaptcha);
+
+    // Photo File Input Handler
+    document.getElementById('adm-photo-file')?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Passport photo size must be less than 5MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (re) => {
+        currentPhotoBase64 = re.target.result;
+        document.getElementById('photo-preview').src = currentPhotoBase64;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Document File Upload Handler (Up to 5 Attachments)
+    document.getElementById('adm-doc-file')?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (attachedDocuments.length >= 5) {
+        alert('Maximum 5 documents can be attached.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Document size must be less than 5MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (re) => {
+        attachedDocuments.push({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          data: re.target.result
+        });
+        renderAttachedDocsList();
+        e.target.value = '';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function removeDoc(idx) {
+      attachedDocuments.splice(idx, 1);
+      renderAttachedDocsList();
+    }
+
+    function renderAttachedDocsList() {
+      const listEl = document.getElementById('attached-docs-list');
+      if (!listEl) return;
+
+      if (attachedDocuments.length === 0) {
+        listEl.innerHTML = '<div class="text-xs text-slate-400 italic py-2 text-center" id="no-docs-text">No documents attached yet. At least 1 document is mandatory.</div>';
+        return;
+      }
+
+      listEl.innerHTML = attachedDocuments.map((doc, idx) => `
+        <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 text-xs">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <span class="material-symbols-outlined text-red-600 text-lg">description</span>
+            <div class="truncate">
+              <span class="font-bold text-slate-800">${doc.name}</span>
+              <span class="text-[10px] text-slate-400 font-mono">(${(doc.size / 1024).toFixed(1)} KB)</span>
+            </div>
+          </div>
+          <button type="button" onclick="removeDoc(${idx})" class="text-red-500 hover:text-red-700 font-bold p-1">
+            <span class="material-symbols-outlined text-base">delete</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // Form Submission
+    document.getElementById('public-admission-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errBox = document.getElementById('form-error-box');
+      const errText = document.getElementById('form-error-text');
+      const submitBtn = document.getElementById('btn-submit-admission');
+
+      errBox.classList.add('hidden');
+
+      if (attachedDocuments.length < 1) {
+        errText.textContent = 'Please attach at least 1 mandatory verification document (e.g. Aadhaar Card / ID proof).';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      const firstName = document.getElementById('adm-first-name').value.trim();
+      const middleName = document.getElementById('adm-middle-name').value.trim();
+      const lastName = document.getElementById('adm-last-name').value.trim();
+      const fullName = [firstName, middleName, lastName].filter(Boolean).join(' ');
+
+      const payload = {
+        name: fullName,
+        firstName,
+        middleName,
+        lastName,
+        gender: document.getElementById('adm-gender').value,
+        dob: document.getElementById('adm-dob').value,
+        bloodGroup: document.getElementById('adm-blood-group').value,
+        belt: document.getElementById('adm-belt').value,
+        membershipPlan: document.getElementById('adm-plan').value,
+        medicalNotes: document.getElementById('adm-medical').value.trim(),
+        parentName: document.getElementById('adm-parent-name').value.trim(),
+        phone: document.getElementById('adm-phone').value.trim(),
+        email: document.getElementById('adm-email').value.trim(),
+        emergName: document.getElementById('adm-emerg-name').value.trim(),
+        emergPhone: document.getElementById('adm-emerg-phone').value.trim(),
+        emergRelation: 'Parent / Guardian',
+        address: document.getElementById('adm-address').value.trim(),
+        city: document.getElementById('adm-city').value.trim(),
+        state: document.getElementById('adm-state').value.trim(),
+        pincode: document.getElementById('adm-pincode').value.trim(),
+        govIdType: document.getElementById('adm-govid-type').value,
+        govIdNumber: document.getElementById('adm-govid-num').value.trim(),
+        avatar: currentPhotoBase64,
+        documents: attachedDocuments,
+        captchaToken: document.getElementById('captcha-token').value,
+        captchaAnswer: document.getElementById('captcha-answer').value.trim()
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-base">progress_activity</span><span>Submitting Application...</span>';
+
+      try {
+        const res = await fetch('/api/public/admissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          document.getElementById('success-app-id').textContent = data.applicationId;
+          document.getElementById('success-msg-text').textContent = data.message;
+          document.getElementById('success-modal').classList.remove('hidden');
+        } else {
+          errText.textContent = data.error || 'Failed to submit admission application.';
+          errBox.classList.remove('hidden');
+          loadCaptcha();
+        }
+      } catch (err) {
+        errText.textContent = 'Server network connection error. Please try again.';
+        errBox.classList.remove('hidden');
+        loadCaptcha();
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-base">send</span><span>Submit Admission Application</span>';
+      }
+    });
+
+    // Initialize CAPTCHA on page load
+    loadCaptcha();
+  </script>
+</body>
+</html>

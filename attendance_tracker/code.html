@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DojoPro - Attendance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#fbf9f9",
+                      "on-surface-variant": "#4c4546",
+                      "outline": "#7e7576",
+                      "on-secondary": "#ffffff",
+                      "background": "#fbf9f9",
+                      "secondary-fixed-dim": "#e9c349",
+                      "on-secondary-fixed": "#241a00",
+                      "on-secondary-container": "#745c00",
+                      "on-tertiary-container": "#ea4b44",
+                      "surface-container-high": "#e9e8e7",
+                      "surface-container-low": "#f5f3f3",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed-variant": "#574500",
+                      "on-primary-fixed": "#1b1b1b",
+                      "on-primary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "surface-dim": "#dbdad9",
+                      "secondary-container": "#fed65b",
+                      "on-surface": "#1b1c1c",
+                      "primary": "#000000",
+                      "primary-fixed": "#e2e2e2",
+                      "inverse-surface": "#303031",
+                      "tertiary": "#000000",
+                      "surface-container-highest": "#e3e2e2",
+                      "surface-variant": "#e3e2e2",
+                      "on-primary-fixed-variant": "#474747",
+                      "outline-variant": "#cfc4c5",
+                      "inverse-primary": "#c6c6c6",
+                      "surface-bright": "#fbf9f9",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#ffdad6",
+                      "on-tertiary-fixed": "#410003",
+                      "on-primary-container": "#848484",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f2f0f0",
+                      "on-tertiary-fixed-variant": "#92030f",
+                      "surface-tint": "#5e5e5e",
+                      "error-container": "#ffdad6",
+                      "tertiary-container": "#410003",
+                      "secondary": "#735c00",
+                      "on-tertiary": "#ffffff",
+                      "on-background": "#1b1c1c",
+                      "surface-container": "#efeded",
+                      "tertiary-fixed-dim": "#ffb4ac",
+                      "primary-container": "#1b1b1b",
+                      "primary-fixed-dim": "#c6c6c6",
+                      "secondary-fixed": "#ffe088"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "stack-lg": "24px",
+                      "section-gap": "48px",
+                      "container-margin": "24px",
+                      "unit": "8px",
+                      "stack-sm": "4px",
+                      "stack-md": "12px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "title-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "letterSpacing": "0.1px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "57px",
+                              {
+                                      "lineHeight": "64px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-sm": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.5px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        @media (max-width: 768px) {
+            .bento-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-20 md:pb-0 flex flex-col md:flex-row">
+<!-- Navigation Drawer (Desktop) -->
+<nav class="hidden md:flex flex-col h-screen w-80 rounded-r-xl shadow-md bg-surface-container dark:bg-surface-dim py-stack-lg fixed inset-y-0 left-0 z-50">
+<div class="px-gutter mb-8 flex items-center gap-4">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="A professional headshot of an older martial arts grandmaster wearing a traditional black gi, looking directly at the camera with a calm, authoritative expression. The lighting is studio-quality, emphasizing discipline and experience, set against a clean, light studio background with a high-contrast corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAnVsD683iASVYBeyKDtNv5ebdQd9kW2Wo7ynIHRocVSmnz7px9p7WdP9J_0rbbDkm0upESxIuuqNp5Bv9KEXdG2cEbyebvfhOVSMlm_gadAangwb7paJh_tmZPo9A-VT7pFtWk8TeAtrHfcv9pfcfbLVPCRpXquYOsGsKtyMfrPJWcjvE8c_X4OV8_mUalPTxpSQkNaFbxuHfjfl10cKHAs3GaKbJ3uIETOQtEDBTcQIf_5_avrNN"/>
+<div>
+<h2 class="font-title-md text-title-md text-primary dark:text-primary-fixed">Grandmaster Han</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Lead Instructor</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Black Belt 5th Dan</p>
+</div>
+</div>
+<ul class="flex flex-col gap-2">
+<li>
+<a class="flex items-center gap-4 px-4 py-3 mx-2 rounded-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md text-body-md">Academy Overview</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 mx-2 rounded-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">person_search</span>
+<span class="font-body-md text-body-md">Student Directory</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 mx-2 rounded-full bg-secondary-container text-on-secondary-container font-bold transition-colors duration-200" href="#">
+<span class="material-symbols-outlined filled-icon">calendar_today</span>
+<span class="font-body-md text-body-md">Class Schedule</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 mx-2 rounded-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">military_tech</span>
+<span class="font-body-md text-body-md">Belt Promotions</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 mx-2 rounded-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-body-md text-body-md">Financial Reports</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 mx-2 rounded-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- Top App Bar (Mobile) -->
+<header class="md:hidden flex justify-between items-center px-gutter h-16 w-full z-50 sticky top-0 bg-surface dark:bg-background border-b border-outline-variant dark:border-outline">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A professional headshot of an older martial arts grandmaster wearing a traditional black gi, looking directly at the camera with a calm, authoritative expression. The lighting is studio-quality, emphasizing discipline and experience, set against a clean, light studio background with a high-contrast corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvudcugLavYAV9Sf4zOgHreHOZdY2XvF-3S0cng6b7NrDfkKoFBfK89KO7KBjiQwffq0taJ-FGxFzQvSchK0tssQRYRQEyqSHU0fdU6Lf13U4AUH6HkQMoC_Yb6WaEQbogkKryoSczMC5Lfu9vaNcwO0_2yJdv1r2ishxZPgioUbZ8_e19KYQfqXMjs6aDVmdh2UImlynXk1QIhX9C1ivZDj-2lhq8_Em5e6cqiywwrClhdFOH1deq"/>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-primary-fixed">DojoPro</h1>
+<button class="text-primary dark:text-primary-fixed active:scale-95 transition-transform duration-200 hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full p-2">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-80 p-container-margin w-full max-w-[1440px] mx-auto">
+<!-- Header Section -->
+<div class="mb-section-gap flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg hidden md:block">Adult Advanced Karate</h1>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile block md:hidden">Adult Advanced Karate</h1>
+<p class="font-title-md text-title-md text-on-surface-variant mt-2">6:00 PM - 7:30 PM • Main Dojo</p>
+</div>
+<div class="flex gap-4">
+<button class="bg-primary text-on-primary font-title-md text-title-md px-6 py-3 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-on-surface-variant transition-all duration-200 flex items-center gap-2">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+                    Scan QR
+                </button>
+</div>
+</div>
+<div class="bento-grid">
+<!-- Check-in & Search Card -->
+<div class="col-span-12 md:col-span-4 bg-surface rounded-xl border border-outline-variant p-6 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-200">
+<h3 class="font-title-md text-title-md mb-4">Manual Check-in</h3>
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-b border-outline focus:border-primary focus:border-b-2 focus:ring-0 pl-12 py-3 font-body-md text-body-md text-on-surface transition-all" placeholder="Search student name..." type="text"/>
+</div>
+<div class="mt-8">
+<h4 class="font-label-sm text-label-sm text-on-surface-variant mb-3 uppercase tracking-wider">Quick Actions</h4>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-surface-container border border-outline-variant hover:border-outline text-on-surface font-title-md text-title-md py-3 rounded-lg transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">person_add</span>
+                            Walk-in Registration
+                        </button>
+</div>
+</div>
+</div>
+<!-- Analytics Card -->
+<div class="col-span-12 md:col-span-8 bg-surface rounded-xl border border-outline-variant p-6 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-200 flex flex-col justify-between">
+<div class="flex justify-between items-start mb-6">
+<h3 class="font-title-md text-title-md">Weekly Attendance Trend</h3>
+<div class="bg-surface-container px-3 py-1 rounded-full border border-outline-variant flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#10b981]"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Avg 85%</span>
+</div>
+</div>
+<!-- Mock Bar Chart -->
+<div class="flex items-end justify-between h-40 gap-2 mt-auto pb-2 border-b border-outline-variant">
+<div class="w-1/5 flex flex-col items-center gap-2">
+<div class="w-full bg-primary rounded-t-sm h-3/4 hover:opacity-80 transition-opacity"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mon</span>
+</div>
+<div class="w-1/5 flex flex-col items-center gap-2">
+<div class="w-full bg-primary rounded-t-sm h-4/5 hover:opacity-80 transition-opacity"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tue</span>
+</div>
+<div class="w-1/5 flex flex-col items-center gap-2">
+<div class="w-full bg-primary rounded-t-sm h-full hover:opacity-80 transition-opacity"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Wed</span>
+</div>
+<div class="w-1/5 flex flex-col items-center gap-2">
+<div class="w-full bg-surface-container-highest rounded-t-sm h-1/2 hover:opacity-80 transition-opacity"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Thu</span>
+</div>
+<div class="w-1/5 flex flex-col items-center gap-2">
+<div class="w-full bg-surface-container-highest rounded-t-sm h-1/3 hover:opacity-80 transition-opacity"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Fri</span>
+</div>
+</div>
+</div>
+<!-- Live Roster Card -->
+<div class="col-span-12 bg-surface rounded-xl border border-outline-variant p-6 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-200">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+<h3 class="font-title-md text-title-md">Live Roster (24 Enrolled)</h3>
+<!-- Status Tabs -->
+<div class="flex bg-surface-container p-1 rounded-lg border border-outline-variant w-full md:w-auto">
+<button class="flex-1 md:flex-none px-4 py-1.5 rounded-md bg-surface shadow-sm font-title-md text-title-md text-primary">All (18)</button>
+<button class="flex-1 md:flex-none px-4 py-1.5 rounded-md text-on-surface-variant font-title-md text-title-md hover:text-primary transition-colors">Present (15)</button>
+<button class="flex-1 md:flex-none px-4 py-1.5 rounded-md text-on-surface-variant font-title-md text-title-md hover:text-primary transition-colors flex items-center justify-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#ef4444]"></span> Absent (3)
+                        </button>
+</div>
+</div>
+<!-- Roster List -->
+<div class="flex flex-col border border-outline-variant rounded-lg overflow-hidden">
+<!-- Student Row 1 -->
+<div class="flex items-center justify-between p-4 border-b border-outline-variant bg-surface hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant font-title-md">
+                                JL
+                            </div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">James Lee</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Check-in: 5:45 PM</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="px-3 py-1 rounded-full bg-primary text-on-primary font-label-sm text-label-sm border border-outline">Black Belt</span>
+<span class="text-[#10b981] flex items-center"><span class="material-symbols-outlined">check_circle</span></span>
+</div>
+</div>
+<!-- Student Row 2 -->
+<div class="flex items-center justify-between p-4 border-b border-outline-variant bg-surface hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant font-title-md">
+                                SM
+                            </div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Sarah Miller</h4>
+<p class="font-body-md text-body-md text-[#ef4444]">Unexcused</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="px-3 py-1 rounded-full bg-[#8B4513] text-white font-label-sm text-label-sm">Brown Belt</span>
+<span class="text-[#ef4444] flex items-center"><span class="material-symbols-outlined">cancel</span></span>
+</div>
+</div>
+<!-- Student Row 3 -->
+<div class="flex items-center justify-between p-4 border-b border-outline-variant bg-surface hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant font-title-md">
+                                DW
+                            </div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">David Wong</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Check-in: 5:50 PM</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="px-3 py-1 rounded-full bg-[#1b1b1b] text-white font-label-sm text-label-sm border border-outline">Black Belt</span>
+<span class="text-[#10b981] flex items-center"><span class="material-symbols-outlined">check_circle</span></span>
+</div>
+</div>
+<!-- Student Row 4 (Excused) -->
+<div class="flex items-center justify-between p-4 bg-surface hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant font-title-md">
+                                EP
+                            </div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Elena Perez</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Excused (Illness)</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="px-3 py-1 rounded-full bg-[#8B4513] text-white font-label-sm text-label-sm">Brown Belt</span>
+<span class="text-on-surface-variant flex items-center"><span class="material-symbols-outlined">info</span></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-16 bg-surface dark:bg-background px-2 pb-safe border-t border-outline-variant dark:border-outline z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high w-full h-full rounded-lg transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high w-full h-full rounded-lg transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-sm text-label-sm mt-1">Roster</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-secondary-fixed-dim font-bold hover:bg-surface-container-low dark:hover:bg-surface-container-high w-full h-full rounded-lg transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined filled-icon">qr_code_scanner</span>
+<span class="font-label-sm text-label-sm mt-1">Attendance</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high w-full h-full rounded-lg transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-sm text-label-sm mt-1">Payments</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high w-full h-full rounded-lg transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">menu</span>
+<span class="font-label-sm text-label-sm mt-1">More</span>
+</a>
+</nav>
+</body></html>
