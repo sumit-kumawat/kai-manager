@@ -671,7 +671,8 @@ function setupLogoRefreshHandler() {
   });
 }
 
-function clearSessionStore() {
+function resetApplicationState() {
+  // 1. Invalidate backend session token if present
   const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
   if (token) {
     fetch('/api/logout', {
@@ -680,10 +681,9 @@ function clearSessionStore() {
     }).catch(() => { });
   }
 
-  localStorage.clear();
-  sessionStorage.clear();
-
-  // Clear all cookies
+  // 2. Clear browser storage & cookies
+  try { localStorage.clear(); } catch (e) { }
+  try { sessionStorage.clear(); } catch (e) { }
   try {
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
@@ -694,7 +694,7 @@ function clearSessionStore() {
     }
   } catch (e) { }
 
-  // Complete memory state wipe
+  // 3. Complete memory state wipe
   appState.currentUser = null;
   appState.userRole = 'viewer';
   appState.isAuthenticated = false;
@@ -704,19 +704,66 @@ function clearSessionStore() {
   appState.classes = [];
   appState.users = [];
   appState.activityLogs = [];
+  appState.pendingAdmissions = [];
   appState.activeTab = 'dashboard';
+  appState.activeAdminSec = 'branding';
 
-  // Complete DOM tab activation purge
+  // 4. Complete DOM rendered container & table body purge
+  const containerIds = [
+    'students-table-body',
+    'financials-table-body',
+    'attendance-history-table-body',
+    'staff-table-body',
+    'logs-table-body',
+    'admissions-list-container',
+    'admission-detail-pane',
+    'global-search-results-dropdown',
+    'mobile-search-dropdown',
+    'schedule-grid-container'
+  ];
+  containerIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+
+  // 5. Reset Dashboard Stat Cards
+  const statIds = [
+    'stat-total-students-count',
+    'stat-attendance-rate',
+    'stat-new-admissions-count',
+    'stat-pending-admissions-count',
+    'stat-total-revenue-val',
+    'stat-outstanding-dues-val',
+    'stat-belt-candidates-count'
+  ];
+  statIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '--';
+  });
+
+  // 6. Reset search inputs & dropdowns
+  const gSearch = document.getElementById('global-search-input');
+  const mSearch = document.getElementById('mobile-search-input');
+  if (gSearch) gSearch.value = '';
+  if (mSearch) mSearch.value = '';
+  if (typeof clearGlobalSearch === 'function') clearGlobalSearch();
+
+  // 7. Hide all modals and active tabs
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
   document.querySelectorAll('.admin-tab-area').forEach(sec => sec.classList.add('hidden'));
+  document.querySelectorAll('.modal-backdrop-container').forEach(m => m.classList.add('hidden'));
 
-  // Reset login form inputs & errors
+  // 8. Reset login inputs & error displays
   const userIn = document.getElementById('login-username');
   const passIn = document.getElementById('login-password');
   const loginErr = document.getElementById('login-error');
   if (userIn) userIn.value = '';
   if (passIn) passIn.value = '';
   if (loginErr) loginErr.classList.add('hidden');
+}
+
+function clearSessionStore() {
+  resetApplicationState();
 }
 
 // ==========================================
@@ -961,148 +1008,177 @@ function applyRolePermissions() {
 // ==========================================
 // FIXED: LOGIN FORM HANDLER
 // ==========================================
-function setupAuthHandlers() {
-  const loginForm = document.getElementById('login-form');
+async function performLogin(username, password) {
+  const userVal = String(username || '').trim();
+  const passVal = String(password || '').trim();
   const loginErr = document.getElementById('login-error');
+  if (loginErr) loginErr.classList.add('hidden');
 
-  loginForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const userVal = document.getElementById('login-username').value.trim();
-    const passVal = document.getElementById('login-password').value.trim();
-
-    // Clear previous error
+  if (!userVal || !passVal) {
     if (loginErr) {
-      loginErr.classList.add('hidden');
+      loginErr.textContent = 'Please enter both username and password.';
+      loginErr.classList.remove('hidden');
     }
+    return false;
+  }
 
+  // Purge any stale DOM elements or previous user state before logging in
+  resetApplicationState();
+
+  try {
+    console.log('Attempting login for:', userVal);
+
+    let res = null;
+    let data = null;
+    let networkError = null;
+
+    // 1. Primary API Attempt
     try {
-      console.log('Attempting login for:', userVal);
-
-      let res = null;
-      let data = null;
-      let networkError = null;
-
-      // 1. Primary API Attempt
+      res = await fetch(getApiUrl('/api/login'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: userVal, password: passVal })
+      });
+      if (res) data = await res.json();
+    } catch (err1) {
+      networkError = err1;
+      console.warn('Primary login fetch failed, trying secondary 127.0.0.1 endpoint:', err1.message);
+      // 2. Secondary 127.0.0.1 IPv4 Retry
       try {
-        res = await fetch(getApiUrl('/api/login'), {
+        res = await fetch('http://127.0.0.1:3000/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: userVal, password: passVal })
         });
         if (res) data = await res.json();
-      } catch (err1) {
-        networkError = err1;
-        console.warn('Primary login fetch failed, trying secondary 127.0.0.1 endpoint:', err1.message);
-        // 2. Secondary 127.0.0.1 IPv4 Retry
+      } catch (err2) {
+        console.warn('Secondary login fetch failed, trying localhost endpoint:', err2.message);
+        // 3. Tertiary localhost Retry
         try {
-          res = await fetch('http://127.0.0.1:3000/api/login', {
+          res = await fetch('http://localhost:3000/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: userVal, password: passVal })
           });
           if (res) data = await res.json();
-        } catch (err2) {
-          console.warn('Secondary login fetch failed, trying localhost endpoint:', err2.message);
-          // 3. Tertiary localhost Retry
-          try {
-            res = await fetch('http://localhost:3000/api/login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username: userVal, password: passVal })
-            });
-            if (res) data = await res.json();
-          } catch (err3) {
-            networkError = err3;
-          }
+        } catch (err3) {
+          networkError = err3;
         }
-      }
-
-      // 4. Server Unreachable -> Offline Default Credential Fallback
-      if (!data && (networkError || !res)) {
-        const lowerUser = userVal.toLowerCase();
-        const defaultAccounts = {
-          'admin': { pass: 'admin', role: 'admin', name: 'KAI Administrator', email: 'admin@conzex.com' },
-          'manager': { pass: '123', role: 'manager', name: 'KAI Manager', email: 'manager@conzex.com' },
-          'receptionist': { pass: '123', role: 'receptionist', name: 'KAI Receptionist', email: 'receptionist@conzex.com' },
-          'viewer': { pass: '123', role: 'viewer', name: 'KAI Portal Viewer', email: 'viewer@conzex.com' }
-        };
-
-        const foundAcc = defaultAccounts[lowerUser];
-        if (foundAcc && passVal === foundAcc.pass) {
-          data = {
-            success: true,
-            token: 'kai_sec_token_local_' + Date.now(),
-            user: {
-              name: foundAcc.name,
-              username: lowerUser,
-              email: foundAcc.email,
-              role: foundAcc.role
-            }
-          };
-          res = { ok: true };
-          console.log('[Auth] Logged in via local default account fallback:', lowerUser);
-        }
-      }
-
-      if (res && res.ok && data && data.success && data.token && data.user) {
-        // Store session tokens
-        localStorage.setItem('kai_session', 'authenticated_' + Date.now());
-        localStorage.setItem('kai_token', data.token);
-        localStorage.setItem('kai_user', JSON.stringify(data.user));
-
-        sessionStorage.setItem('kai_session', 'authenticated_' + Date.now());
-        sessionStorage.setItem('kai_token', data.token);
-        sessionStorage.setItem('kai_user', JSON.stringify(data.user));
-        sessionStorage.removeItem('kai_manager_verified');
-
-        appState.currentUser = data.user;
-        appState.userRole = (data.user.role || 'viewer').toLowerCase();
-        appState.isAuthenticated = true;
-
-        loginErr?.classList.add('hidden');
-        document.getElementById('view-login')?.classList.add('hidden');
-        document.getElementById('app-wrapper')?.classList.remove('hidden');
-
-        updateHeaderUserInfo();
-        applyRolePermissions();
-
-        logActivity(`User Logged In: ${data.user.username}`, `Role: ${data.user.role.toUpperCase()}`, 'system');
-
-        await loadDatabase();
-
-        // Route to appropriate view
-        const currentHash = (window.location.hash || '').replace(/^#/, '');
-        if (!currentHash || currentHash === 'login') {
-          if (appState.userRole === 'admin') {
-            switchAdminSection('branding', true);
-          } else {
-            switchTab('dashboard', true);
-            if (appState.userRole === 'manager') {
-              loadPendingAdmissions();
-            }
-          }
-        } else if (currentHash === 'admin-settings') {
-          switchAdminSection(appState.activeAdminSec || 'branding', true);
-        } else {
-          switchTab(currentHash, true);
-        }
-
-        await renderAllViews();
-        showToast(`Signed in as ${data.user.username} (${data.user.role.toUpperCase()})`);
-      } else {
-        if (loginErr) {
-          loginErr.textContent = (data && data.error) || 'Invalid username or password.';
-          loginErr.classList.remove('hidden');
-        }
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      if (loginErr) {
-        loginErr.textContent = err.message || 'Login failed due to connection error. Please check your internet connection.';
-        loginErr.classList.remove('hidden');
       }
     }
-  });
+
+    // 4. Server Unreachable -> Offline Default Credential Fallback
+    if (!data && (networkError || !res)) {
+      const lowerUser = userVal.toLowerCase();
+      const defaultAccounts = {
+        'admin': { pass: 'admin', role: 'admin', name: 'KAI Administrator', email: 'admin@conzex.com' },
+        'manager': { pass: '123', role: 'manager', name: 'KAI Manager', email: 'manager@conzex.com' },
+        'receptionist': { pass: '123', role: 'receptionist', name: 'KAI Receptionist', email: 'receptionist@conzex.com' },
+        'viewer': { pass: '123', role: 'viewer', name: 'KAI Portal Viewer', email: 'viewer@conzex.com' }
+      };
+
+      const foundAcc = defaultAccounts[lowerUser];
+      if (foundAcc && passVal === foundAcc.pass) {
+        data = {
+          success: true,
+          token: 'kai_sec_token_local_' + Date.now(),
+          user: {
+            name: foundAcc.name,
+            username: lowerUser,
+            email: foundAcc.email,
+            role: foundAcc.role
+          }
+        };
+        res = { ok: true };
+        console.log('[Auth] Logged in via local default account fallback:', lowerUser);
+      }
+    }
+
+    if (res && res.ok && data && data.success && data.token && data.user) {
+      // Store session tokens
+      localStorage.setItem('kai_session', 'authenticated_' + Date.now());
+      localStorage.setItem('kai_token', data.token);
+      localStorage.setItem('kai_user', JSON.stringify(data.user));
+
+      sessionStorage.setItem('kai_session', 'authenticated_' + Date.now());
+      sessionStorage.setItem('kai_token', data.token);
+      sessionStorage.setItem('kai_user', JSON.stringify(data.user));
+      sessionStorage.removeItem('kai_manager_verified');
+
+      appState.currentUser = data.user;
+      appState.userRole = (data.user.role || 'viewer').toLowerCase();
+      appState.isAuthenticated = true;
+
+      loginErr?.classList.add('hidden');
+      document.getElementById('view-login')?.classList.add('hidden');
+      document.getElementById('app-wrapper')?.classList.remove('hidden');
+
+      updateHeaderUserInfo();
+      applyRolePermissions();
+
+      logActivity(`User Logged In: ${data.user.username}`, `Role: ${data.user.role.toUpperCase()}`, 'system');
+
+      await loadDatabase();
+
+      // Route to appropriate view
+      const currentHash = (window.location.hash || '').replace(/^#/, '');
+      if (!currentHash || currentHash === 'login') {
+        if (appState.userRole === 'admin') {
+          switchAdminSection('branding', true);
+        } else {
+          switchTab('dashboard', true);
+          if (appState.userRole === 'manager') {
+            loadPendingAdmissions();
+          }
+        }
+      } else if (currentHash === 'admin-settings') {
+        switchAdminSection(appState.activeAdminSec || 'branding', true);
+      } else {
+        switchTab(currentHash, true);
+      }
+
+      await renderAllViews();
+      showToast(`Signed in as ${data.user.username} (${data.user.role.toUpperCase()})`);
+      return true;
+    } else {
+      if (loginErr) {
+        loginErr.textContent = (data && data.error) || 'Invalid username or password.';
+        loginErr.classList.remove('hidden');
+      }
+      return false;
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    if (loginErr) {
+      loginErr.textContent = err.message || 'Login failed due to connection error. Please check your internet connection.';
+      loginErr.classList.remove('hidden');
+    }
+    return false;
+  }
+}
+
+window.handleLoginSubmit = async function(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const userVal = document.getElementById('login-username')?.value || '';
+  const passVal = document.getElementById('login-password')?.value || '';
+  return await performLogin(userVal, passVal);
+};
+
+window.doLogin = async function(user, pass) {
+  return await performLogin(user, pass);
+};
+
+window.quickLogin = async function(user, pass) {
+  const uIn = document.getElementById('login-username');
+  const pIn = document.getElementById('login-password');
+  if (uIn) uIn.value = user;
+  if (pIn) pIn.value = pass;
+  return await performLogin(user, pass);
+};
+
+function setupAuthHandlers() {
+  const loginForm = document.getElementById('login-form');
+  loginForm?.addEventListener('submit', window.handleLoginSubmit);
 }
 
 function setupAdminProfileDropdown() {
