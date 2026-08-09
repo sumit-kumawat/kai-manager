@@ -750,8 +750,14 @@ function checkAuth() {
       // Show app, hide login
       const viewLogin = document.getElementById('view-login');
       const appWrapper = document.getElementById('app-wrapper');
-      if (viewLogin) viewLogin.classList.add('hidden');
-      if (appWrapper) appWrapper.classList.remove('hidden');
+      if (viewLogin) {
+        viewLogin.classList.add('hidden');
+        viewLogin.style.display = 'none';
+      }
+      if (appWrapper) {
+        appWrapper.classList.remove('hidden');
+        appWrapper.style.display = 'flex';
+      }
 
       updateHeaderUserInfo();
       applyRolePermissions();
@@ -777,8 +783,16 @@ function checkAuth() {
   appState.isAuthenticated = false;
   appState.currentUser = null;
   appState.userRole = 'viewer';
-  document.getElementById('view-login')?.classList.remove('hidden');
-  document.getElementById('app-wrapper')?.classList.add('hidden');
+  const vLogin = document.getElementById('view-login');
+  const aWrap = document.getElementById('app-wrapper');
+  if (vLogin) {
+    vLogin.classList.remove('hidden');
+    vLogin.style.display = 'flex';
+  }
+  if (aWrap) {
+    aWrap.classList.add('hidden');
+    aWrap.style.display = 'none';
+  }
   return false;
 }
 
@@ -796,8 +810,16 @@ function triggerLogout(isInactivity = false) {
     else inactAlert.classList.add('hidden');
   }
 
-  document.getElementById('view-login')?.classList.remove('hidden');
-  document.getElementById('app-wrapper')?.classList.add('hidden');
+  const vLogin = document.getElementById('view-login');
+  const aWrap = document.getElementById('app-wrapper');
+  if (vLogin) {
+    vLogin.classList.remove('hidden');
+    vLogin.style.display = 'flex';
+  }
+  if (aWrap) {
+    aWrap.classList.add('hidden');
+    aWrap.style.display = 'none';
+  }
 
   const dropdown = document.getElementById('admin-profile-dropdown');
   if (dropdown) dropdown.classList.add('hidden');
@@ -1066,8 +1088,16 @@ async function performLogin(username, password) {
       appState.isAuthenticated = true;
 
       loginErr?.classList.add('hidden');
-      document.getElementById('view-login')?.classList.add('hidden');
-      document.getElementById('app-wrapper')?.classList.remove('hidden');
+      const vLogin = document.getElementById('view-login');
+      const aWrap = document.getElementById('app-wrapper');
+      if (vLogin) {
+        vLogin.classList.add('hidden');
+        vLogin.style.display = 'none';
+      }
+      if (aWrap) {
+        aWrap.classList.remove('hidden');
+        aWrap.style.display = 'flex';
+      }
 
       updateHeaderUserInfo();
       applyRolePermissions();
@@ -1121,6 +1151,14 @@ window.handleLoginSubmit = async function(e) {
 };
 
 window.doLogin = async function(user, pass) {
+  return await performLogin(user, pass);
+};
+
+window.quickLogin = async function(user, pass) {
+  const uIn = document.getElementById('login-username');
+  const pIn = document.getElementById('login-password');
+  if (uIn) uIn.value = user;
+  if (pIn) pIn.value = pass;
   return await performLogin(user, pass);
 };
 

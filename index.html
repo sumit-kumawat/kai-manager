@@ -102,6 +102,32 @@
           <span>Sign In to Portal</span>
         </button>
 
+        <div class="pt-3 border-t border-slate-100">
+          <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center mb-2">1-Click Quick Login</span>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="window.quickLogin('admin', 'admin')"
+              class="py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[11px] rounded-xl shadow transition flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-xs text-red-500">admin_panel_settings</span>
+              <span>Admin</span>
+            </button>
+            <button type="button" onclick="window.quickLogin('manager', '123')"
+              class="py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[11px] rounded-xl shadow transition flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-xs">manage_accounts</span>
+              <span>Manager</span>
+            </button>
+            <button type="button" onclick="window.quickLogin('receptionist', '123')"
+              class="py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] rounded-xl shadow transition flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-xs">badge</span>
+              <span>Receptionist</span>
+            </button>
+            <button type="button" onclick="window.quickLogin('viewer', '123')"
+              class="py-2 px-3 bg-slate-600 hover:bg-slate-700 text-white font-extrabold text-[11px] rounded-xl shadow transition flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-xs">visibility</span>
+              <span>Viewer</span>
+            </button>
+          </div>
+        </div>
+
         <div class="pt-2 border-t border-slate-100 text-center">
           <a href="/admission"
             class="text-xs font-extrabold text-red-600 hover:text-red-700 inline-flex items-center gap-1.5 p-2 rounded-xl hover:bg-red-50 transition">
