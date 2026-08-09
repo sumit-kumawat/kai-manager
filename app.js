@@ -3989,7 +3989,7 @@ function generateKAIStudentId() {
   });
 
   const nextSeq = maxSeq + 1;
-  const seqStr = nextSeq < 100 ? String(nextSeq).padStart(2, '0') : String(nextSeq);
+  const seqStr = String(nextSeq).padStart(3, '0');
   return `${prefix}${seqStr}`;
 }
 

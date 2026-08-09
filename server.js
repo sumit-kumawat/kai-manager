@@ -117,7 +117,7 @@ function generateServerStudentId(dbData) {
   });
 
   const nextSeq = maxSeq + 1;
-  const seqStr = nextSeq < 100 ? String(nextSeq).padStart(2, '0') : String(nextSeq);
+  const seqStr = String(nextSeq).padStart(3, '0');
   return `${prefix}${seqStr}`;
 }
 
@@ -497,8 +497,8 @@ async function dispatchAutomatedEmail({
     });
 
     let attachments = [];
-    if (meta && (meta.invoiceObj || meta.invoiceData || category === 'receipt' || category === 'due' || category === 'overdue' || category === 'fee' || category === 'staff_salary')) {
-      const invObj = meta.invoiceObj || meta.invoiceData || { id: meta.invoiceId || 'KAISTD202601A', studentName: cleanTargetName, finalPaid: meta.amount || 2500 };
+    if (meta && (meta.invoiceObj || meta.invoiceData || category === 'receipt' || category === 'admission_approved' || category === 'id_card' || category === 'due' || category === 'overdue' || category === 'fee' || category === 'staff_salary')) {
+      const invObj = meta.invoiceObj || meta.invoiceData || { id: meta.invoiceId || 'KAISTD2026001A', studentName: cleanTargetName, finalPaid: meta.amount || 2500 };
       const pdfBuf = createPdfReceiptBuffer(invObj);
       const filename = `${invObj.id || 'Receipt'}_Receipt.pdf`;
       attachments.push({
@@ -1530,7 +1530,7 @@ const server = http.createServer((req, res) => {
 
           const year = new Date().getFullYear();
           const countForYear = (dbData.pendingAdmissions.length + 1);
-          const applicationId = `KAI-ADM-${year}-${String(countForYear).padStart(4, '0')}`;
+          const applicationId = `KAIADM${year}${String(countForYear).padStart(3, '0')}`;
 
           const newAdmission = {
             id: applicationId,
@@ -1736,13 +1736,25 @@ const server = http.createServer((req, res) => {
 
           writeDbFile(dbData);
 
-          // Automated ID Card & Welcome Email Delivery
+          // Automated ID Card & Welcome Email Delivery with PDF Payment Receipt Attachment
           if (admission.email) {
+            const invoiceObj = {
+              id: invoiceId,
+              studentId: studentId,
+              studentName: admission.name,
+              origAmount: finalFee,
+              discount: 0,
+              finalPaid: finalFee,
+              dueDate: new Date().toISOString().split('T')[0],
+              status: 'Paid',
+              paymentMethod: 'Admission Enrolment'
+            };
+
             dispatchAutomatedEmail({
-              category: 'id_card',
+              category: 'admission_approved',
               targetEmail: admission.email,
               targetName: admission.name,
-              subject: `Admission Approved! Official Student ID Card (${studentId}) - Karate Academy India`,
+              subject: `Admission Approved! Official Student ID Card (${studentId}) & Payment Receipt - Karate Academy India`,
               subtitle: 'Official Admission & Digital ID Card Delivery',
               contentHtml: `
                 <p>Congratulations! Your admission to <strong>Karate Academy India</strong> has been officially approved and verified by the Academy Manager.</p>
@@ -1757,6 +1769,7 @@ const server = http.createServer((req, res) => {
                     <tr><td class="label">Account Status:</td><td class="value"><span class="badge-paid">ACTIVE</span></td></tr>
                   </table>
                 </div>
+                <p><strong>Payment Receipt Attached:</strong> Your official payment receipt PDF for ₹${finalFee.toLocaleString('en-IN')} is attached to this email.</p>
                 <p><strong>Next Steps:</strong></p>
                 <ul>
                   <li>Your Digital Mat Pass is now active. Present your Student ID (<strong>${studentId}</strong>) at the reception kiosk for automatic attendance check-in.</li>
@@ -1765,7 +1778,7 @@ const server = http.createServer((req, res) => {
               `,
               triggeredBy: `Manager Approval (${sessionUser.username})`,
               preventDuplicateMinutes: 1,
-              meta: { studentId, invoiceId, admissionId: admission.id }
+              meta: { studentId, invoiceId, admissionId: admission.id, invoiceObj }
             }).catch(() => { });
           }
 
