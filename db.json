@@ -343,6 +343,16 @@
   ],
   "sessions": [
     {
+      "token": "kai_sec_token_rcw3r5u2q71786299664025",
+      "user": {
+        "name": "KAI Administrator",
+        "username": "admin",
+        "email": "admin@conzex.com",
+        "role": "admin"
+      },
+      "createdAt": 1786299664025
+    },
+    {
       "token": "kai_sec_token_6crorlvwd8y1786292055345",
       "user": {
         "name": "Hemant Kumawat",
@@ -351,16 +361,6 @@
         "role": "manager"
       },
       "createdAt": 1786292055345
-    },
-    {
-      "token": "kai_sec_token_mtwgl8dfjmj1786292055341",
-      "user": {
-        "name": "KAI Administrator",
-        "username": "admin",
-        "email": "admin@conzex.com",
-        "role": "admin"
-      },
-      "createdAt": 1786292055341
     },
     {
       "token": "kai_sec_token_h0qp2hhb9z91786281139597",

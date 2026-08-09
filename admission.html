@@ -66,21 +66,76 @@
         </div>
         <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Join Karate Academy India</h2>
         <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-          Fill out the admission registration form below. After submission, your application will be verified by the Academy Manager to generate your permanent Student ID (<span class="font-mono text-red-400 font-bold">KAI2026XX</span>) and Digital Mat Pass.
+          Complete the step-by-step registration wizard below. After submission, your application will be verified by the Academy Manager to generate your permanent Student ID (<span class="font-mono text-red-400 font-bold">KAI2026XX</span>) and Digital Mat Pass.
         </p>
       </div>
     </div>
 
     <!-- ADMISSION FORM CONTAINER -->
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
-      
-      <form id="public-admission-form" class="space-y-8">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
 
-        <!-- SECTION 1: ATHLETE PERSONAL INFORMATION -->
-        <div class="space-y-4">
+      <!-- WIZARD STEP PROGRESS TRACKER -->
+      <div class="space-y-4">
+        <!-- STEP BADGES / INDICATOR LINE -->
+        <div class="flex items-center justify-between relative px-2">
+          <!-- Step 1 Indicator -->
+          <button type="button" onclick="goToWizardStep(1)" class="flex flex-col items-center gap-1.5 z-10 focus:outline-none group">
+            <div id="step-pill-1" class="w-9 h-9 rounded-full bg-red-600 text-white font-extrabold text-xs flex items-center justify-center shadow ring-4 ring-red-100 transition-all duration-300">1</div>
+            <span id="step-label-1" class="text-xs font-extrabold text-red-600 hidden sm:inline-block">Personal Details</span>
+          </button>
+
+          <div id="step-line-1" class="flex-1 h-1 bg-slate-200 mx-2 rounded-full transition-all duration-300"></div>
+
+          <!-- Step 2 Indicator -->
+          <button type="button" onclick="goToWizardStep(2)" class="flex flex-col items-center gap-1.5 z-10 focus:outline-none group">
+            <div id="step-pill-2" class="w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center border border-slate-200 transition-all duration-300">2</div>
+            <span id="step-label-2" class="text-xs font-medium text-slate-400 hidden sm:inline-block">Contact & Address</span>
+          </button>
+
+          <div id="step-line-2" class="flex-1 h-1 bg-slate-200 mx-2 rounded-full transition-all duration-300"></div>
+
+          <!-- Step 3 Indicator -->
+          <button type="button" onclick="goToWizardStep(3)" class="flex flex-col items-center gap-1.5 z-10 focus:outline-none group">
+            <div id="step-pill-3" class="w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center border border-slate-200 transition-all duration-300">3</div>
+            <span id="step-label-3" class="text-xs font-medium text-slate-400 hidden sm:inline-block">ID & Photo</span>
+          </button>
+
+          <div id="step-line-3" class="flex-1 h-1 bg-slate-200 mx-2 rounded-full transition-all duration-300"></div>
+
+          <!-- Step 4 Indicator -->
+          <button type="button" onclick="goToWizardStep(4)" class="flex flex-col items-center gap-1.5 z-10 focus:outline-none group">
+            <div id="step-pill-4" class="w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center border border-slate-200 transition-all duration-300">4</div>
+            <span id="step-label-4" class="text-xs font-medium text-slate-400 hidden sm:inline-block">Documents</span>
+          </button>
+
+          <div id="step-line-4" class="flex-1 h-1 bg-slate-200 mx-2 rounded-full transition-all duration-300"></div>
+
+          <!-- Step 5 Indicator -->
+          <button type="button" onclick="goToWizardStep(5)" class="flex flex-col items-center gap-1.5 z-10 focus:outline-none group">
+            <div id="step-pill-5" class="w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center border border-slate-200 transition-all duration-300">5</div>
+            <span id="step-label-5" class="text-xs font-medium text-slate-400 hidden sm:inline-block">Declaration</span>
+          </button>
+        </div>
+
+        <!-- PROGRESS PERCENTAGE BAR -->
+        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200 flex items-center">
+          <div id="wizard-progress-bar" class="h-full bg-gradient-to-r from-red-600 to-amber-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
+        </div>
+        <div class="flex items-center justify-between text-[11px] font-bold text-slate-500">
+          <span id="wizard-step-title">Step 1 of 5: Athlete Personal Information</span>
+          <span id="wizard-progress-pct" class="font-mono text-red-600">0% Completed</span>
+        </div>
+      </div>
+      
+      <form id="public-admission-form" class="space-y-6">
+
+        <!-- ========================================== -->
+        <!-- WIZARD STEP 1: ATHLETE PERSONAL INFO -->
+        <!-- ========================================== -->
+        <div id="wizard-step-1" class="wizard-step-container space-y-4">
           <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
             <span class="material-symbols-outlined text-red-600">person</span>
-            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">1. Athlete Personal Information</h3>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">Step 1: Athlete Personal Information</h3>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -157,11 +212,13 @@
           </div>
         </div>
 
-        <!-- SECTION 2: PRIMARY CONTACT & ADDRESS -->
-        <div class="space-y-4">
+        <!-- ========================================== -->
+        <!-- WIZARD STEP 2: CONTACT & ADDRESS -->
+        <!-- ========================================== -->
+        <div id="wizard-step-2" class="wizard-step-container hidden space-y-4">
           <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
             <span class="material-symbols-outlined text-red-600">contact_phone</span>
-            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">2. Primary Contact & Residential Address</h3>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">Step 2: Primary Contact & Residential Address</h3>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -211,11 +268,13 @@
           </div>
         </div>
 
-        <!-- SECTION 3: GOVERNMENT ID & PHOTO UPLOAD -->
-        <div class="space-y-4">
+        <!-- ========================================== -->
+        <!-- WIZARD STEP 3: GOV ID & PHOTO -->
+        <!-- ========================================== -->
+        <div id="wizard-step-3" class="wizard-step-container hidden space-y-4">
           <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
             <span class="material-symbols-outlined text-red-600">badge</span>
-            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">3. Government ID & ID Card Photograph</h3>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">Step 3: Government ID & ID Card Photograph</h3>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -250,12 +309,14 @@
           </div>
         </div>
 
-        <!-- SECTION 4: DOCUMENT ATTACHMENTS (UP TO 5 ATTACHMENTS) -->
-        <div class="space-y-4">
+        <!-- ========================================== -->
+        <!-- WIZARD STEP 4: DOCUMENT ATTACHMENTS -->
+        <!-- ========================================== -->
+        <div id="wizard-step-4" class="wizard-step-container hidden space-y-4">
           <div class="flex items-center justify-between pb-2 border-b border-slate-100">
             <div class="flex items-center gap-2">
               <span class="material-symbols-outlined text-red-600">attach_file</span>
-              <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">4. Document Attachments</h3>
+              <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">Step 4: Document Attachments</h3>
             </div>
             <span class="text-xs font-bold text-slate-500">1 Mandatory + Up to 4 Optional (Max 5)</span>
           </div>
@@ -275,35 +336,43 @@
 
             <!-- DYNAMIC ATTACHED DOCUMENTS LIST -->
             <div id="attached-docs-list" class="space-y-2 pt-2">
-              <div class="text-xs text-slate-400 italic py-2 text-center" id="no-docs-text">No documents attached yet. At least 1 document is required.</div>
+              <div class="text-xs text-slate-400 italic py-2 text-center" id="no-docs-text">No documents attached yet. At least 1 document is mandatory.</div>
             </div>
           </div>
         </div>
 
-        <!-- SECTION 5: SECURITY CAPTCHA & DECLARATION -->
-        <div class="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-200">
-          <div class="flex items-center gap-2">
+        <!-- ========================================== -->
+        <!-- WIZARD STEP 5: SECURITY CAPTCHA & DECLARATION -->
+        <!-- ========================================== -->
+        <div id="wizard-step-5" class="wizard-step-container hidden space-y-4">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
             <span class="material-symbols-outlined text-red-600">security</span>
-            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">5. Security Verification & Declaration</h3>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">Step 5: Security Verification & Declaration</h3>
           </div>
 
-          <div class="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
-            <div class="flex items-center gap-2 font-mono font-extrabold text-sm text-slate-900 bg-slate-100 px-4 py-2.5 rounded-xl border border-slate-200 shrink-0">
+          <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="flex items-center gap-2 font-mono font-extrabold text-sm text-slate-900 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shrink-0 shadow-sm">
               <span id="captcha-question">Loading CAPTCHA...</span>
-              <button type="button" id="btn-refresh-captcha" class="text-slate-400 hover:text-red-600" title="Reload CAPTCHA">
+              <button type="button" id="btn-refresh-captcha" class="text-slate-400 hover:text-red-600 transition" title="Reload CAPTCHA">
                 <span class="material-symbols-outlined text-base">refresh</span>
               </button>
             </div>
             <input type="hidden" id="captcha-token"/>
-            <input type="number" id="captcha-answer" required placeholder="Enter answer" class="w-full sm:w-48 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 font-bold focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+            <input type="number" id="captcha-answer" required placeholder="Enter answer" class="w-full sm:w-48 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-mono text-slate-900 font-bold focus:ring-2 focus:ring-red-600 focus:outline-none"/>
           </div>
 
-          <label class="flex items-start gap-3 cursor-pointer pt-2">
-            <input type="checkbox" id="adm-declaration" required class="w-4 h-4 mt-0.5 text-red-600 rounded border-slate-300 focus:ring-red-500"/>
-            <span class="text-xs text-slate-600 font-medium leading-relaxed">
-              I hereby declare that the information provided above is true and correct. I agree to abide by the rules, discipline, and training guidelines of <strong>Karate Academy India</strong>.
-            </span>
-          </label>
+          <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 space-y-2">
+            <span class="text-xs font-extrabold text-amber-900 block">Review Summary & Terms</span>
+            <p class="text-[11px] text-amber-800 leading-relaxed">
+              By submitting this form, you certify that all information provided across Steps 1 to 4 is accurate. Your application will be sent to the Karate Academy India management team for review.
+            </p>
+            <label class="flex items-start gap-3 cursor-pointer pt-2">
+              <input type="checkbox" id="adm-declaration" required class="w-4 h-4 mt-0.5 text-red-600 rounded border-slate-300 focus:ring-red-500"/>
+              <span class="text-xs text-slate-700 font-medium leading-relaxed">
+                I hereby declare that the information provided above is true and correct. I agree to abide by the rules, discipline, and training guidelines of <strong>Karate Academy India</strong>.
+              </span>
+            </label>
+          </div>
         </div>
 
         <!-- ERROR MESSAGE CONTAINER -->
@@ -312,12 +381,24 @@
           <span id="form-error-text"></span>
         </div>
 
-        <!-- SUBMIT BUTTON -->
-        <div class="pt-2 flex items-center justify-end gap-3">
-          <button type="submit" id="btn-submit-admission" class="w-full sm:w-auto px-8 py-3.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined text-base">send</span>
-            <span>Submit Admission Application</span>
+        <!-- WIZARD FOOTER NAVIGATION CONTROLS -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+          <button type="button" id="btn-prev-step" onclick="prevWizardStep()" class="hidden px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl transition flex items-center gap-1.5 border border-slate-200">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>
+            <span>Back</span>
           </button>
+
+          <div class="flex items-center gap-3 ml-auto">
+            <button type="button" id="btn-next-step" onclick="nextWizardStep()" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+              <span id="btn-next-step-text">Continue to Step 2</span>
+              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </button>
+
+            <button type="submit" id="btn-submit-admission" class="hidden px-8 py-3.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-base">send</span>
+              <span>Submit Admission Application</span>
+            </button>
+          </div>
         </div>
 
       </form>
@@ -367,6 +448,162 @@
   <script>
     let attachedDocuments = [];
     let currentPhotoBase64 = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+
+    // WIZARD NAVIGATION STATE & LOGIC
+    let currentWizardStep = 1;
+    const totalWizardSteps = 5;
+    const stepTitles = [
+      'Step 1 of 5: Athlete Personal Information',
+      'Step 2 of 5: Primary Contact & Residential Address',
+      'Step 3 of 5: Government ID & ID Card Photograph',
+      'Step 4 of 5: Document Attachments',
+      'Step 5 of 5: Security Verification & Declaration'
+    ];
+
+    function updateWizardUI() {
+      for (let i = 1; i <= totalWizardSteps; i++) {
+        const stepEl = document.getElementById(`wizard-step-${i}`);
+        if (stepEl) stepEl.classList.toggle('hidden', i !== currentWizardStep);
+
+        const pill = document.getElementById(`step-pill-${i}`);
+        const label = document.getElementById(`step-label-${i}`);
+        const line = document.getElementById(`step-line-${i}`);
+
+        if (pill) {
+          if (i < currentWizardStep) {
+            pill.className = 'w-9 h-9 rounded-full bg-emerald-500 text-white font-bold text-xs flex items-center justify-center shadow transition-all duration-300';
+            pill.innerHTML = '<span class="material-symbols-outlined text-base">check</span>';
+          } else if (i === currentWizardStep) {
+            pill.className = 'w-9 h-9 rounded-full bg-red-600 text-white font-extrabold text-xs flex items-center justify-center shadow ring-4 ring-red-100 transition-all duration-300';
+            pill.textContent = i;
+          } else {
+            pill.className = 'w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center border border-slate-200 transition-all duration-300';
+            pill.textContent = i;
+          }
+        }
+
+        if (label) {
+          if (i === currentWizardStep) {
+            label.className = 'text-xs font-extrabold text-red-600 hidden sm:inline-block';
+          } else if (i < currentWizardStep) {
+            label.className = 'text-xs font-bold text-emerald-600 hidden sm:inline-block';
+          } else {
+            label.className = 'text-xs font-medium text-slate-400 hidden sm:inline-block';
+          }
+        }
+
+        if (line) {
+          line.className = i < currentWizardStep ? 'flex-1 h-1 bg-emerald-500 mx-2 rounded-full transition-all duration-300' : 'flex-1 h-1 bg-slate-200 mx-2 rounded-full transition-all duration-300';
+        }
+      }
+
+      const pct = Math.round(((currentWizardStep - 1) / (totalWizardSteps - 1)) * 100);
+      const progressBar = document.getElementById('wizard-progress-bar');
+      if (progressBar) progressBar.style.width = `${pct}%`;
+      const pctText = document.getElementById('wizard-progress-pct');
+      if (pctText) pctText.textContent = `${pct}% Completed`;
+
+      const titleEl = document.getElementById('wizard-step-title');
+      if (titleEl) titleEl.textContent = stepTitles[currentWizardStep - 1];
+
+      const btnPrev = document.getElementById('btn-prev-step');
+      const btnNext = document.getElementById('btn-next-step');
+      const btnSubmit = document.getElementById('btn-submit-admission');
+
+      if (btnPrev) btnPrev.classList.toggle('hidden', currentWizardStep === 1);
+
+      if (btnNext) {
+        if (currentWizardStep === totalWizardSteps) {
+          btnNext.classList.add('hidden');
+        } else {
+          btnNext.classList.remove('hidden');
+          const nextTextEl = document.getElementById('btn-next-step-text');
+          if (nextTextEl) nextTextEl.textContent = `Continue to Step ${currentWizardStep + 1}`;
+        }
+      }
+
+      if (btnSubmit) btnSubmit.classList.toggle('hidden', currentWizardStep !== totalWizardSteps);
+
+      // Hide error box when navigating steps
+      document.getElementById('form-error-box')?.classList.add('hidden');
+
+      // Scroll to form header smoothly
+      document.getElementById('public-admission-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function validateWizardStep(stepNum) {
+      const errBox = document.getElementById('form-error-box');
+      const errText = document.getElementById('form-error-text');
+      errBox?.classList.add('hidden');
+
+      if (stepNum === 1) {
+        const fn = document.getElementById('adm-first-name').value.trim();
+        const ln = document.getElementById('adm-last-name').value.trim();
+        const dob = document.getElementById('adm-dob').value;
+        if (!fn || !ln || !dob) {
+          showWizardError('Please complete all required personal details (First Name, Last Name, Date of Birth).');
+          return false;
+        }
+      } else if (stepNum === 2) {
+        const parent = document.getElementById('adm-parent-name').value.trim();
+        const phone = document.getElementById('adm-phone').value.trim();
+        const email = document.getElementById('adm-email').value.trim();
+        const address = document.getElementById('adm-address').value.trim();
+        if (!parent || !phone || !email || !address) {
+          showWizardError('Please enter Parent Name, 10-digit Mobile Phone, Email, and Street Address.');
+          return false;
+        }
+        if (!/^[0-9]{10}$/.test(phone)) {
+          showWizardError('Please enter a valid 10-digit mobile phone number.');
+          return false;
+        }
+      } else if (stepNum === 3) {
+        const govIdNum = document.getElementById('adm-govid-num').value.trim();
+        if (!govIdNum) {
+          showWizardError('Please enter Government ID Number.');
+          return false;
+        }
+      } else if (stepNum === 4) {
+        if (attachedDocuments.length < 1) {
+          showWizardError('Please upload at least 1 mandatory verification document (e.g. Aadhaar Card / ID proof).');
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function showWizardError(msg) {
+      const errBox = document.getElementById('form-error-box');
+      const errText = document.getElementById('form-error-text');
+      if (errText) errText.textContent = msg;
+      if (errBox) errBox.classList.remove('hidden');
+    }
+
+    function nextWizardStep() {
+      if (validateWizardStep(currentWizardStep)) {
+        if (currentWizardStep < totalWizardSteps) {
+          currentWizardStep++;
+          updateWizardUI();
+        }
+      }
+    }
+
+    function prevWizardStep() {
+      if (currentWizardStep > 1) {
+        currentWizardStep--;
+        updateWizardUI();
+      }
+    }
+
+    function goToWizardStep(stepNum) {
+      if (stepNum < currentWizardStep) {
+        currentWizardStep = stepNum;
+        updateWizardUI();
+      } else if (stepNum === currentWizardStep + 1 && validateWizardStep(currentWizardStep)) {
+        currentWizardStep = stepNum;
+        updateWizardUI();
+      }
+    }
 
     // Fetch CAPTCHA Challenge from Server
     async function loadCaptcha() {
@@ -467,9 +704,19 @@
 
       errBox.classList.add('hidden');
 
-      if (attachedDocuments.length < 1) {
-        errText.textContent = 'Please attach at least 1 mandatory verification document (e.g. Aadhaar Card / ID proof).';
-        errBox.classList.remove('hidden');
+      if (!validateWizardStep(1) || !validateWizardStep(2) || !validateWizardStep(3) || !validateWizardStep(4)) {
+        return;
+      }
+
+      const captchaAnswer = document.getElementById('captcha-answer').value.trim();
+      const declaration = document.getElementById('adm-declaration').checked;
+
+      if (!captchaAnswer) {
+        showWizardError('Please answer the security CAPTCHA question.');
+        return;
+      }
+      if (!declaration) {
+        showWizardError('Please check the declaration box to confirm your application.');
         return;
       }
 
@@ -504,7 +751,7 @@
         avatar: currentPhotoBase64,
         documents: attachedDocuments,
         captchaToken: document.getElementById('captcha-token').value,
-        captchaAnswer: document.getElementById('captcha-answer').value.trim()
+        captchaAnswer
       };
 
       submitBtn.disabled = true;
@@ -537,8 +784,9 @@
       }
     });
 
-    // Initialize CAPTCHA on page load
+    // Initialize CAPTCHA and Wizard UI on page load
     loadCaptcha();
+    updateWizardUI();
   </script>
 </body>
 </html>

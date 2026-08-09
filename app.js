@@ -1365,11 +1365,21 @@ async function loadDatabase() {
       applyLoadedData(data);
       return;
     } else if (res.status === 401) {
+      // Check cached database before forcing logout
+      const cached = localStorage.getItem('kai_db_cache');
+      if (cached) {
+        try {
+          applyLoadedData(JSON.parse(cached));
+          return;
+        } catch (e) { }
+      }
       clearSessionStore();
       checkAuth();
       return;
     }
-  } catch (e) { }
+  } catch (e) {
+    console.warn('Network error loading DB, attempting cached fallback:', e.message);
+  }
 
   const cached = localStorage.getItem('kai_db_cache');
   if (cached) {
