@@ -2141,8 +2141,8 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`[Server] KAI Manager RBAC & SMTP Server running at http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`[Server] KAI Manager RBAC & SMTP Server running at http://0.0.0.0:${PORT} (http://localhost:${PORT})`);
   console.log('[Server] Default login credentials:');
   console.log('  Admin: admin / admin');
   console.log('  Manager: manager / 123');
