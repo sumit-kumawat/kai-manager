@@ -408,95 +408,71 @@ function createPdfFinancialLedgerBuffer(dbData, filterBranch = 'all') {
   const netBalance = totalIncome - totalExpenses - totalSalaries;
   const genDate = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
 
-  // Build structured table rows
-  const ledgerRows = [];
-  financials.slice(0, 10).forEach(f => {
-    ledgerRows.push({
-      date: String(f.date || f.dueDate || '2026-08-10').substring(0, 10),
-      ref: String(f.id || 'INV').padEnd(14, ' ').substring(0, 14),
-      type: 'INCOME '.padEnd(8, ' '),
-      desc: String(f.studentName || 'Athlete Tuition').padEnd(26, ' ').substring(0, 26),
-      amount: `+ Rs. ${parseInt(f.finalPaid || f.amount || 0).toLocaleString('en-IN')}`
-    });
-  });
-
-  expenses.slice(0, 5).forEach(e => {
-    ledgerRows.push({
-      date: String(e.date || '2026-08-10').substring(0, 10),
-      ref: String(e.id || 'EXP').padEnd(14, ' ').substring(0, 14),
-      type: 'EXPENSE'.padEnd(8, ' '),
-      desc: String(e.vendor || e.category || 'Dojo Expense').padEnd(26, ' ').substring(0, 26),
-      amount: `- Rs. ${parseInt(e.amount || 0).toLocaleString('en-IN')}`
-    });
-  });
-
   const pdfText = `%PDF-1.4
 1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj
 2 0 obj <</Type /Pages /Kids [3 0 R] /Count 1>> endobj
 3 0 obj <</Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources <</Font <</F1 4 0 R /F2 6 0 R>>>> /Contents 5 0 R>> endobj
 4 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold>> endobj
 6 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>> endobj
-5 0 obj <</Length 1800>> stream
+5 0 obj <</Length 1300>> stream
 BT
 /F1 18 Tf
 40 800 TD
 (${orgName.toUpperCase()}) Tj
 0 -20 TD
 /F2 10 Tf
-(OFFICIAL FINANCIAL LEDGER & AUDIT STATEMENT) Tj
+(FINANCIAL LEDGER & AUDIT STATEMENT) Tj
 0 -15 TD
 (Generated: ${genDate}   |   Branch Scope: ${filterBranch.toUpperCase()}) Tj
 0 -15 TD
 (Tel: ${phone}   |   Email: ${email}) Tj
-0 -25 TD
-/F1 11 Tf
-(1. FINANCIAL SUMMARY & BALANCE SHEET) Tj
-0 -18 TD
-/F2 10 Tf
-(Gross Tuition Income Received:   Rs. ${totalIncome.toLocaleString('en-IN')}) Tj
-0 -14 TD
-(Operational Expenses Total:      Rs. ${totalExpenses.toLocaleString('en-IN')}) Tj
-0 -14 TD
-(Staff Salary Disbursement Total: Rs. ${totalSalaries.toLocaleString('en-IN')}) Tj
-0 -18 TD
-/F1 12 Tf
-(NET CLOSING CASH BALANCE:        Rs. ${netBalance.toLocaleString('en-IN')}) Tj
 0 -30 TD
-/F1 11 Tf
-(2. TRANSACTIONAL LEDGER STATEMENT) Tj
-0 -18 TD
-/F1 9 Tf
-(DATE       REF ID         TYPE     DESCRIPTION / PAYEE        AMOUNT) Tj
-0 -12 TD
-(--------------------------------------------------------------------------------) Tj
-0 -14 TD
+/F1 12 Tf
+(FINANCIAL SUMMARY & BALANCE SHEET:) Tj
+0 -20 TD
+/F2 10 Tf
+(Total Gross Income Received: Rs. ${totalIncome.toLocaleString('en-IN')}) Tj
+0 -15 TD
+(Total Operational Expenses: Rs. ${totalExpenses.toLocaleString('en-IN')}) Tj
+0 -15 TD
+(Total Staff Salaries Disbursed: Rs. ${totalSalaries.toLocaleString('en-IN')}) Tj
+0 -20 TD
+/F1 14 Tf
+(NET CLOSING CASH BALANCE: Rs. ${netBalance.toLocaleString('en-IN')}) Tj
+0 -30 TD
+/F1 12 Tf
+(KEY TRANSACTIONS LOG:) Tj
+0 -20 TD
 /F2 9 Tf
-${ledgerRows.map(r => `(${r.date}  ${r.ref}  ${r.type} ${r.desc} ${r.amount})`).join('\n0 -14 TD\n')}
+(Ref ID          Type        Recipient / Note            Amount (Rs.)    Status) Tj
+0 -15 TD
+(--------------------------------------------------------------------------------) Tj
+0 -15 TD
+${financials.slice(0, 15).map(f => `(${String(f.id || 'N/A').substring(0, 15)}  Income   ${String(f.studentName || 'Student').substring(0, 20)}  Rs.${String(f.finalPaid || f.amount || 0)}  Paid)`).join('\n0 -15 TD\n')}
 0 -30 TD
 /F1 10 Tf
-(OFFICIAL COMPUTERIZED AUDIT STATEMENT - KARATE ACADEMY INDIA) Tj
+(END OF STATEMENT - CONFIDENTIAL FINANCIAL REPORT) Tj
 0 -14 TD
 /F2 9 Tf
 (Page 1 of 1 - Computerized Statement Issued by ${appTitle}) Tj
 ET
 endstream
 endobj
-6 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>> endobj
 xref
 0 7
 0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000244 00000 n 
-0000000307 00000 n 
-0000002150 00000 n 
+0000000010 00000 n 
+0000000060 00000 n 
+0000000117 00000 n 
+0000000237 00000 n 
+0000000305 00000 n 
+0000000385 00000 n 
 trailer <</Size 7 /Root 1 0 R>>
 startxref
-2220
+1500
 %%EOF`;
 
-  return Buffer.from(pdfText, 'binary');
+  return Buffer.from(pdfText, 'utf-8');
 }
 
 // Robust Authenticated SMTP Transporter Helper (Universal support for Gmail, Hostinger, Zoho, Outlook, cPanel, Custom SMTP)
@@ -672,6 +648,22 @@ function renderKaiEmailHtml({ title, subtitle, studentName, contentHtml, callToA
   `;
 }
 
+function validateEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  const clean = email.trim().toLowerCase();
+  if (!clean.includes('@') || !clean.includes('.')) return false;
+
+  const invalidDomains = ['example.com', 'test.com', 'dummy.com', 'placeholder.com', 'domain.com'];
+  const parts = clean.split('@');
+  if (parts.length !== 2) return false;
+  const domain = parts[1];
+
+  if (invalidDomains.includes(domain)) return false;
+  if (clean.startsWith('applicant_') && clean.endsWith('@example.com')) return false;
+
+  return true;
+}
+
 // Centralized Automated Email Dispatcher & Log Manager
 async function dispatchAutomatedEmail({
   category = 'general',
@@ -686,40 +678,32 @@ async function dispatchAutomatedEmail({
   preventDuplicateMinutes = 5,
   meta = {}
 }) {
-  if (!targetEmail || !String(targetEmail).includes('@')) {
-    return { success: false, error: 'Invalid or missing recipient email address.' };
+  if (!validateEmail(targetEmail)) {
+    const dbData = readDbFile();
+    dbData.emailLogs = dbData.emailLogs || [];
+    const logId = Date.now() + Math.floor(Math.random() * 1000);
+    const emailLogEntry = {
+      id: logId,
+      category,
+      recipientEmail: targetEmail || 'N/A',
+      recipientName: targetName || 'Recipient',
+      subject: subject || 'Notification from Karate Academy India',
+      subtitle: subtitle || 'Skipped - Invalid Email',
+      contentHtml: contentHtml || '',
+      status: 'failed',
+      timestamp: new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }),
+      triggeredBy,
+      error: 'Invalid or placeholder recipient email address (example.com/dummy rejected).'
+    };
+    dbData.emailLogs.unshift(emailLogEntry);
+    writeDbFile(dbData);
+    return { success: false, error: 'Invalid or dummy recipient email address. Dispatch skipped.', logId };
   }
 
   const cleanTargetEmail = String(targetEmail).trim().toLowerCase();
   const cleanTargetName = String(targetName || 'Athlete / Parent').trim();
   const dbData = readDbFile();
   dbData.emailLogs = dbData.emailLogs || [];
-
-  // Suppress SMTP dispatch for test dummy addresses (Requirement 6)
-  const isDummyEmail = cleanTargetEmail.includes('example.com') ||
-                       cleanTargetEmail.includes('test.com') ||
-                       cleanTargetEmail.includes('invalid') ||
-                       cleanTargetEmail.startsWith('applicant_');
-
-  if (isDummyEmail) {
-    const dummyLogEntry = {
-      id: Date.now(),
-      category,
-      recipientEmail: cleanTargetEmail,
-      recipientName: cleanTargetName,
-      subject,
-      subtitle: 'Skipped - Test Dummy Email',
-      contentHtml,
-      status: 'failed',
-      timestamp: new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }),
-      triggeredBy,
-      error: 'SMTP Transmission Skipped: Recipient address is a test dummy email address.',
-      meta
-    };
-    dbData.emailLogs.unshift(dummyLogEntry);
-    writeDbFile(dbData);
-    return { success: false, note: 'SMTP transmission skipped for test dummy email address.', logId: dummyLogEntry.id };
-  }
 
   // Duplicate suppression check if enabled
   if (preventDuplicateMinutes > 0) {
@@ -808,18 +792,9 @@ async function dispatchAutomatedEmail({
       });
     }
 
-    const recipientList = [cleanTargetEmail];
-    const secEmail = meta?.secondaryEmail || meta?.parentEmail || meta?.emergEmail;
-    if (secEmail && String(secEmail).includes('@')) {
-      const cleanSec = String(secEmail).trim().toLowerCase();
-      if (cleanSec !== cleanTargetEmail && !cleanSec.includes('example.com')) {
-        recipientList.push(cleanSec);
-      }
-    }
-
     const mailOptions = {
       from: `"${smtpConfig.fromName || 'Karate Academy India'}" <${smtpConfig.fromEmail || smtpConfig.username}>`,
-      to: recipientList.join(', '),
+      to: cleanTargetEmail,
       replyTo: smtpConfig.replyTo || smtpConfig.fromEmail || smtpConfig.username,
       subject,
       html: htmlBody,
@@ -832,7 +807,7 @@ async function dispatchAutomatedEmail({
     emailLogEntry.error = null;
     writeDbFile(dbData);
 
-    return { success: true, message: `Email dispatched successfully to ${recipientList.join(', ')}`, logId };
+    return { success: true, message: `Email dispatched successfully to ${cleanTargetEmail}`, logId };
   } catch (err) {
     const formattedErr = formatSmtpError(err, smtpConfig?.host, smtpConfig?.port, smtpConfig?.encryption);
     emailLogEntry.status = 'failed';
@@ -1808,9 +1783,9 @@ const server = http.createServer((req, res) => {
       }
 
       if (req.method === 'POST') {
-        if (sessionUser.role !== 'admin') {
+        if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
           res.writeHead(403, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: '403 Forbidden. Only Administrators can create or update branches.' }));
+          res.end(JSON.stringify({ error: '403 Forbidden. Permission denied.' }));
           return;
         }
 
@@ -2581,6 +2556,90 @@ function getStudentPublicRef(student) {
         } catch (e) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: `Staff creation failed: ${e.message}` }));
+        }
+      });
+      return;
+    }
+
+    // 16.1 Staff Account Status Toggle (`/api/staff/status`)
+    if (req.url === '/api/staff/status' && req.method === 'POST') {
+      if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Only Managers and Admins can modify staff account status.' }));
+        return;
+      }
+
+      let body = '';
+      req.on('data', chunk => body += chunk.toString());
+      req.on('end', () => {
+        try {
+          const { staffId, status } = JSON.parse(body);
+          const dbData = readDbFile();
+          const staff = (dbData.users || []).find(u => u.staffId === staffId || String(u.id) === String(staffId));
+
+          if (!staff) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Staff member record not found.' }));
+            return;
+          }
+
+          staff.status = status === 'disabled' ? 'disabled' : 'active';
+          writeDbFile(dbData);
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            success: true,
+            message: `Staff account ${staff.name} status updated to ${staff.status.toUpperCase()}.`,
+            staff
+          }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: `Failed to update status: ${e.message}` }));
+        }
+      });
+      return;
+    }
+
+    // 16.2 Staff Deletion Endpoint (`/api/staff/delete` - Admin Only)
+    if (req.url === '/api/staff/delete' && req.method === 'POST') {
+      if (!sessionUser || sessionUser.role !== 'admin') {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: '403 Forbidden. Only Root Administrators can delete staff accounts.' }));
+        return;
+      }
+
+      let body = '';
+      req.on('data', chunk => body += chunk.toString());
+      req.on('end', () => {
+        try {
+          const { staffId } = JSON.parse(body);
+          const dbData = readDbFile();
+          const idx = (dbData.users || []).findIndex(u => u.staffId === staffId || String(u.id) === String(staffId));
+
+          if (idx < 0) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Staff member record not found.' }));
+            return;
+          }
+
+          const target = dbData.users[idx];
+          if (target.username === 'admin') {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Cannot delete primary root administrator account.' }));
+            return;
+          }
+
+          dbData.users.splice(idx, 1);
+          writeDbFile(dbData);
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            success: true,
+            message: `Staff account ${target.name} (${target.staffId || target.username}) deleted successfully.`
+          }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: `Staff deletion failed: ${e.message}` }));
         }
       });
       return;

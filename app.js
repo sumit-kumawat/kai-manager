@@ -413,18 +413,20 @@ function getStudentPublicRef(studentOrId) {
 
 async function generateStudentQRCodeBase64(studentId) {
   if (!studentId) return null;
-  const publicVerifyUrl = `https://www.karateacademyindia.com/verify-athlete?ref=${encodeURIComponent(studentId)}`;
+  const publicRefToken = getStudentPublicRef(studentId);
+
+  const openQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(publicRefToken)}`;
 
   if (typeof QRCode !== 'undefined' && QRCode.toDataURL) {
     try {
-      const url = await QRCode.toDataURL(publicVerifyUrl, {
+      const url = await QRCode.toDataURL(publicRefToken, {
         width: 160,
         margin: 1,
         color: { dark: '#000000', light: '#ffffff' }
       });
       if (url && url.length > 50) return url;
     } catch (e) {
-      console.warn(`QRCode.toDataURL error for ${publicVerifyUrl}:`, e);
+      console.warn(`QRCode.toDataURL error for ${publicRefToken}:`, e);
     }
   }
 
@@ -1143,9 +1145,13 @@ async function performLogin(username, password) {
       // Route to appropriate view
       const currentHash = (window.location.hash || '').replace(/^#/, '');
       if (!currentHash || currentHash === 'login') {
-        switchTab('dashboard', true);
-        if (appState.userRole === 'manager') {
-          loadPendingAdmissions();
+        if (appState.userRole === 'admin') {
+          switchAdminSection('branding', true);
+        } else {
+          switchTab('dashboard', true);
+          if (appState.userRole === 'manager') {
+            loadPendingAdmissions();
+          }
         }
       } else if (currentHash === 'admin-settings') {
         switchAdminSection(appState.activeAdminSec || 'branding', true);
@@ -1517,7 +1523,7 @@ function showLightbox(opts = {}) {
           return `
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">${label} ${reqStar}</label>
-              <textarea name="${f.name}" data-label="${label}" ${req} rows="3" placeholder="${f.placeholder || ''}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none">${val}</textarea>
+              <textarea name="${f.name}" data-label="${label}" ${req} rows="3" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none">${val}</textarea>
             </div>
           `;
         }
@@ -1642,29 +1648,37 @@ function openUserProfileModal() {
 }
 
 function calculateTenure(joiningDateStr) {
-  if (!joiningDateStr) return 'N/A (Joining Date Not Set)';
-  const start = new Date(joiningDateStr);
+  if (!joiningDateStr) return { days: 0, formatted: '0 Days', full: '0 Days' };
+  const joinDate = new Date(joiningDateStr);
+  if (isNaN(joinDate.getTime())) return { days: 0, formatted: '0 Days', full: '0 Days' };
+
   const now = new Date();
-  if (isNaN(start.getTime())) return 'N/A';
-  const diffTime = Math.abs(now - start);
-  const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  let years = now.getFullYear() - start.getFullYear();
-  let months = now.getMonth() - start.getMonth();
-  let days = now.getDate() - start.getDate();
+  const diffTime = Math.max(0, now - joinDate);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  let years = now.getFullYear() - joinDate.getFullYear();
+  let months = now.getMonth() - joinDate.getMonth();
+  let days = now.getDate() - joinDate.getDate();
+
   if (days < 0) {
-    months--;
-    const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-    days += lastMonth.getDate();
+    months -= 1;
+    const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    days += prevMonth.getDate();
   }
   if (months < 0) {
-    years--;
+    years -= 1;
     months += 12;
   }
+
   const parts = [];
   if (years > 0) parts.push(`${years} Year${years > 1 ? 's' : ''}`);
   if (months > 0) parts.push(`${months} Month${months > 1 ? 's' : ''}`);
-  if (days > 0 || parts.length === 0) parts.push(`${days} Day${days !== 1 ? 's' : ''}`);
-  return `${parts.join(', ')} (${totalDays.toLocaleString('en-IN')} Days Total)`;
+  if (days > 0 || parts.length === 0) parts.push(`${days} Day${days > 1 ? 's' : ''}`);
+
+  const formattedDays = `${diffDays.toLocaleString('en-IN')} Days`;
+  const full = `${parts.join(' ')} (${formattedDays})`;
+
+  return { days: diffDays, formatted: formattedDays, full, years, months, daysDetail: days };
 }
 
 function renderEmptyStateRow(colSpan, icon, title, message) {
@@ -2012,307 +2026,86 @@ async function renderAllViews() {
 }
 
 // 1. Executive Dashboard
-// 1. Executive Grafana Dashboard Engine
-window.kaiCharts = window.kaiCharts || {};
-
 function renderDashboard() {
-  renderGrafanaAdminDashboard();
-}
+  const activeStudents = appState.students.filter(s => s.accountStatus !== 'inactive');
+  const totalStudents = activeStudents.length;
 
-function renderGrafanaAdminDashboard() {
-  if (!appState.students) return;
+  const totalEl = document.getElementById('stat-total-students');
+  if (totalEl) totalEl.textContent = totalStudents;
 
-  const filterBranch = window.dashBranchFilter || 'all';
+  const present = activeStudents.filter(s => s.status === 'present').length;
+  const excused = activeStudents.filter(s => s.status === 'excused').length;
+  const absent = activeStudents.filter(s => s.status === 'absent' || !s.status).length;
+  const rate = totalStudents > 0 ? Math.round((present / totalStudents) * 100) : 0;
 
-  let students = appState.students || [];
-  let attendance = appState.attendance || [];
-  let financials = appState.financials || [];
-  let expenses = appState.expenses || [];
-  let admissions = appState.pendingAdmissions || [];
-  let emailLogs = appState.emailLogs || [];
+  const rateEl = document.getElementById('stat-attendance-rate');
+  if (rateEl) rateEl.textContent = `${rate}%`;
 
-  if (filterBranch && filterBranch !== 'all') {
-    students = students.filter(s => !s.branchId || String(s.branchId) === String(filterBranch));
-    financials = financials.filter(f => !f.branchId || String(f.branchId) === String(filterBranch));
-    expenses = expenses.filter(e => String(e.branchId) === String(filterBranch));
-  }
+  const countsEl = document.getElementById('stat-attendance-counts');
+  if (countsEl) countsEl.textContent = `${present} Present • ${absent} Absent`;
 
-  const totalStudents = students.length;
-  const activeStudents = students.filter(s => s.accountStatus !== 'inactive').length;
-  const totalStaff = (appState.users || []).length;
-  const activeStaff = (appState.users || []).filter(u => u.status !== 'disabled').length;
+  const presEl = document.getElementById('stat-present-count');
+  if (presEl) presEl.textContent = `${present} Present`;
 
-  const todayStr = getTodayDateStr();
-  const todayAttendance = attendance.filter(a => a.date === todayStr);
-  const presentCount = todayAttendance.filter(a => a.status === 'present').length;
-  const absentCount = todayAttendance.filter(a => a.status === 'absent').length;
-  const excusedCount = todayAttendance.filter(a => a.status === 'excused').length;
-  const attRate = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
+  const absEl = document.getElementById('stat-absent-count');
+  if (absEl) absEl.textContent = `${absent} Absent`;
 
-  const pendingCount = admissions.filter(a => (a.status || 'pending').toLowerCase() === 'pending').length;
-  const approvedCount = admissions.filter(a => (a.status || '').toLowerCase() === 'approved').length;
-  const rejectedCount = admissions.filter(a => (a.status || '').toLowerCase() === 'rejected').length;
-
-  const sentEmails = emailLogs.filter(e => e.status === 'sent').length;
-  const failedEmails = emailLogs.filter(e => e.status === 'failed').length;
-
-  const grossIncome = financials.reduce((sum, f) => sum + (parseInt(f.finalPaid || f.amount || 0)), 0);
-  const expTotal = expenses.reduce((sum, e) => sum + (parseInt(e.amount || 0)), 0);
-  const salTotal = (appState.staffSalaries || []).reduce((sum, s) => sum + (parseInt(s.paidAmount || 0)), 0);
-  const totalExpenses = expTotal + salTotal;
-  const netBalance = grossIncome - totalExpenses;
-
-  const totalDues = students.reduce((sum, s) => sum + (parseInt(s.pendingDues || s.dues || 0)), 0);
-  const beltCandidates = students.filter(s => s.beltReady || s.eligibleForBelt).length;
+  // New Admissions This Month
   const currentMonthPrefix = new Date().toISOString().slice(0, 7);
-  const newAdmissionsCount = students.filter(s => s.joinDate && s.joinDate.startsWith(currentMonthPrefix)).length;
+  const newAdmissionsCount = appState.students.filter(s => s.joinDate && s.joinDate.startsWith(currentMonthPrefix)).length;
+  const newAdmEl = document.getElementById('stat-new-admissions');
+  if (newAdmEl) newAdmEl.textContent = newAdmissionsCount;
 
-  // Update DOM KPI elements
-  const elTotal = document.getElementById('stat-total-students');
-  if (elTotal) elTotal.textContent = totalStudents.toLocaleString('en-IN');
+  // Pending Online Admissions
+  const pendingCount = (appState.pendingAdmissions || []).filter(a => a.status === 'pending').length;
+  const pendAdmEl = document.getElementById('stat-pending-admissions');
+  if (pendAdmEl) pendAdmEl.textContent = pendingCount;
 
-  const elActive = document.getElementById('stat-active-students');
-  if (elActive) elActive.textContent = activeStudents.toLocaleString('en-IN');
+  const totalRev = appState.financials.reduce((sum, f) => sum + (f.finalPaid || f.amount || 0), 0);
+  const revEl = document.getElementById('stat-monthly-revenue');
+  if (revEl) revEl.textContent = `₹${totalRev.toLocaleString('en-IN')}`;
 
-  const elRate = document.getElementById('stat-attendance-rate');
-  if (elRate) elRate.textContent = `${attRate}%`;
+  let totalDues = 0;
+  activeStudents.forEach(s => {
+    const studentInvoices = appState.financials.filter(f => String(f.studentId) === String(s.studentId));
+    const paid = studentInvoices.reduce((sum, f) => sum + (f.finalPaid || f.amount || 0), 0);
+    const expected = (s.monthlyFee || 2500);
+    if (paid < expected) {
+      totalDues += (expected - paid);
+    }
+  });
+  const duesEl = document.getElementById('stat-total-dues-display');
+  if (duesEl) duesEl.textContent = `₹${totalDues.toLocaleString('en-IN')}`;
 
-  const elPresent = document.getElementById('stat-attendance-counts');
-  if (elPresent) elPresent.textContent = `${presentCount} Present`;
-
-  const elAbsent = document.getElementById('stat-absent-count');
-  if (elAbsent) elAbsent.textContent = `${absentCount} Absent`;
-
-  const elStaff = document.getElementById('stat-total-staff');
-  if (elStaff) elStaff.textContent = totalStaff.toLocaleString('en-IN');
-
-  const elActiveStaff = document.getElementById('stat-active-staff');
-  if (elActiveStaff) elActiveStaff.textContent = `${activeStaff} Active`;
-
-  const elPending = document.getElementById('stat-pending-admissions');
-  if (elPending) elPending.textContent = pendingCount.toLocaleString('en-IN');
-
-  const elEmailSent = document.getElementById('stat-email-sent');
-  if (elEmailSent) elEmailSent.textContent = sentEmails.toLocaleString('en-IN');
-
-  const elEmailFailed = document.getElementById('stat-email-failed');
-  if (elEmailFailed) elEmailFailed.textContent = `${failedEmails} Failed`;
-
-  const elRev = document.getElementById('stat-monthly-revenue');
-  if (elRev) elRev.textContent = `₹${grossIncome.toLocaleString('en-IN')}`;
-
-  const elExp = document.getElementById('stat-total-expenses');
-  if (elExp) elExp.textContent = `₹${totalExpenses.toLocaleString('en-IN')}`;
-
-  const elNet = document.getElementById('stat-net-balance');
-  if (elNet) elNet.textContent = `₹${netBalance.toLocaleString('en-IN')}`;
-
-  const elDues = document.getElementById('stat-total-dues-display');
-  if (elDues) elDues.textContent = `₹${totalDues.toLocaleString('en-IN')}`;
-
-  const elBelt = document.getElementById('stat-belt-candidates');
-  if (elBelt) elBelt.textContent = `${beltCandidates} Ready`;
-
-  const elNewAdm = document.getElementById('stat-new-admissions');
-  if (elNewAdm) elNewAdm.textContent = newAdmissionsCount.toLocaleString('en-IN');
-
-  // Render Activity Log Stream
-  const activityContainer = document.getElementById('dash-activity-stream');
-  if (activityContainer) {
-    const logs = appState.activityLogs || [];
-    if (logs.length === 0) {
-      activityContainer.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs font-medium">No activity log entries yet.</div>`;
+  const dashList = document.getElementById('dash-attendance-list');
+  if (dashList) {
+    if (appState.students.length === 0) {
+      dashList.innerHTML = `
+        <div class="py-8 text-center text-xs text-slate-500 space-y-2">
+          <span class="material-symbols-outlined text-4xl text-slate-300">groups</span>
+          <p class="font-bold text-slate-700">No students registered yet</p>
+          <p>Click "Register Student" to enroll the first athlete into ${appState.config.appSubtitle}.</p>
+        </div>
+      `;
     } else {
-      activityContainer.innerHTML = logs.slice(0, 8).map(l => `
-        <div class="py-2.5 flex items-start gap-3">
-          <div class="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-0.5">
-            <span class="material-symbols-outlined text-sm">${l.type === 'payment' ? 'payments' : l.type === 'admission' ? 'person_add' : l.type === 'idcard' ? 'badge' : 'notifications'}</span>
+      dashList.innerHTML = appState.students.slice(0, 8).map(s => `
+        <div class="py-3 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <img class="w-9 h-9 rounded-full object-cover border border-slate-200" src="${s.avatar || DEFAULT_AVATAR}" alt="${s.name}"/>
+            <div>
+              <div class="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                <span>${s.name}</span>
+                ${s.accountStatus === 'inactive' ? `<span class="status-badge status-inactive text-[9px] py-0 px-1">Inactive</span>` : ''}
+              </div>
+              <div class="text-[10px] text-slate-500 font-mono">${s.studentId} • ${s.belt}</div>
+            </div>
           </div>
-          <div class="flex-1 overflow-hidden">
-            <div class="font-bold text-xs text-slate-900 leading-tight">${l.title}</div>
-            <div class="text-[11px] text-slate-500 leading-tight truncate">${l.subtitle || ''}</div>
-          </div>
-          <span class="text-[10px] text-slate-400 font-mono shrink-0">${l.timestamp || ''}</span>
+          <span class="status-badge status-${s.status || 'present'}">${s.status || 'present'}</span>
         </div>
       `).join('');
     }
   }
-
-  // Render Attendance Roster
-  const attRosterContainer = document.getElementById('dash-attendance-list');
-  if (attRosterContainer) {
-    if (todayAttendance.length === 0) {
-      attRosterContainer.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs font-medium">No attendance marked yet today.</div>`;
-    } else {
-      attRosterContainer.innerHTML = todayAttendance.slice(0, 8).map(a => {
-        const studentObj = students.find(s => String(s.studentId) === String(a.studentId));
-        return `
-          <div class="py-2.5 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2.5">
-              <img class="w-7 h-7 rounded-full object-cover border border-slate-200" src="${studentObj?.avatar || DEFAULT_AVATAR}" alt="${a.studentId}"/>
-              <div>
-                <div class="font-bold text-xs text-slate-900">${studentObj?.name || a.studentId}</div>
-                <div class="text-[10px] text-slate-400 font-mono">${a.studentId} • ${a.timestamp || 'Today'}</div>
-              </div>
-            </div>
-            <span class="status-badge status-${a.status === 'present' ? 'paid' : 'inactive'} text-[9px] uppercase">${a.status}</span>
-          </div>
-        `;
-      }).join('');
-    }
-  }
-
-  // Render Interactive Chart.js Charts if Chart library loaded
-  if (typeof Chart !== 'undefined') {
-    renderGrafanaCharts({
-      students,
-      attendance: todayAttendance,
-      presentCount,
-      absentCount,
-      excusedCount,
-      pendingCount,
-      approvedCount,
-      rejectedCount,
-      grossIncome,
-      totalExpenses,
-      netBalance,
-      sentEmails,
-      failedEmails,
-      branches: appState.branches || []
-    });
-  }
 }
-
-function renderGrafanaCharts(data) {
-  // Chart 1: Enrolment Growth
-  const ctxGrowth = document.getElementById('chart-student-growth')?.getContext('2d');
-  if (ctxGrowth) {
-    if (window.kaiCharts.growth) window.kaiCharts.growth.destroy();
-    window.kaiCharts.growth = new Chart(ctxGrowth, {
-      type: 'line',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-        datasets: [{
-          label: 'Athletes',
-          data: [12, 19, 24, 32, 45, 52, 60, data.students.length || 65],
-          borderColor: '#d90429',
-          backgroundColor: 'rgba(217, 4, 41, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    });
-  }
-
-  // Chart 2: Attendance Pie
-  const ctxPie = document.getElementById('chart-attendance-pie')?.getContext('2d');
-  if (ctxPie) {
-    if (window.kaiCharts.pie) window.kaiCharts.pie.destroy();
-    window.kaiCharts.pie = new Chart(ctxPie, {
-      type: 'doughnut',
-      data: {
-        labels: ['Present', 'Absent', 'Excused'],
-        datasets: [{
-          data: [data.presentCount || 1, data.absentCount || 0, data.excusedCount || 0],
-          backgroundColor: ['#10b981', '#ef4444', '#f59e0b']
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
-    });
-  }
-
-  // Chart 3: Admissions Pipeline
-  const ctxAdm = document.getElementById('chart-admissions-pipeline')?.getContext('2d');
-  if (ctxAdm) {
-    if (window.kaiCharts.admissions) window.kaiCharts.admissions.destroy();
-    window.kaiCharts.admissions = new Chart(ctxAdm, {
-      type: 'doughnut',
-      data: {
-        labels: ['Pending', 'Approved', 'Rejected'],
-        datasets: [{
-          data: [data.pendingCount || 0, data.approvedCount || 1, data.rejectedCount || 0],
-          backgroundColor: ['#f59e0b', '#3b82f6', '#64748b']
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
-    });
-  }
-
-  // Chart 4: Financial Cashflow
-  const ctxFin = document.getElementById('chart-financial-cashflow')?.getContext('2d');
-  if (ctxFin) {
-    if (window.kaiCharts.cashflow) window.kaiCharts.cashflow.destroy();
-    window.kaiCharts.cashflow = new Chart(ctxFin, {
-      type: 'bar',
-      data: {
-        labels: ['Revenue', 'Expenses', 'Net Cash'],
-        datasets: [{
-          label: 'Amount (₹)',
-          data: [data.grossIncome, data.totalExpenses, data.netBalance],
-          backgroundColor: ['#10b981', '#ef4444', '#3b82f6']
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    });
-  }
-
-  // Chart 5: Email Performance
-  const ctxEmail = document.getElementById('chart-email-performance')?.getContext('2d');
-  if (ctxEmail) {
-    if (window.kaiCharts.email) window.kaiCharts.email.destroy();
-    window.kaiCharts.email = new Chart(ctxEmail, {
-      type: 'bar',
-      data: {
-        labels: ['Sent', 'Failed'],
-        datasets: [{
-          label: 'Emails',
-          data: [data.sentEmails, data.failedEmails],
-          backgroundColor: ['#8b5cf6', '#ef4444']
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    });
-  }
-
-  // Chart 6: Branch Performance
-  const ctxBranch = document.getElementById('chart-branch-performance')?.getContext('2d');
-  if (ctxBranch) {
-    if (window.kaiCharts.branch) window.kaiCharts.branch.destroy();
-    const branchNames = data.branches.map(b => b.code || b.name);
-    const branchCounts = data.branches.map(b => data.students.filter(s => (s.branchId || 'HQ') === (b.code || b.id)).length);
-
-    window.kaiCharts.branch = new Chart(ctxBranch, {
-      type: 'bar',
-      data: {
-        labels: branchNames.length > 0 ? branchNames : ['HQ', 'NORTH', 'SOUTH'],
-        datasets: [{
-          label: 'Roster Count',
-          data: branchCounts.length > 0 ? branchCounts : [data.students.length, 0, 0],
-          backgroundColor: '#0f172a'
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    });
-  }
-}
-
-window.setDashboardTimeRange = function(range) {
-  window.dashTimeRange = range;
-  ['today', '7d', '30d', 'month'].forEach(r => {
-    const btn = document.getElementById(`dash-range-${r}`);
-    if (btn) {
-      if (r === range) btn.className = 'px-3 py-1.5 rounded-lg bg-red-600 text-white shadow transition font-bold';
-      else btn.className = 'px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition font-bold';
-    }
-  });
-  renderGrafanaAdminDashboard();
-};
-
-window.updateDashboardBranchFilter = function(branchCode) {
-  window.dashBranchFilter = branchCode;
-  renderGrafanaAdminDashboard();
-};
 
 // 2. Attendance Tracker Engine
 function getTodayDateStr() {
@@ -2420,42 +2213,11 @@ function renderAttendance() {
   updateAttendanceCounters(selectedDate);
 }
 
-function checkBatchTimingGuard(targetDate) {
-  const todayDate = getTodayDateStr();
-  const dateStr = targetDate || todayDate;
-
-  if (dateStr === todayDate) {
-    const scheduledStartTime = appState.config?.batchStartTime || '06:00';
-    const now = new Date();
-    const currentHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-    if (currentHHMM < scheduledStartTime) {
-      const formattedTime = new Date(`2000-01-01T${scheduledStartTime}:00`).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
-      return {
-        allowed: false,
-        message: `Attendance marking blocked: Scheduled batch timing for today starts at ${formattedTime}. Check-ins are strictly prohibited prior to scheduled batch time.`
-      };
-    }
-  }
-
-  return { allowed: true };
-}
-
 function setStudentStatus(idStr, status, targetDate) {
   if (appState.userRole === 'viewer') {
     showLightbox({ title: 'Permission Denied', message: 'Viewer role is read-only.', type: 'error' });
     return;
   }
-
-  const dateInput = document.getElementById('attendance-date');
-  const dateStr = targetDate || (dateInput?.value ? dateInput.value : getTodayDateStr());
-
-  const guard = checkBatchTimingGuard(dateStr);
-  if (!guard.allowed) {
-    showLightbox({ title: 'Batch Timing Guard', message: guard.message, type: 'warning' });
-    return;
-  }
-
   const student = appState.students.find(s => String(s.id) === String(idStr));
   if (!student) return;
 
@@ -2463,6 +2225,9 @@ function setStudentStatus(idStr, status, targetDate) {
     showToast('Cannot mark attendance for inactive student account.');
     return;
   }
+
+  const dateInput = document.getElementById('attendance-date');
+  const dateStr = targetDate || (dateInput?.value ? dateInput.value : getTodayDateStr());
 
   let record = appState.attendance.find(a => String(a.studentId) === String(student.studentId) && a.date === dateStr);
   if (record) {
@@ -2515,12 +2280,6 @@ function markBulkAttendance(status) {
 
   const dateInput = document.getElementById('attendance-date');
   const selectedDate = (dateInput && dateInput.value) ? dateInput.value : getTodayDateStr();
-
-  const guard = checkBatchTimingGuard(selectedDate);
-  if (!guard.allowed) {
-    showLightbox({ title: 'Batch Timing Guard', message: guard.message, type: 'warning' });
-    return;
-  }
 
   const query = (document.getElementById('attendance-search-input')?.value || '').toLowerCase().trim();
   const beltFilter = document.getElementById('attendance-belt-filter')?.value || 'all';
@@ -3235,23 +2994,6 @@ function processScannedQR(qrCodeStr) {
     return;
   }
 
-  const today = new Date().toISOString().split('T')[0];
-
-  const guard = checkBatchTimingGuard(today);
-  if (!guard.allowed) {
-    if (lastResultBox) {
-      lastResultBox.innerHTML = `
-        <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-1 text-center">
-          <span class="material-symbols-outlined text-amber-600 text-3xl">schedule</span>
-          <h4 class="font-extrabold text-sm text-amber-900">Attendance Blocked: Batch Not Started</h4>
-          <p class="text-xs text-amber-800 font-bold">${guard.message}</p>
-        </div>
-      `;
-    }
-    showLightbox({ title: 'Batch Timing Guard', message: guard.message, type: 'warning' });
-    return;
-  }
-
   if (student.accountStatus === 'inactive') {
     if (lastResultBox) {
       lastResultBox.innerHTML = `
@@ -3270,6 +3012,7 @@ function processScannedQR(qrCodeStr) {
     return;
   }
 
+  const today = new Date().toISOString().split('T')[0];
   const alreadyScanned = appState.attendance.some(a => String(a.studentId) === String(student.studentId) && a.date === today);
 
   if (alreadyScanned && student.status === 'present') {
@@ -3776,31 +3519,9 @@ async function renderIDCards() {
     return;
   }
 
-  const isManagerView = (appState.userRole === 'manager');
-
   const studentCardsHtml = await Promise.all(appState.students.map(async (s) => {
     const fullAddress = [s.address, s.city, s.state, s.pincode].filter(Boolean).join(', ') || 'N/A';
     const qrDataBase64 = await generateStudentQRCodeBase64(s.studentId);
-
-    if (isManagerView) {
-      return `
-        <div class="kai-idcard-light id-card-printable p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between gap-4 w-full max-w-sm" id="idcard-element-${s.id}">
-          <div class="flex items-center gap-3 overflow-hidden">
-            <img class="w-14 h-14 rounded-xl object-cover border-2 border-red-500 shadow-sm shrink-0 bg-white" src="${s.avatar || DEFAULT_AVATAR}" alt="${s.name}"/>
-            <div class="space-y-1 overflow-hidden">
-              <h4 class="font-extrabold text-sm text-slate-900 leading-tight truncate">${s.name}</h4>
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-[10px] font-mono font-extrabold text-red-600 bg-red-50 py-0.5 px-1.5 rounded border border-red-100 inline-block">${s.studentId}</span>
-                <span class="belt-badge ${getBeltClass(s.belt)} text-[9px] py-0.5 px-1.5">${s.belt}</span>
-              </div>
-            </div>
-          </div>
-          <button onclick="downloadIDCardPNG('${s.id}')" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition text-center flex items-center gap-1 shadow text-xs shrink-0">
-            <span class="material-symbols-outlined text-sm">download</span><span>PNG</span>
-          </button>
-        </div>
-      `;
-    }
 
     return `
       <div class="kai-idcard-light id-card-printable p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-lg space-y-4 relative overflow-hidden flex flex-col justify-between w-full max-w-sm" id="idcard-element-${s.id}">
@@ -3891,56 +3612,61 @@ async function downloadIDCardPNG(studentIdStr) {
   mount.style.zIndex = '-9999';
 
   mount.innerHTML = `
-    <div style="width: 440px; height: 680px; background: #ffffff; border-radius: 24px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; padding: 24px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; border: 2px solid #cbd5e1; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
+    <div style="width: 420px; height: 660px; background: #ffffff; border-radius: 24px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0f172a; padding: 24px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; border: 2px solid #cbd5e1; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
       
       <!-- TOP HEADER WITH RED ACCENT -->
-      <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 14px; text-align: center;">
-        <div style="width: 48px; height: 48px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; padding: 4px; flex-shrink: 0;">
+      <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 14px; display: flex; align-items: center; gap: 12px;">
+        <div style="width: 44px; height: 44px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; padding: 4px;">
           <img src="${logo}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='https://www.karateacademyindia.com/logo.png';"/>
         </div>
-        <div>
-          <h2 style="margin: 0; font-size: 16px; font-weight: 900; color: #0f172a; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.3;">KARATE ACADEMY INDIA</h2>
-          <p style="margin: 3px 0 0 0; font-size: 11px; color: #dc2626; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Official Athlete Training Pass</p>
+        <div style="flex: 1;">
+          <h2 style="margin: 0; font-size: 15px; font-weight: 900; color: #0f172a; letter-spacing: 0.5px; text-transform: uppercase;">KARATE ACADEMY INDIA</h2>
+          <p style="margin: 2px 0 0 0; font-size: 10px; color: #dc2626; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Official Athlete Training Pass</p>
         </div>
       </div>
 
-      <!-- ATHLETE PROFILE SECTION (CENTERED & SPACED PROPERLY) -->
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin: 10px 0;">
-        <div style="width: 96px; height: 96px; border-radius: 20px; border: 3px solid #dc2626; overflow: hidden; background-color: #f1f5f9; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 10px;">
+      <!-- ATHLETE PROFILE SECTION -->
+      <div style="display: flex; align-items: center; gap: 16px; margin-top: 8px;">
+        <div style="width: 96px; height: 96px; border-radius: 20px; border: 3px solid #dc2626; overflow: hidden; background-color: #f1f5f9; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
           <img src="${student.avatar || DEFAULT_AVATAR}" alt="${student.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='${DEFAULT_AVATAR}';"/>
         </div>
-        <h3 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 900; color: #0f172a; line-height: 1.3;">${student.name}</h3>
-        <div style="display: flex; items-center; justify-content: center; gap: 8px; margin-bottom: 4px;">
-          <span style="font-family: monospace; font-size: 13px; color: #dc2626; font-weight: 900; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 3px 10px; inline-block;">${student.studentId}</span>
-          <span style="background: #0f172a; color: #ffffff; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 6px; text-transform: uppercase; inline-block;">${student.belt || 'White Belt'}</span>
+        <div style="flex: 1; overflow: hidden;">
+          <h3 style="margin: 0; font-size: 18px; font-weight: 900; color: #0f172a; line-height: 1.2;">${student.name}</h3>
+          <div style="display: inline-block; font-family: monospace; font-size: 12px; color: #dc2626; font-weight: 900; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 2px 8px; margin-top: 4px;">${student.studentId}</div>
+          <div style="margin-top: 4px;">
+            <span style="display: inline-block; background: #0f172a; color: #ffffff; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">${student.belt || 'White Belt'}</span>
+          </div>
         </div>
-        <div style="font-size: 11px; color: #64748b; font-weight: 600; margin-top: 4px;">Gender: <strong style="color: #0f172a;">${student.gender || 'N/A'}</strong> • DOB: <strong style="color: #0f172a;">${student.dob || 'N/A'}</strong></div>
       </div>
 
-      <!-- ATHLETE DETAILS BOX (WELL SPACED WITH LINE HEIGHT PREVENTING OVERLAP) -->
-      <div style="background-color: #f8fafc; border-radius: 16px; padding: 14px 16px; border: 1px solid #e2e8f0; font-size: 11px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+      <!-- ATHLETE DETAILS BOX -->
+      <div style="background-color: #f8fafc; border-radius: 16px; padding: 14px 16px; border: 1px solid #e2e8f0; font-size: 11px; color: #334155; line-height: 1.6;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span style="color: #64748b; font-weight: 700;">Gender / DOB:</span>
+          <strong style="color: #0f172a;">${student.gender || 'Male'} • ${student.dob || 'N/A'}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
           <span style="color: #64748b; font-weight: 700;">Primary Phone:</span>
           <strong style="color: #0f172a; font-family: monospace;">${student.contactPhone || student.phone || 'N/A'}</strong>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
           <span style="color: #64748b; font-weight: 700;">Primary Email:</span>
           <strong style="color: #0f172a;">${student.contactEmail || student.email || 'N/A'}</strong>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <span style="color: #64748b; font-weight: 700; flex-shrink: 0; margin-right: 12px;">Full Address:</span>
-          <strong style="color: #0f172a; text-align: right; word-break: break-word; line-height: 1.4;">${fullAddress}</strong>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #64748b; font-weight: 700;">Address:</span>
+          <strong style="color: #0f172a; max-width: 240px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fullAddress}</strong>
         </div>
       </div>
 
-      <!-- BOTTOM SCAN PASS SECTION -->
+      <!-- BOTTOM SCAN SECTION -->
       <div style="border-top: 2px dashed #cbd5e1; padding-top: 14px; display: flex; align-items: center; justify-content: space-between;">
         <div>
-          <div style="font-size: 12px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">DOJO KIOSK SCAN PASS</div>
-          <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Karate Academy India Honbu Portal</div>
-          <div style="font-size: 10px; color: #dc2626; font-family: monospace; font-weight: 900; margin-top: 2px;">${student.studentId}</div>
+          <div style="font-size: 11px; font-weight: 900; color: #0f172a; text-transform: uppercase;">DOJO KIOSK SCAN PASS</div>
+          <div style="font-size: 9px; color: #64748b; margin-top: 2px;">Karate Academy India Honbu Portal</div>
+          <div style="font-size: 9px; color: #dc2626; font-family: monospace; font-weight: 800; margin-top: 2px;">${student.studentId}</div>
         </div>
-        <div style="width: 72px; height: 72px; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-shrink: 0;">
+        <div style="width: 70px; height: 70px; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
           <img src="${qrDataBase64}" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain;"/>
         </div>
       </div>
@@ -3974,169 +3700,61 @@ async function downloadIDCardPNG(studentIdStr) {
   });
 }
 
-// 7. Financial Ledger & Accounting Balance Sheet Engine
+// 7. Financial Ledger & DYNAMIC AUTO-HEIGHT RECEIPT GENERATOR
 function renderFinancials() {
-  renderFinancialLedger();
-}
+  // Calculate Total Earnings and Total Dues
+  const totalEarnings = appState.financials.reduce((sum, f) => sum + (f.finalPaid || f.amount || 0), 0);
 
-function renderFinancialLedger() {
+  let totalDues = 0;
+  const activeStudents = appState.students.filter(s => s.accountStatus !== 'inactive');
+
+  activeStudents.forEach(s => {
+    const studentInvoices = appState.financials.filter(f => String(f.studentId) === String(s.studentId));
+    const paid = studentInvoices.reduce((sum, f) => sum + (f.finalPaid || f.amount || 0), 0);
+    const expected = (s.monthlyFee || 2500);
+    if (paid < expected) {
+      totalDues += (expected - paid);
+    }
+  });
+
+  appState.financials.forEach(f => {
+    if (f.status === 'Unpaid' || f.status === 'Pending') {
+      totalDues += Math.max(0, (f.origAmount || 0) - (f.finalPaid || 0));
+    }
+  });
+
+  const earningsEl = document.getElementById('ledger-total-earnings');
+  if (earningsEl) earningsEl.textContent = `₹${totalEarnings.toLocaleString('en-IN')}`;
+
+  const duesEl = document.getElementById('ledger-total-dues');
+  if (duesEl) duesEl.textContent = `₹${totalDues.toLocaleString('en-IN')}`;
+
   const tbody = document.getElementById('financials-table-body');
   if (!tbody) return;
 
-  const searchQuery = (document.getElementById('financials-search-input')?.value || '').trim().toLowerCase();
-  const filterRange = document.getElementById('fin-filter-range')?.value || 'all';
-  const filterBranch = document.getElementById('fin-filter-branch')?.value || 'all';
-  const filterType = document.getElementById('fin-filter-type')?.value || 'all';
-  const filterMethod = document.getElementById('fin-filter-method')?.value || 'all';
-
-  // Build unified transaction list from Payments (Credits), Expenses (Debits), and Staff Salaries (Debits)
-  let transactions = [];
-
-  (appState.financials || []).forEach(f => {
-    transactions.push({
-      id: f.id || 'INV-' + Date.now(),
-      rawDate: f.date || f.dueDate || new Date().toISOString().split('T')[0],
-      date: f.date || f.dueDate || new Date().toISOString().split('T')[0],
-      ref: f.id,
-      title: f.studentName || 'Tuition Fee Payment',
-      payee: f.studentName || 'Student',
-      category: f.category || 'Tuition Fee',
-      branch: f.branchId || 'HQ',
-      type: 'credit',
-      debit: 0,
-      credit: parseInt(f.finalPaid || f.amount || 0),
-      method: f.paymentMethod || 'Online',
-      invoiceObj: f
-    });
-  });
-
-  (appState.expenses || []).forEach(e => {
-    transactions.push({
-      id: e.id || 'EXP-' + Date.now(),
-      rawDate: e.date || new Date().toISOString().split('T')[0],
-      date: e.date || new Date().toISOString().split('T')[0],
-      ref: e.id,
-      title: e.title || e.description || 'Operational Expense',
-      payee: e.category || 'Vendor',
-      category: e.category || 'Expense',
-      branch: e.branchId || 'HQ',
-      type: 'debit',
-      debit: parseInt(e.amount || 0),
-      credit: 0,
-      method: e.paymentMethod || 'Bank Transfer',
-      expenseObj: e
-    });
-  });
-
-  (appState.staffSalaries || []).forEach(s => {
-    transactions.push({
-      id: s.id || 'SAL-' + Date.now(),
-      rawDate: s.paymentDate || new Date().toISOString().split('T')[0],
-      date: s.paymentDate || new Date().toISOString().split('T')[0],
-      ref: s.id,
-      title: `Staff Salary - ${s.staffName || 'Staff'} (${s.month || 'Current'})`,
-      payee: s.staffName || 'Staff Member',
-      category: 'Salaries & HR',
-      branch: s.branchId || 'HQ',
-      type: 'salary',
-      debit: parseInt(s.paidAmount || 0),
-      credit: 0,
-      method: s.paymentMethod || 'Bank Transfer',
-      salaryObj: s
-    });
-  });
-
-  // Sort transactions chronologically
-  transactions.sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
-
-  // Compute opening & closing totals
-  const openingBalance = 0;
-  let runningBal = openingBalance;
-
-  transactions.forEach(t => {
-    runningBal += (t.credit - t.debit);
-    t.runningBalance = runningBal;
-  });
-
-  const totalCredits = transactions.reduce((sum, t) => sum + t.credit, 0);
-  const totalDebits = transactions.reduce((sum, t) => sum + t.debit, 0);
-  const netCash = totalCredits - totalDebits;
-  const closingBalance = openingBalance + netCash;
-
-  // Update Summary Cards
-  const elOpen = document.getElementById('ledger-opening-balance');
-  if (elOpen) elOpen.textContent = `₹${openingBalance.toLocaleString('en-IN')}`;
-
-  const elInc = document.getElementById('ledger-total-income');
-  if (elInc) elInc.textContent = `₹${totalCredits.toLocaleString('en-IN')}`;
-
-  const elExp = document.getElementById('ledger-total-expenses');
-  if (elExp) elExp.textContent = `₹${totalDebits.toLocaleString('en-IN')}`;
-
-  const elNet = document.getElementById('ledger-net-balance');
-  if (elNet) elNet.textContent = `₹${netCash.toLocaleString('en-IN')}`;
-
-  const elClose = document.getElementById('ledger-closing-balance');
-  if (elClose) elClose.textContent = `₹${closingBalance.toLocaleString('en-IN')}`;
-
-  // Apply Filter Criteria
-  let filtered = transactions;
-
-  if (searchQuery) {
-    filtered = filtered.filter(t =>
-      t.ref.toLowerCase().includes(searchQuery) ||
-      t.title.toLowerCase().includes(searchQuery) ||
-      t.payee.toLowerCase().includes(searchQuery) ||
-      t.category.toLowerCase().includes(searchQuery)
-    );
-  }
-
-  if (filterBranch !== 'all') {
-    filtered = filtered.filter(t => String(t.branch) === String(filterBranch));
-  }
-
-  if (filterType !== 'all') {
-    if (filterType === 'income') filtered = filtered.filter(t => t.credit > 0);
-    else if (filterType === 'expense') filtered = filtered.filter(t => t.type === 'debit');
-    else if (filterType === 'salary') filtered = filtered.filter(t => t.type === 'salary');
-  }
-
-  if (filterMethod !== 'all') {
-    filtered = filtered.filter(t => t.method.toLowerCase().includes(filterMethod.toLowerCase()));
-  }
-
-  if (filtered.length === 0) {
+  if (appState.financials.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="9" class="py-12 text-center text-xs text-slate-500 space-y-2">
+        <td colspan="7" class="py-12 text-center text-xs text-slate-500 space-y-2">
           <span class="material-symbols-outlined text-4xl text-slate-300 block mb-1">payments</span>
-          <strong class="text-slate-700 block">No matching accounting ledger records found</strong>
-          <p>Try resetting filters or record a new transaction.</p>
+          <strong class="text-slate-700 block">No financial transactions recorded</strong>
+          <p>Click "Record Payment" to log tuition fee collections.</p>
         </td>
       </tr>
     `;
     return;
   }
 
-  tbody.innerHTML = filtered.map(t => `
-    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-      <td class="py-3 px-4 text-slate-500 font-mono text-[11px]">${t.date}</td>
-      <td class="py-3 px-4 font-mono font-bold ${t.type === 'credit' ? 'text-emerald-700' : 'text-blue-600'}">${t.ref}</td>
-      <td class="py-3 px-4 font-bold text-slate-900">
-        ${t.title}
-        <div class="text-[10px] text-slate-400 font-normal">Method: ${t.method}</div>
-      </td>
-      <td class="py-3 px-4"><span class="text-[10px] bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded">${t.category}</span></td>
-      <td class="py-3 px-4 text-slate-600 font-medium">${t.branch}</td>
-      <td class="py-3 px-4 text-right font-mono font-bold text-red-600">${t.debit > 0 ? `₹${t.debit.toLocaleString('en-IN')}` : '-'}</td>
-      <td class="py-3 px-4 text-right font-mono font-bold text-emerald-700">${t.credit > 0 ? `₹${t.credit.toLocaleString('en-IN')}` : '-'}</td>
-      <td class="py-3 px-4 text-right font-mono font-extrabold text-slate-900">₹${t.runningBalance.toLocaleString('en-IN')}</td>
-      <td class="py-3 px-4 text-right">
-        ${t.invoiceObj ? `
-          <button onclick="openReceiptModal('${t.invoiceObj.id}')" class="px-2.5 py-1 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-bold text-[10px] rounded-lg transition shadow-sm">View Receipt</button>
-        ` : `
-          <span class="text-[10px] text-slate-400 font-mono">Recorded</span>
-        `}
+  tbody.innerHTML = appState.financials.map(f => `
+    <tr class="hover:bg-slate-50 transition" data-searchable>
+      <td class="py-3.5 px-6 font-mono font-bold text-slate-900">${f.id}</td>
+      <td class="py-3.5 px-6 font-bold text-slate-900">${f.studentName}</td>
+      <td class="py-3.5 px-6 text-slate-500">₹${(f.origAmount || f.amount).toLocaleString('en-IN')}</td>
+      <td class="py-3.5 px-6 text-red-600 font-bold">- ₹${(f.discount || 0).toLocaleString('en-IN')}</td>
+      <td class="py-3.5 px-6 font-extrabold text-emerald-700">₹${(f.finalPaid || f.amount).toLocaleString('en-IN')}</td>
+      <td class="py-3.5 px-6"><span class="status-badge status-paid">${f.status || 'Paid'}</span></td>
+      <td class="py-3.5 px-6 text-right">
+        <button onclick="openReceiptModal('${f.id}')" class="px-3 py-1 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-bold text-[10px] rounded-lg transition">View Receipt</button>
       </td>
     </tr>
   `).join('');
@@ -4319,15 +3937,27 @@ async function generateReceiptPDFBlob(invoiceId) {
 }
 
 async function shareReceiptWhatsApp(inv) {
-  downloadReceiptPDF(inv.id);
+  try {
+    const file = await generateReceiptPDFBlob(inv.id);
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: `${appState.config.appSubtitle} Receipt #${inv.id}`,
+        text: `Fee Receipt #${inv.id} for ${inv.studentName}`
+      });
+      logActivity(`Receipt Shared via WhatsApp: ${inv.id}`, `Athlete: ${inv.studentName}`, 'payment');
+      showToast('Receipt PDF shared via WhatsApp');
+      return;
+    }
+  } catch (e) { }
 
-  const student = appState.students.find(s => String(s.studentId) === String(inv.studentId) || String(s.id) === String(inv.studentId));
-  let phone = inv.phone || student?.contactPhone || student?.phone || '7040925257';
+  downloadReceiptPDF(inv.id);
+  const student = appState.students.find(s => String(s.studentId) === String(inv.studentId));
+  let phone = student?.contactPhone || student?.phone || '7040925257';
   phone = phone.replace(/[^0-9]/g, '');
   if (phone.length === 10) phone = '91' + phone;
 
-  const text = encodeURIComponent(`*KARATE ACADEMY INDIA - OFFICIAL PAYMENT RECEIPT*\n\nDear *${inv.studentName || 'Athlete'}*,\n\nWe have received your payment of *₹${(inv.finalPaid || inv.amount).toLocaleString('en-IN')}*.\nInvoice #: *${inv.id}*\nStudent ID: *${inv.studentId || 'N/A'}*\nPayment Method: ${inv.paymentMethod}\nStatus: PAID / VERIFIED\n\nOfficial PDF Receipt downloaded to device. Thank you for training with Karate Academy India!`);
-
+  const text = encodeURIComponent(`*${appState.config.appSubtitle.toUpperCase()} - RECEIPT CONFIRMATION*\n\nDear *${inv.studentName}* (${inv.studentId}),\n\nWe have received your payment of *₹${(inv.finalPaid || inv.amount).toLocaleString('en-IN')}*.\nInvoice #: *${inv.id}*\nPayment Method: ${inv.paymentMethod}\nStatus: PAID / VERIFIED\n\nReceipt PDF downloaded to device. Thank you!`);
   window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
 }
 
@@ -4395,8 +4025,51 @@ async function shareReceiptEmail(inv) {
   window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
 }
 
-function printReceipt(invoiceId) {
-  downloadReceiptPDF(invoiceId);
+async function printReceipt(invoiceId) {
+  const inv = appState.financials.find(f => f.id === invoiceId);
+  if (!inv) return;
+
+  const el = document.getElementById('receipt-printable-content') || document.getElementById('receipt-card-wrapper');
+  if (!el || typeof html2pdf === 'undefined') {
+    window.print();
+    return;
+  }
+
+  showToast('Preparing printable PDF receipt...');
+
+  const opt = {
+    margin: 8,
+    filename: `${invoiceId}_Print.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2.5, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  try {
+    const pdfBlob = await html2pdf().set(opt).from(el).output('blob');
+    const blobUrl = URL.createObjectURL(pdfBlob);
+
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = '0';
+    printFrame.src = blobUrl;
+    document.body.appendChild(printFrame);
+
+    printFrame.onload = () => {
+      setTimeout(() => {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+        showToast('Print dialog launched.');
+      }, 500);
+    };
+  } catch (err) {
+    console.error('Print PDF error:', err);
+    window.print();
+  }
 }
 
 // 8. Admin & Manager User Management Controller
@@ -4449,10 +4122,6 @@ function renderAdminUsersTable() {
             <span class="status-badge ${u.status === 'disabled' ? 'status-inactive' : 'status-active'} text-[9px]">${u.status || 'active'}</span>
           </td>
           <td class="py-3 px-4 text-right space-x-1 whitespace-nowrap">
-            <button onclick="openStaffDetailsModal('${u.id}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[10px] rounded-lg border border-slate-200 inline-flex items-center gap-1 shadow-sm" title="View Full Staff Profile & Salary History">
-              <span class="material-symbols-outlined text-xs text-blue-600">person</span>
-              <span>Profile</span>
-            </button>
             ${isRootAdmin ? `
               <span class="text-[10px] text-amber-700 font-extrabold uppercase bg-amber-200/80 px-2 py-0.5 rounded border border-amber-300">Root Admin</span>
             ` : u.role === 'admin' && isManagerRole ? `
@@ -4485,124 +4154,6 @@ function renderAdminUsersTable() {
   const mgrTbody = document.getElementById('manager-users-table-body');
   if (mgrTbody) mgrTbody.innerHTML = generateRowsHtml();
 }
-
-let activeStaffModalUser = null;
-
-window.openStaffDetailsModal = function(userIdStr) {
-  const user = appState.users.find(u => String(u.id) === String(userIdStr) || String(u.staffId) === String(userIdStr));
-  if (!user) return;
-
-  activeStaffModalUser = user;
-  const modal = document.getElementById('staff-details-modal');
-  if (!modal) return;
-
-  document.getElementById('stf-modal-name').textContent = user.name || user.username;
-  document.getElementById('stf-modal-id').textContent = user.staffId || 'KAISTF202601';
-  document.getElementById('stf-modal-username').textContent = `@${user.username}`;
-  document.getElementById('stf-modal-role-badge').textContent = (user.role || 'staff').toUpperCase();
-  document.getElementById('stf-modal-role-badge').className = `role-badge role-${user.role || 'manager'}`;
-
-  document.getElementById('stf-prof-name').textContent = user.name || 'N/A';
-  document.getElementById('stf-prof-user').textContent = user.username || 'N/A';
-  document.getElementById('stf-prof-id').textContent = user.staffId || 'N/A';
-  document.getElementById('stf-prof-role').textContent = String(user.role || 'staff').toUpperCase();
-  document.getElementById('stf-prof-branch').textContent = user.branchId || 'HQ (Main Honbu Dojo)';
-  document.getElementById('stf-prof-email').textContent = user.email || 'N/A';
-  document.getElementById('stf-prof-phone').textContent = user.contactPhone || user.phone || '+91 70409 25257';
-
-  const salaryVal = user.monthlySalary || (user.role === 'manager' ? 25000 : user.role === 'receptionist' ? 15000 : 18000);
-  document.getElementById('stf-prof-salary').textContent = `₹${salaryVal.toLocaleString('en-IN')}`;
-
-  const statusEl = document.getElementById('stf-prof-status');
-  if (statusEl) {
-    statusEl.textContent = user.status || 'active';
-    statusEl.className = `status-badge ${user.status === 'disabled' ? 'status-inactive' : 'status-active'} text-[9px]`;
-  }
-
-  const joiningStr = user.joiningDate || user.createdAt || '2024-01-15';
-  document.getElementById('stf-prof-joining').textContent = `Joining Date: ${joiningStr}`;
-  document.getElementById('stf-prof-tenure').textContent = calculateTenure(joiningStr);
-
-  const deleteBtn = document.getElementById('stf-btn-delete-account');
-  if (deleteBtn) {
-    if (appState.userRole === 'admin' && user.username !== 'admin') deleteBtn.classList.remove('hidden');
-    else deleteBtn.classList.add('hidden');
-  }
-
-  // Populate Salary History Tab
-  const salaries = (appState.staffSalaries || []).filter(s => String(s.staffId) === String(user.staffId) || String(s.staffName).toLowerCase() === String(user.name).toLowerCase());
-  const tbody = document.getElementById('stf-salary-history-tbody');
-  if (tbody) {
-    if (salaries.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No salary transactions found for ${user.name}.</td></tr>`;
-    } else {
-      tbody.innerHTML = salaries.map(s => `
-        <tr class="hover:bg-slate-50 border-b border-slate-100">
-          <td class="py-2.5 px-4 font-mono font-bold text-blue-600">${s.id}</td>
-          <td class="py-2.5 px-4 font-bold text-slate-800">${s.month}</td>
-          <td class="py-2.5 px-4 text-slate-500 font-mono">${s.paymentDate || 'N/A'}</td>
-          <td class="py-2.5 px-4 font-extrabold text-emerald-700 font-mono">₹${(s.paidAmount || 0).toLocaleString('en-IN')}</td>
-          <td class="py-2.5 px-4 font-semibold text-slate-700">${s.paymentMethod || 'Bank Transfer'}</td>
-          <td class="py-2.5 px-4 text-right">
-            <button onclick="downloadReceiptPDF('${s.id}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[10px] rounded-lg border border-blue-200 shadow-sm">
-              Payslip PDF
-            </button>
-          </td>
-        </tr>
-      `).join('');
-    }
-  }
-
-  switchStaffTab('profile');
-  modal.classList.remove('hidden');
-};
-
-window.closeStaffDetailsModal = function() {
-  document.getElementById('staff-details-modal')?.classList.add('hidden');
-};
-
-window.switchStaffTab = function(tabName) {
-  const profBtn = document.getElementById('stf-tab-btn-profile');
-  const salaryBtn = document.getElementById('stf-tab-btn-salary');
-  const profContent = document.getElementById('stf-tab-content-profile');
-  const salaryContent = document.getElementById('stf-tab-content-salary');
-
-  if (tabName === 'profile') {
-    profBtn?.classList.add('text-red-600', 'border-red-600', 'font-extrabold');
-    profBtn?.classList.remove('text-slate-600', 'border-transparent');
-    salaryBtn?.classList.remove('text-red-600', 'border-red-600', 'font-extrabold');
-    salaryBtn?.classList.add('text-slate-600', 'border-transparent');
-
-    profContent?.classList.remove('hidden');
-    salaryContent?.classList.add('hidden');
-  } else {
-    salaryBtn?.classList.add('text-red-600', 'border-red-600', 'font-extrabold');
-    salaryBtn?.classList.remove('text-slate-600', 'border-transparent');
-    profBtn?.classList.remove('text-red-600', 'border-red-600', 'font-extrabold');
-    profBtn?.classList.add('text-slate-600', 'border-transparent');
-
-    salaryContent?.classList.remove('hidden');
-    profContent?.classList.add('hidden');
-  }
-};
-
-window.toggleStaffModalStatus = function() {
-  if (!activeStaffModalUser) return;
-  toggleUserDisabled(activeStaffModalUser.id);
-  openStaffDetailsModal(activeStaffModalUser.id);
-};
-
-window.deleteStaffModalAccount = function() {
-  if (!activeStaffModalUser) return;
-  deleteUserAccount(activeStaffModalUser.id);
-  closeStaffDetailsModal();
-};
-
-window.openStaffInvoiceFromModal = function() {
-  if (!activeStaffModalUser) return;
-  closeStaffDetailsModal();
-  openStaffInvoiceModal(activeStaffModalUser.id);
-};
 
 function renderAdminStudentsTable() {
   const tbody = document.getElementById('admin-students-table-body');
@@ -4806,43 +4357,224 @@ function toggleUserDisabled(userId) {
   showToast(`User ${user.username} ${user.status}`);
 }
 
-function deleteUserAccount(userId) {
-  const user = appState.users.find(u => String(u.id) === String(userId));
-  if (!user || user.username === 'admin') return;
-
-  if (appState.userRole === 'manager' && user.role === 'admin') {
-    showLightbox({ title: 'Permission Denied', message: 'Managers cannot delete Admin accounts.', type: 'error' });
+async function deleteUserAccount(userId) {
+  // Requirement 23: Staff deletion restricted strictly to Admin
+  if (appState.userRole !== 'admin') {
+    await showCustomAlert({
+      title: 'Permission Denied',
+      message: 'Staff deletion is restricted strictly to Root Administrators.',
+      type: 'error'
+    });
     return;
   }
 
-  if (user.role === 'manager') {
-    const activeManagers = appState.users.filter(u => u.role === 'manager');
-    if (activeManagers.length <= 1) {
-      showLightbox({
-        title: 'Deletion Blocked',
-        message: 'At least one active Manager account is required in the system. You cannot delete the sole remaining Manager account.',
-        type: 'warning'
-      });
-      return;
+  const user = appState.users.find(u => String(u.id) === String(userId) || u.staffId === userId);
+  if (!user || user.username === 'admin') {
+    await showCustomAlert({ title: 'Action Prohibited', message: 'Cannot delete primary root administrator account.', type: 'error' });
+    return;
+  }
+
+  const confirmed = await showCustomConfirm({
+    title: 'Confirm Delete Staff Account',
+    message: `Are you sure you want to permanently delete staff member "${user.name}" (${user.staffId || user.username})? Historical payroll and activity logs will be preserved.`,
+    confirmText: 'Delete Staff Member',
+    cancelText: 'Cancel',
+    type: 'warning'
+  });
+
+  if (!confirmed) return;
+
+  const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
+  try {
+    const res = await fetch('/api/staff/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ staffId: user.staffId || user.id })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      appState.users = appState.users.filter(u => String(u.id) !== String(user.id));
+      logActivity(`User Deleted: ${user.username}`, `Staff ID ${user.staffId || user.id} deleted by Admin`, 'user');
+      saveDatabase();
+      renderAdminUsersTable();
+      showToast(`Staff member ${user.name} deleted successfully.`);
+    } else {
+      await showCustomAlert({ title: 'Deletion Failed', message: data.error || 'Failed to delete staff account.', type: 'error' });
+    }
+  } catch (err) {
+    showToast('Error deleting staff account: ' + err.message);
+  }
+}
+
+
+
+window.openStaffProfileModal = function(staffId) {
+  const staff = appState.users.find(u => String(u.id) === String(staffId) || u.staffId === staffId);
+  if (!staff) return;
+
+  const modal = document.getElementById('staff-profile-modal');
+  if (!modal) return;
+
+  const tenure = calculateTenure(staff.joiningDate || '2023-01-10');
+
+  // Populate Header
+  const photoEl = document.getElementById('sp-header-photo');
+  if (photoEl) photoEl.src = staff.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100';
+
+  const nameEl = document.getElementById('sp-header-name');
+  if (nameEl) nameEl.textContent = staff.name;
+
+  const roleEl = document.getElementById('sp-header-role');
+  if (roleEl) roleEl.textContent = staff.role.toUpperCase();
+
+  const idEl = document.getElementById('sp-header-id');
+  if (idEl) idEl.textContent = staff.staffId || staff.username;
+
+  const tenureEl = document.getElementById('sp-header-tenure');
+  if (tenureEl) tenureEl.textContent = tenure.formatted;
+
+  const statusEl = document.getElementById('sp-header-status');
+  if (statusEl) {
+    statusEl.textContent = (staff.status || 'active').toUpperCase();
+    statusEl.className = `status-badge ${staff.status === 'disabled' ? 'status-inactive' : 'status-active'} text-[9px]`;
+  }
+
+  // Populate Overview Details
+  const desigEl = document.getElementById('sp-overview-designation');
+  if (desigEl) desigEl.textContent = staff.designation || (staff.role === 'manager' ? 'Senior Dojo Manager' : 'Front Desk Specialist');
+
+  const deptEl = document.getElementById('sp-overview-department');
+  if (deptEl) deptEl.textContent = staff.department || 'Operations';
+
+  const branchEl = document.getElementById('sp-overview-branch');
+  if (branchEl) branchEl.textContent = staff.branchId || 'HQ Main Dojo';
+
+  const joiningEl = document.getElementById('sp-overview-joining');
+  if (joiningEl) joiningEl.textContent = staff.joiningDate || '2023-01-10';
+
+  const tenureFullEl = document.getElementById('sp-overview-tenure-full');
+  if (tenureFullEl) tenureFullEl.textContent = tenure.full;
+
+  const userEl = document.getElementById('sp-overview-username');
+  if (userEl) userEl.textContent = staff.username;
+
+  const emailEl = document.getElementById('sp-overview-email');
+  if (emailEl) emailEl.textContent = staff.email || `${staff.username}@karateacademyindia.com`;
+
+  const phoneEl = document.getElementById('sp-overview-phone');
+  if (phoneEl) phoneEl.textContent = staff.phone || '+91 70409 25258';
+
+  const salaryEl = document.getElementById('sp-overview-salary');
+  if (salaryEl) salaryEl.textContent = `₹${(staff.monthlySalary || staff.salaryAmount || 25000).toLocaleString('en-IN')}`;
+
+  // Populate Salary Transactions Tab
+  const salaryHistory = (appState.staffSalaries || []).filter(s => String(s.staffId) === String(staff.staffId) || String(s.staffId) === String(staff.id));
+  const totalPaid = salaryHistory.reduce((sum, s) => sum + (s.paidAmount || s.amount || 0), 0);
+  const totalPaidEl = document.getElementById('sp-salary-total-paid');
+  if (totalPaidEl) totalPaidEl.textContent = `Total Disbursed: ₹${totalPaid.toLocaleString('en-IN')}`;
+
+  const salaryTbody = document.getElementById('sp-salary-table-body');
+  if (salaryTbody) {
+    if (salaryHistory.length === 0) {
+      salaryTbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No salary transactions recorded for staff member.</td></tr>`;
+    } else {
+      salaryTbody.innerHTML = salaryHistory.map(s => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-2.5 px-4 font-mono font-bold text-slate-900">${s.id}</td>
+          <td class="py-2.5 px-4 font-bold text-slate-900">${s.month || 'Current'}</td>
+          <td class="py-2.5 px-4 font-mono font-bold text-emerald-700">₹${(s.paidAmount || s.amount || 0).toLocaleString('en-IN')}</td>
+          <td class="py-2.5 px-4 text-slate-600">${s.paymentMethod || 'Bank Transfer'}</td>
+          <td class="py-2.5 px-4 text-slate-500 font-mono">${s.paymentDate || 'N/A'}</td>
+          <td class="py-2.5 px-4 text-right"><span class="status-badge status-paid">PAID</span></td>
+        </tr>
+      `).join('');
     }
   }
 
-  showLightbox({
-    title: 'Delete User Account',
-    message: `Are you sure you want to permanently delete user account "${user.username}"?`,
-    type: 'confirm',
-    confirmText: 'Delete Account',
-    onResult: (confirmed) => {
-      if (confirmed) {
-        appState.users = appState.users.filter(u => String(u.id) !== String(userId));
-        logActivity(`User Deleted: ${user.username}`, `Role was ${user.role.toUpperCase()}`, 'user');
-        saveDatabase();
-        renderAdminUsersTable();
-        showToast(`Deleted user account: ${user.username}`);
-      }
+  // Populate Payslips Tab
+  const payslipContainer = document.getElementById('sp-payslips-list-container');
+  if (payslipContainer) {
+    if (salaryHistory.length === 0) {
+      payslipContainer.innerHTML = `<div class="p-6 text-center text-slate-400 bg-slate-50 rounded-xl border border-slate-200">No payslips generated yet. Click "Generate New Payslip" to disburse monthly salary.</div>`;
+    } else {
+      payslipContainer.innerHTML = salaryHistory.map(s => `
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+          <div class="space-y-1">
+            <h5 class="font-extrabold text-slate-900 text-sm">Monthly Payslip — ${s.month}</h5>
+            <div class="text-xs text-slate-500 font-mono">Ref #: ${s.id} • Issued: ${s.paymentDate || 'N/A'}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <strong class="text-emerald-700 font-mono font-extrabold text-sm">₹${(s.paidAmount || s.amount || 0).toLocaleString('en-IN')}</strong>
+            <button onclick="downloadReceiptPDF('${s.id}')" class="px-3 py-1.5 bg-slate-900 text-white font-bold text-xs rounded-xl hover:bg-slate-800 shadow transition flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs">download</span>
+              <span>Payslip PDF</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
     }
+  }
+
+  // Populate Account Control Toggle
+  const toggleBtn = document.getElementById('sp-btn-toggle-status');
+  if (toggleBtn) {
+    if (staff.status === 'disabled') {
+      toggleBtn.textContent = 'Enable Account';
+      toggleBtn.className = 'px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition shadow';
+    } else {
+      toggleBtn.textContent = 'Disable Account';
+      toggleBtn.className = 'px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition shadow';
+    }
+    toggleBtn.onclick = () => {
+      toggleUserDisabled(staff.id);
+      closeStaffProfileModal();
+    };
+  }
+
+  // Admin Delete Safeguard
+  const adminDeleteSec = document.getElementById('sp-admin-delete-container');
+  const deleteBtn = document.getElementById('sp-btn-delete-staff');
+  if (adminDeleteSec && deleteBtn) {
+    if (appState.userRole === 'admin' && staff.username !== 'admin') {
+      adminDeleteSec.classList.remove('hidden');
+      deleteBtn.onclick = () => {
+        closeStaffProfileModal();
+        deleteUserAccount(staff.id);
+      };
+    } else {
+      adminDeleteSec.classList.add('hidden');
+    }
+  }
+
+  // Modal Tab Switching
+  const tabBtns = modal.querySelectorAll('.sp-tab-btn');
+  const tabContents = modal.querySelectorAll('.sp-tab-content');
+  tabBtns.forEach(btn => {
+    btn.onclick = () => {
+      const target = btn.getAttribute('data-sp-tab');
+      tabBtns.forEach(b => {
+        b.classList.remove('border-blue-600', 'text-blue-600');
+        b.classList.add('border-transparent', 'text-slate-600');
+      });
+      btn.classList.remove('border-transparent', 'text-slate-600');
+      btn.classList.add('border-blue-600', 'text-blue-600');
+
+      tabContents.forEach(c => {
+        if (c.id === `sp-tab-content-${target}`) c.classList.remove('hidden');
+        else c.classList.add('hidden');
+      });
+    };
   });
-}
+
+  const closeBtn = document.getElementById('close-sp-modal');
+  if (closeBtn) closeBtn.onclick = closeStaffProfileModal;
+
+  modal.classList.remove('hidden');
+};
+
+window.closeStaffProfileModal = function() {
+  document.getElementById('staff-profile-modal')?.classList.add('hidden');
+};
 
 // Belt CSS Helper
 function getBeltClass(belt) {
@@ -5110,80 +4842,7 @@ function openEditStudentModal(idStr) {
   document.getElementById('edit-student-modal')?.classList.remove('hidden');
 }
 
-let currentWizardStep = 1;
-
-window.setWizardStep = function(stepNum) {
-  currentWizardStep = Math.max(1, Math.min(4, stepNum));
-
-  for (let i = 1; i <= 4; i++) {
-    const stepDiv = document.getElementById(`add-student-step-${i}`);
-    const stepPill = document.getElementById(`wiz-step-pill-${i}`);
-
-    if (stepDiv) {
-      if (i === currentWizardStep) stepDiv.classList.remove('hidden');
-      else stepDiv.classList.add('hidden');
-    }
-
-    if (stepPill) {
-      if (i === currentWizardStep) {
-        stepPill.className = 'py-2 px-1 rounded-xl bg-red-600 text-white shadow-sm border border-red-700 transition font-bold';
-      } else if (i < currentWizardStep) {
-        stepPill.className = 'py-2 px-1 rounded-xl bg-emerald-600 text-white border border-emerald-700 transition font-bold';
-      } else {
-        stepPill.className = 'py-2 px-1 rounded-xl bg-slate-100 text-slate-500 border border-slate-200 transition font-medium';
-      }
-    }
-  }
-
-  const prevBtn = document.getElementById('wiz-prev-btn');
-  const nextBtn = document.getElementById('wiz-next-btn');
-  const submitBtn = document.getElementById('wiz-submit-btn');
-
-  if (prevBtn) {
-    if (currentWizardStep > 1) prevBtn.classList.remove('hidden');
-    else prevBtn.classList.add('hidden');
-  }
-
-  if (nextBtn && submitBtn) {
-    if (currentWizardStep < 4) {
-      nextBtn.classList.remove('hidden');
-      submitBtn.classList.add('hidden');
-    } else {
-      nextBtn.classList.add('hidden');
-      submitBtn.classList.remove('hidden');
-    }
-  }
-};
-
-window.wizardStepNext = function() {
-  if (currentWizardStep === 1) {
-    const fname = document.getElementById('new-student-first-name')?.value.trim();
-    const lname = document.getElementById('new-student-last-name')?.value.trim();
-    if (!fname || !lname) {
-      showToast('Please fill out required First Name and Last Name fields.');
-      return;
-    }
-  } else if (currentWizardStep === 3) {
-    const phone = document.getElementById('new-student-contact-phone')?.value.trim();
-    const email = document.getElementById('new-student-contact-email')?.value.trim();
-    if (!phone || !email) {
-      showToast('Please fill out required Primary Contact Phone and Email.');
-      return;
-    }
-  }
-
-  setWizardStep(currentWizardStep + 1);
-};
-
-window.wizardStepPrev = function() {
-  setWizardStep(currentWizardStep - 1);
-};
-
-window.resetAddStudentWizard = function() {
-  setWizardStep(1);
-};
-
-function setupModals() {
+function setupFormsAndCalculators() {
   const openAddBtns = document.querySelectorAll('.open-add-student-modal');
   const closeAddBtn = document.getElementById('close-add-student-modal');
   const addModal = document.getElementById('add-student-modal');
@@ -5193,7 +4852,6 @@ function setupModals() {
       showLightbox({ title: 'Permission Denied', message: 'Receptionist and Viewer accounts are not authorized to register students.', type: 'error' });
       return;
     }
-    resetAddStudentWizard();
     addModal?.classList.remove('hidden');
   }));
   closeAddBtn?.addEventListener('click', () => addModal?.classList.add('hidden'));
@@ -6858,14 +6516,14 @@ window.openAddExpenseModal = async function() {
 
   const result = await showCustomPrompt({
     title: 'Record Operational Expense',
-    message: 'Enter payee, category, and expense details',
+    message: 'Enter vendor, category, and expense details',
     confirmText: 'Save Expense',
     fields: [
-      { name: 'vendor', label: 'Payee / Vendor Name', placeholder: 'e.g. Dojo Supplies / Electricity Board', required: true },
-      { name: 'amount', label: 'Expense Amount (₹)', type: 'number', placeholder: 'e.g. 2500', required: true },
+      { name: 'vendor', label: 'Payee / Vendor Name', value: 'Dojo Supplies', required: true },
+      { name: 'amount', label: 'Expense Amount (₹)', type: 'number', value: '1500', required: true },
       { name: 'category', label: 'Category', type: 'select', options: ['Utilities', 'Equipment', 'Salaries', 'Marketing', 'Maintenance', 'Misc'], value: 'Utilities' },
       { name: 'branchId', label: 'Branch Dojo', type: 'select', options: branchOptions, value: branchOptions[0].value },
-      { name: 'description', label: 'Description / Notes', placeholder: 'e.g. Monthly utility payment' }
+      { name: 'description', label: 'Description / Notes', value: 'Operational expense payment' }
     ]
   });
 
@@ -6888,6 +6546,7 @@ window.openAddExpenseModal = async function() {
 };
 
 window.openAddBranchModal = async function() {
+  // Requirement 2: Strictly enforce Admin-only branch creation in UI
   if (appState.userRole !== 'admin') {
     await showCustomAlert({
       title: 'Permission Restricted',
@@ -6902,10 +6561,10 @@ window.openAddBranchModal = async function() {
     message: 'Configure regional training facility details',
     confirmText: 'Create Branch',
     fields: [
-      { name: 'name', label: 'Branch Name', placeholder: 'e.g. East Branch Dojo', required: true },
-      { name: 'code', label: 'Branch Code (e.g. EAST)', placeholder: 'e.g. EAST', required: true },
-      { name: 'city', label: 'City Location', placeholder: 'e.g. Jaipur', required: true },
-      { name: 'address', label: 'Complete Address', placeholder: 'e.g. East Martial Arts Complex' }
+      { name: 'name', label: 'Branch Name', value: 'East Branch Dojo', required: true },
+      { name: 'code', label: 'Branch Code (e.g. EAST)', value: 'EAST', required: true },
+      { name: 'city', label: 'City Location', value: 'Jaipur', required: true },
+      { name: 'address', label: 'Complete Address', value: 'East Martial Arts Complex' }
     ]
   });
 

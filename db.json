@@ -26,32 +26,64 @@
       "fromEmail": "kumawatsumit45@gmail.com"
     }
   },
+  "batches": [
+    { "id": "BATCH_MORNING", "name": "Morning Dojo Session", "startTime": "06:00", "endTime": "07:30", "status": "active" },
+    { "id": "BATCH_EVENING", "name": "Evening Tatami Session", "startTime": "17:00", "endTime": "18:30", "status": "active" },
+    { "id": "BATCH_NIGHT", "name": "Night Advance Session", "startTime": "19:00", "endTime": "20:30", "status": "active" }
+  ],
   "users": [
     {
       "id": 1,
+      "staffId": "KAISTF202601",
+      "publicRef": "KAISTF-X001",
       "username": "admin",
       "password": "admin",
       "name": "KAI Administrator",
       "email": "info@karateacademyindia.com",
+      "phone": "+91 70409 25257",
       "role": "admin",
+      "designation": "Chief Director",
+      "department": "Administration",
+      "branchId": "HQ",
+      "joiningDate": "2022-01-10",
+      "salaryAmount": 75000,
+      "salaryStatus": "Disbursed",
       "status": "active"
     },
     {
       "id": 1786096911444,
+      "staffId": "KAISTF202602",
+      "publicRef": "KAISTF-X002",
       "username": "hemantk",
       "password": "123",
       "name": "Hemant Kumawat",
       "email": "info@karateacademyindia.com",
+      "phone": "+91 70409 25258",
       "role": "manager",
+      "designation": "Senior Dojo Manager",
+      "department": "Operations",
+      "branchId": "HQ",
+      "joiningDate": "2023-03-15",
+      "salaryAmount": 45000,
+      "salaryStatus": "Disbursed",
       "status": "active"
     },
     {
       "id": 1786214242285,
+      "staffId": "KAISTF202603",
+      "publicRef": "KAISTF-X003",
       "username": "rohitk",
       "password": "123",
       "name": "Rohit Kumawat",
       "email": "info@karateacademyindia.com",
+      "phone": "+91 70409 25259",
       "role": "receptionist",
+      "designation": "Front Desk Specialist",
+      "department": "Reception",
+      "branchId": "HQ",
+      "joiningDate": "2024-02-01",
+      "salaryAmount": 30000,
+      "salaryStatus": "Disbursed",
       "status": "active"
     }
   ],
@@ -93,7 +125,7 @@
       "membershipPlan": "Monthly Plan",
       "parentName": "Ramesh Sharma",
       "phone": "9876543210",
-      "email": "info@karateacademyindia.com",
+      "email": "aarav.sharma@karateacademyindia.com",
       "emergName": "Ramesh Sharma",
       "emergPhone": "9876543210",
       "address": "Connaught Place, Central Delhi",
@@ -122,7 +154,7 @@
       "membershipPlan": "Monthly Plan",
       "parentName": "Ramesh Sharma",
       "phone": "9876543210",
-      "email": "info@karateacademyindia.com",
+      "email": "aarav.sharma@karateacademyindia.com",
       "emergName": "Ramesh Sharma",
       "emergPhone": "9876543210",
       "address": "Connaught Place, Central Delhi",
@@ -280,7 +312,7 @@
     {
       "id": 1786292062581,
       "title": "Email Receipt Dispatched: KAISTD202603A",
-      "subtitle": "Sent to applicant_1786292055346@example.com for Aarav Sharma (Delivered)",
+      "subtitle": "Sent to aarav.sharma@karateacademyindia.com for Aarav Sharma (Delivered)",
       "timestamp": "09/08/26, 9:44 pm",
       "type": "payment"
     },
@@ -301,7 +333,7 @@
     {
       "id": 1786279303930,
       "title": "Email Receipt Dispatched: KAISTD202602A",
-      "subtitle": "Sent to applicant_1786279291521@example.com for Aarav Sharma (Delivered)",
+      "subtitle": "Sent to aarav.sharma@karateacademyindia.com for Aarav Sharma (Delivered)",
       "timestamp": "09/08/26, 6:11 pm",
       "type": "payment"
     },
@@ -410,7 +442,7 @@
       "membershipPlan": "Monthly Plan",
       "parentName": "Ramesh Sharma",
       "phone": "9876543210",
-      "email": "info@karateacademyindia.com",
+      "email": "aarav.sharma@karateacademyindia.com",
       "emergName": "Ramesh Sharma",
       "emergPhone": "9876543210",
       "emergRelation": "Parent / Guardian",
@@ -450,7 +482,7 @@
       "membershipPlan": "Monthly Plan",
       "parentName": "Ramesh Sharma",
       "phone": "9876543210",
-      "email": "info@karateacademyindia.com",
+      "email": "aarav.sharma@karateacademyindia.com",
       "emergName": "Ramesh Sharma",
       "emergPhone": "9876543210",
       "emergRelation": "Parent / Guardian",
@@ -479,7 +511,7 @@
     {
       "id": 1786292062868,
       "category": "receipt",
-      "recipientEmail": "applicant_1786292055346@example.com",
+      "recipientEmail": "aarav.sharma@karateacademyindia.com",
       "recipientName": "Aarav Sharma",
       "subject": "Official Fee Payment Receipt #KAISTD202603A - Karate Academy India",
       "subtitle": "Official Payment Receipt",
@@ -498,7 +530,7 @@
     {
       "id": 1786292059322,
       "category": "receipt",
-      "recipientEmail": "applicant_1786292055346@example.com",
+      "recipientEmail": "aarav.sharma@karateacademyindia.com",
       "recipientName": "Aarav Sharma",
       "subject": "Official Fee Payment Receipt #KAISTD202603A - Karate Academy India",
       "subtitle": "Official Payment Receipt",
@@ -517,7 +549,7 @@
     {
       "id": 1786292055466,
       "category": "attendance_present",
-      "recipientEmail": "applicant_1786292055346@example.com",
+      "recipientEmail": "aarav.sharma@karateacademyindia.com",
       "recipientName": "Aarav Sharma",
       "subject": "Attendance Confirmation: Present on Mat - Karate Academy India",
       "subtitle": "Mat Check-In Confirmation",
@@ -538,7 +570,7 @@
     {
       "id": 1786292056263,
       "category": "id_card",
-      "recipientEmail": "applicant_1786292055346@example.com",
+      "recipientEmail": "aarav.sharma@karateacademyindia.com",
       "recipientName": "Aarav Sharma",
       "subject": "Admission Approved! Official Student ID Card (KAISTD202603) - Karate Academy India",
       "subtitle": "Official Admission & Digital ID Card Delivery",
@@ -559,7 +591,7 @@
     {
       "id": 1786292055774,
       "category": "admission_received",
-      "recipientEmail": "applicant_1786292055346@example.com",
+      "recipientEmail": "aarav.sharma@karateacademyindia.com",
       "recipientName": "Aarav Sharma",
       "subject": "Admission Application Received (KAI-ADM-2026-0002) - Karate Academy India",
       "subtitle": "Application Acknowledgement",
@@ -578,7 +610,7 @@
     {
       "id": 1786279304751,
       "category": "receipt",
-      "recipientEmail": "applicant_1786279291521@example.com",
+      "recipientEmail": "aarav.sharma@karateacademyindia.com",
       "recipientName": "Aarav Sharma",
       "subject": "Official Fee Payment Receipt #KAISTD202602A - Karate Academy India",
       "subtitle": "Official Payment Receipt",
@@ -597,7 +629,7 @@
     {
       "id": 1786279301320,
       "category": "receipt",
-      "recipientEmail": "applicant_1786279291521@example.com",
+      "recipientEmail": "aarav.sharma@karateacademyindia.com",
       "recipientName": "Aarav Sharma",
       "subject": "Official Fee Payment Receipt #KAISTD202602A - Karate Academy India",
       "subtitle": "Official Payment Receipt",
@@ -616,7 +648,7 @@
     {
       "id": 1786279291992,
       "category": "attendance_present",
-      "recipientEmail": "applicant_1786279291521@example.com",
+      "recipientEmail": "aarav.sharma@karateacademyindia.com",
       "recipientName": "Aarav Sharma",
       "subject": "Attendance Confirmation: Present on Mat - Karate Academy India",
       "subtitle": "Mat Check-In Confirmation",
@@ -637,7 +669,7 @@
     {
       "id": 1786279291590,
       "category": "id_card",
-      "recipientEmail": "applicant_1786279291521@example.com",
+      "recipientEmail": "aarav.sharma@karateacademyindia.com",
       "recipientName": "Aarav Sharma",
       "subject": "Admission Approved! Official Student ID Card (KAISTD202602) - Karate Academy India",
       "subtitle": "Official Admission & Digital ID Card Delivery",
@@ -658,7 +690,7 @@
     {
       "id": 1786279291820,
       "category": "admission_received",
-      "recipientEmail": "applicant_1786279291521@example.com",
+      "recipientEmail": "aarav.sharma@karateacademyindia.com",
       "recipientName": "Aarav Sharma",
       "subject": "Admission Application Received (KAI-ADM-2026-0001) - Karate Academy India",
       "subtitle": "Application Acknowledgement",
