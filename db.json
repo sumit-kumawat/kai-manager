@@ -15,7 +15,7 @@
     "receiptHeader": "KARATE ACADEMY INDIA",
     "receiptFooter": "Thank you for training with Karate Academy India! For queries contact +917040925257.",
     "contactPhone": "+917040925257",
-    "contactEmail": "admin@conzex.com",
+    "contactEmail": "info@karateacademyindia.com",
     "smtp": {
       "host": "smtp.gmail.com",
       "port": "465",
@@ -32,7 +32,7 @@
       "username": "admin",
       "password": "admin",
       "name": "KAI Administrator",
-      "email": "admin@conzex.com",
+      "email": "info@karateacademyindia.com",
       "role": "admin",
       "status": "active"
     },
@@ -93,7 +93,7 @@
       "membershipPlan": "Monthly Plan",
       "parentName": "Ramesh Sharma",
       "phone": "9876543210",
-      "email": "applicant_1786279291521@example.com",
+      "email": "info@karateacademyindia.com",
       "emergName": "Ramesh Sharma",
       "emergPhone": "9876543210",
       "address": "Connaught Place, Central Delhi",
@@ -122,7 +122,7 @@
       "membershipPlan": "Monthly Plan",
       "parentName": "Ramesh Sharma",
       "phone": "9876543210",
-      "email": "applicant_1786292055346@example.com",
+      "email": "info@karateacademyindia.com",
       "emergName": "Ramesh Sharma",
       "emergPhone": "9876543210",
       "address": "Connaught Place, Central Delhi",
@@ -347,7 +347,7 @@
       "user": {
         "name": "KAI Administrator",
         "username": "admin",
-        "email": "admin@conzex.com",
+        "email": "info@karateacademyindia.com",
         "role": "admin"
       },
       "createdAt": 1786303991516
@@ -367,7 +367,7 @@
       "user": {
         "name": "KAI Portal Viewer",
         "username": "viewer",
-        "email": "viewer@conzex.com",
+        "email": "viewer@karateacademyindia.com",
         "role": "viewer"
       },
       "createdAt": 1786281139597
@@ -387,7 +387,7 @@
       "user": {
         "name": "KAI Manager",
         "username": "manager",
-        "email": "manager@conzex.com",
+        "email": "manager@karateacademyindia.com",
         "role": "manager"
       },
       "createdAt": 1786279639952
@@ -410,7 +410,7 @@
       "membershipPlan": "Monthly Plan",
       "parentName": "Ramesh Sharma",
       "phone": "9876543210",
-      "email": "applicant_1786292055346@example.com",
+      "email": "info@karateacademyindia.com",
       "emergName": "Ramesh Sharma",
       "emergPhone": "9876543210",
       "emergRelation": "Parent / Guardian",
@@ -450,7 +450,7 @@
       "membershipPlan": "Monthly Plan",
       "parentName": "Ramesh Sharma",
       "phone": "9876543210",
-      "email": "applicant_1786279291521@example.com",
+      "email": "info@karateacademyindia.com",
       "emergName": "Ramesh Sharma",
       "emergPhone": "9876543210",
       "emergRelation": "Parent / Guardian",

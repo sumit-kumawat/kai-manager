@@ -28,8 +28,8 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between antialiased selection:bg-red-500 selection:text-white">
 
-  <!-- TOP HEADER -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+  <!-- TOP HEADER (STICKY SITE HEADER) -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
     <div class="max-w-4xl mx-auto px-4 h-20 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center shadow-sm border border-slate-200">
@@ -436,10 +436,7 @@
         <strong>Karate Academy India Management Portal</strong> • Official Mat Registration
       </div>
       <div>
-        <a href="https://www.conzex.com?utm_source=chatgpt.com" target="_blank" rel="noopener" class="conzex-rainbow-text font-bold inline-flex items-center gap-1">
-          <img src="https://files.conzex.com/api/files/public/f32f130c-199c-4d0b-8fd5-4134757a71d9/icon-rounded.png" alt="Conzex" class="w-3.5 h-3.5 inline-block"/>
-          <span>Conzex Global Private Limited</span>
-        </a>
+        <span class="font-bold text-slate-600">Karate Academy India Official ERP</span>
       </div>
     </div>
   </footer>
@@ -622,12 +619,22 @@
 
     document.getElementById('btn-refresh-captcha')?.addEventListener('click', loadCaptcha);
 
+    function showAdmissionAlert(msg) {
+      const errBox = document.getElementById('form-error-box');
+      const errText = document.getElementById('form-error-text');
+      if (errBox && errText) {
+        errText.textContent = msg;
+        errBox.classList.remove('hidden');
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
     // Photo File Input Handler
     document.getElementById('adm-photo-file')?.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
       if (file.size > 5 * 1024 * 1024) {
-        alert('Passport photo size must be less than 5MB.');
+        showAdmissionAlert('Passport photo size must be less than 5MB.');
         return;
       }
       const reader = new FileReader();
@@ -643,11 +650,11 @@
       const file = e.target.files[0];
       if (!file) return;
       if (attachedDocuments.length >= 5) {
-        alert('Maximum 5 documents can be attached.');
+        showAdmissionAlert('Maximum 5 documents can be attached.');
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        alert('Document size must be less than 5MB.');
+        showAdmissionAlert('Document size must be less than 5MB.');
         return;
       }
 

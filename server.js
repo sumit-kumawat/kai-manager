@@ -221,7 +221,7 @@ function createPdfReceiptBuffer(invoiceObj) {
   const method = String(invoiceObj.paymentMethod || invoiceObj.method || 'Online / Transfer / Cash');
   const dateStr = String(invoiceObj.date || invoiceObj.dueDate || new Date().toISOString().split('T')[0]);
   const phone = String(invoiceObj.phone || invoiceObj.studentPhone || '+91 70409 25257');
-  const email = String(invoiceObj.email || invoiceObj.studentEmail || 'support@conzex.com');
+  const email = String(invoiceObj.email || invoiceObj.studentEmail || 'info@karateacademyindia.com');
 
   const pdfText = `%PDF-1.4
 1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj
@@ -238,7 +238,7 @@ BT
 /F2 10 Tf
 (Official Mat Portal Fee Payment Receipt) Tj
 0 -15 TD
-(Tel: +91 70409 25257  |  Email: support@conzex.com) Tj
+(Tel: +91 70409 25257  |  Email: info@karateacademyindia.com) Tj
 0 -30 TD
 /F1 12 Tf
 (OFFICIAL PAID RECEIPT  -  INVOICE #: ${invId}) Tj
@@ -390,7 +390,7 @@ function createPdfFinancialLedgerBuffer(dbData, filterBranch = 'all') {
   const appTitle = cfg.appTitle || 'KAI Manager';
   const orgName = cfg.receiptHeader || 'KARATE ACADEMY INDIA';
   const phone = cfg.contactPhone || '+91 70409 25257';
-  const email = cfg.contactEmail || 'admin@conzex.com';
+  const email = cfg.contactEmail || 'info@karateacademyindia.com';
 
   let financials = dbData.financials || [];
   let expenses = dbData.expenses || [];
@@ -408,71 +408,95 @@ function createPdfFinancialLedgerBuffer(dbData, filterBranch = 'all') {
   const netBalance = totalIncome - totalExpenses - totalSalaries;
   const genDate = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
 
+  // Build structured table rows
+  const ledgerRows = [];
+  financials.slice(0, 10).forEach(f => {
+    ledgerRows.push({
+      date: String(f.date || f.dueDate || '2026-08-10').substring(0, 10),
+      ref: String(f.id || 'INV').padEnd(14, ' ').substring(0, 14),
+      type: 'INCOME '.padEnd(8, ' '),
+      desc: String(f.studentName || 'Athlete Tuition').padEnd(26, ' ').substring(0, 26),
+      amount: `+ Rs. ${parseInt(f.finalPaid || f.amount || 0).toLocaleString('en-IN')}`
+    });
+  });
+
+  expenses.slice(0, 5).forEach(e => {
+    ledgerRows.push({
+      date: String(e.date || '2026-08-10').substring(0, 10),
+      ref: String(e.id || 'EXP').padEnd(14, ' ').substring(0, 14),
+      type: 'EXPENSE'.padEnd(8, ' '),
+      desc: String(e.vendor || e.category || 'Dojo Expense').padEnd(26, ' ').substring(0, 26),
+      amount: `- Rs. ${parseInt(e.amount || 0).toLocaleString('en-IN')}`
+    });
+  });
+
   const pdfText = `%PDF-1.4
 1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj
 2 0 obj <</Type /Pages /Kids [3 0 R] /Count 1>> endobj
 3 0 obj <</Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources <</Font <</F1 4 0 R /F2 6 0 R>>>> /Contents 5 0 R>> endobj
 4 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold>> endobj
 6 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>> endobj
-5 0 obj <</Length 1300>> stream
+5 0 obj <</Length 1800>> stream
 BT
 /F1 18 Tf
 40 800 TD
 (${orgName.toUpperCase()}) Tj
 0 -20 TD
 /F2 10 Tf
-(FINANCIAL LEDGER & AUDIT STATEMENT) Tj
+(OFFICIAL FINANCIAL LEDGER & AUDIT STATEMENT) Tj
 0 -15 TD
 (Generated: ${genDate}   |   Branch Scope: ${filterBranch.toUpperCase()}) Tj
 0 -15 TD
 (Tel: ${phone}   |   Email: ${email}) Tj
-0 -30 TD
-/F1 12 Tf
-(FINANCIAL SUMMARY & BALANCE SHEET:) Tj
-0 -20 TD
+0 -25 TD
+/F1 11 Tf
+(1. FINANCIAL SUMMARY & BALANCE SHEET) Tj
+0 -18 TD
 /F2 10 Tf
-(Total Gross Income Received: Rs. ${totalIncome.toLocaleString('en-IN')}) Tj
-0 -15 TD
-(Total Operational Expenses: Rs. ${totalExpenses.toLocaleString('en-IN')}) Tj
-0 -15 TD
-(Total Staff Salaries Disbursed: Rs. ${totalSalaries.toLocaleString('en-IN')}) Tj
-0 -20 TD
-/F1 14 Tf
-(NET CLOSING CASH BALANCE: Rs. ${netBalance.toLocaleString('en-IN')}) Tj
-0 -30 TD
+(Gross Tuition Income Received:   Rs. ${totalIncome.toLocaleString('en-IN')}) Tj
+0 -14 TD
+(Operational Expenses Total:      Rs. ${totalExpenses.toLocaleString('en-IN')}) Tj
+0 -14 TD
+(Staff Salary Disbursement Total: Rs. ${totalSalaries.toLocaleString('en-IN')}) Tj
+0 -18 TD
 /F1 12 Tf
-(KEY TRANSACTIONS LOG:) Tj
-0 -20 TD
-/F2 9 Tf
-(Ref ID          Type        Recipient / Note            Amount (Rs.)    Status) Tj
-0 -15 TD
+(NET CLOSING CASH BALANCE:        Rs. ${netBalance.toLocaleString('en-IN')}) Tj
+0 -30 TD
+/F1 11 Tf
+(2. TRANSACTIONAL LEDGER STATEMENT) Tj
+0 -18 TD
+/F1 9 Tf
+(DATE       REF ID         TYPE     DESCRIPTION / PAYEE        AMOUNT) Tj
+0 -12 TD
 (--------------------------------------------------------------------------------) Tj
-0 -15 TD
-${financials.slice(0, 15).map(f => `(${String(f.id || 'N/A').substring(0, 15)}  Income   ${String(f.studentName || 'Student').substring(0, 20)}  Rs.${String(f.finalPaid || f.amount || 0)}  Paid)`).join('\n0 -15 TD\n')}
+0 -14 TD
+/F2 9 Tf
+${ledgerRows.map(r => `(${r.date}  ${r.ref}  ${r.type} ${r.desc} ${r.amount})`).join('\n0 -14 TD\n')}
 0 -30 TD
 /F1 10 Tf
-(END OF STATEMENT - CONFIDENTIAL FINANCIAL REPORT) Tj
+(OFFICIAL COMPUTERIZED AUDIT STATEMENT - KARATE ACADEMY INDIA) Tj
 0 -14 TD
 /F2 9 Tf
 (Page 1 of 1 - Computerized Statement Issued by ${appTitle}) Tj
 ET
 endstream
 endobj
+6 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>> endobj
 xref
 0 7
 0000000000 65535 f 
-0000000010 00000 n 
-0000000060 00000 n 
-0000000117 00000 n 
-0000000237 00000 n 
-0000000305 00000 n 
-0000000385 00000 n 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000244 00000 n 
+0000000307 00000 n 
+0000002150 00000 n 
 trailer <</Size 7 /Root 1 0 R>>
 startxref
-1500
+2220
 %%EOF`;
 
-  return Buffer.from(pdfText, 'utf-8');
+  return Buffer.from(pdfText, 'binary');
 }
 
 // Robust Authenticated SMTP Transporter Helper (Universal support for Gmail, Hostinger, Zoho, Outlook, cPanel, Custom SMTP)
@@ -671,18 +695,44 @@ async function dispatchAutomatedEmail({
   const dbData = readDbFile();
   dbData.emailLogs = dbData.emailLogs || [];
 
+  // Suppress SMTP dispatch for test dummy addresses (Requirement 6)
+  const isDummyEmail = cleanTargetEmail.includes('example.com') ||
+                       cleanTargetEmail.includes('test.com') ||
+                       cleanTargetEmail.includes('invalid') ||
+                       cleanTargetEmail.startsWith('applicant_');
+
+  if (isDummyEmail) {
+    const dummyLogEntry = {
+      id: Date.now(),
+      category,
+      recipientEmail: cleanTargetEmail,
+      recipientName: cleanTargetName,
+      subject,
+      subtitle: 'Skipped - Test Dummy Email',
+      contentHtml,
+      status: 'failed',
+      timestamp: new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }),
+      triggeredBy,
+      error: 'SMTP Transmission Skipped: Recipient address is a test dummy email address.',
+      meta
+    };
+    dbData.emailLogs.unshift(dummyLogEntry);
+    writeDbFile(dbData);
+    return { success: false, note: 'SMTP transmission skipped for test dummy email address.', logId: dummyLogEntry.id };
+  }
+
   // Duplicate suppression check if enabled
   if (preventDuplicateMinutes > 0) {
     const cutoffTime = Date.now() - (preventDuplicateMinutes * 60 * 1000);
     const existingRecent = dbData.emailLogs.find(log =>
       log.recipientEmail === cleanTargetEmail &&
       log.category === category &&
-      log.subject === subject &&
       log.status === 'sent' &&
-      log.id > cutoffTime
+      ((meta.studentId && meta.date && String(log.meta?.studentId) === String(meta.studentId) && String(log.meta?.date) === String(meta.date)) ||
+       (log.subject === subject && log.id > cutoffTime))
     );
     if (existingRecent) {
-      return { success: true, message: 'Notification already dispatched recently (duplicate suppressed).', logId: existingRecent.id, duplicate: true };
+      return { success: true, message: 'Notification already dispatched for this session/event (duplicate suppressed).', logId: existingRecent.id, duplicate: true };
     }
   }
 
@@ -758,9 +808,18 @@ async function dispatchAutomatedEmail({
       });
     }
 
+    const recipientList = [cleanTargetEmail];
+    const secEmail = meta?.secondaryEmail || meta?.parentEmail || meta?.emergEmail;
+    if (secEmail && String(secEmail).includes('@')) {
+      const cleanSec = String(secEmail).trim().toLowerCase();
+      if (cleanSec !== cleanTargetEmail && !cleanSec.includes('example.com')) {
+        recipientList.push(cleanSec);
+      }
+    }
+
     const mailOptions = {
       from: `"${smtpConfig.fromName || 'Karate Academy India'}" <${smtpConfig.fromEmail || smtpConfig.username}>`,
-      to: cleanTargetEmail,
+      to: recipientList.join(', '),
       replyTo: smtpConfig.replyTo || smtpConfig.fromEmail || smtpConfig.username,
       subject,
       html: htmlBody,
@@ -773,7 +832,7 @@ async function dispatchAutomatedEmail({
     emailLogEntry.error = null;
     writeDbFile(dbData);
 
-    return { success: true, message: `Email dispatched successfully to ${cleanTargetEmail}`, logId };
+    return { success: true, message: `Email dispatched successfully to ${recipientList.join(', ')}`, logId };
   } catch (err) {
     const formattedErr = formatSmtpError(err, smtpConfig?.host, smtpConfig?.port, smtpConfig?.encryption);
     emailLogEntry.status = 'failed';
@@ -856,7 +915,7 @@ const server = http.createServer((req, res) => {
                   username: lowerUser,
                   password: defaultUser.pass,
                   name: defaultUser.name,
-                  email: `${lowerUser}@conzex.com`,
+                  email: `${lowerUser}@karateacademyindia.com`,
                   role: defaultUser.role,
                   status: 'active'
                 };
@@ -1179,7 +1238,7 @@ const server = http.createServer((req, res) => {
 
           const mailOptions = {
             from: `"${fromName || 'KAI Admin'}" <${fromEmail || username}>`,
-            to: testEmail || sessionUser.email || 'admin@conzex.com',
+            to: testEmail || sessionUser.email || 'info@karateacademyindia.com',
             subject: 'Karate Academy India - SMTP Configuration Test',
             html: renderKaiEmailHtml({
               title: 'SMTP Connection Verified',
@@ -1537,10 +1596,35 @@ const server = http.createServer((req, res) => {
       req.on('end', async () => {
         try {
           const { studentId, studentName, studentEmail, status, date, time } = JSON.parse(body);
+          const dbData = readDbFile();
 
-          if (!studentEmail) {
+          const foundStudent = (dbData.students || []).find(s => String(s.studentId) === String(studentId) || String(s.id) === String(studentId));
+          const targetName = studentName || foundStudent?.name || 'Athlete';
+          const primaryEmail = (studentEmail || foundStudent?.contactEmail || foundStudent?.contact?.email || foundStudent?.email || '').trim();
+
+          // Missing Primary Email handling (Requirement 9)
+          if (!primaryEmail || !primaryEmail.includes('@')) {
+            const isPresent = status === 'present';
+            const logEntry = {
+              id: Date.now(),
+              category: isPresent ? 'attendance_present' : 'attendance_absent',
+              recipientEmail: 'N/A',
+              recipientName: targetName,
+              subject: `Attendance Notification (Skipped - Missing Primary Email)`,
+              subtitle: 'Skipped - Missing Primary Email',
+              contentHtml: `<p>Attendance marked as <strong>${status.toUpperCase()}</strong> for ${targetName} (${studentId}) on ${date}, but no valid primary email was configured.</p>`,
+              status: 'failed',
+              timestamp: new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }),
+              triggeredBy: `Attendance Engine (${sessionUser.username})`,
+              error: 'No primary communication email registered for student.',
+              meta: { studentId, status, date }
+            };
+            dbData.emailLogs = dbData.emailLogs || [];
+            dbData.emailLogs.unshift(logEntry);
+            writeDbFile(dbData);
+
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, note: 'No email address registered for student.' }));
+            res.end(JSON.stringify({ success: false, note: 'No primary communication email address registered for student. Logged in email audit trail.', logId: logEntry.id }));
             return;
           }
 
@@ -1551,39 +1635,41 @@ const server = http.createServer((req, res) => {
             : `Attendance Notice: Absent from Session - Karate Academy India`;
           const subtitle = isPresent ? 'Mat Check-In Confirmation' : 'Mat Absence Notice';
 
+          // Standard Professional Template (No Emojis)
           const contentHtml = isPresent ? `
-            <p>This is to confirm that <strong>${studentName}</strong> has safely checked in and is <strong>PRESENT</strong> for today's karate training session on the tatami mat.</p>
+            <p>This is to confirm that <strong>${targetName}</strong> has safely checked in and is <strong>PRESENT</strong> for scheduled training on the tatami mat.</p>
             <div class="card">
               <table class="table">
                 <tr><td class="label">Student ID:</td><td class="value">${studentId}</td></tr>
-                <tr><td class="label">Athlete Name:</td><td class="value">${studentName}</td></tr>
+                <tr><td class="label">Athlete Name:</td><td class="value">${targetName}</td></tr>
                 <tr><td class="label">Check-In Date:</td><td class="value">${date || new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })}</td></tr>
                 <tr><td class="label">Check-In Time:</td><td class="value">${time || new Date().toLocaleTimeString('en-IN', { timeStyle: 'short' })}</td></tr>
                 <tr><td class="label">Attendance Status:</td><td class="value"><span class="badge-paid">PRESENT</span></td></tr>
               </table>
             </div>
+            <p>Thank you for training with Karate Academy India.</p>
           ` : `
-            <p>This is a notification that <strong>${studentName}</strong> was marked <strong>ABSENT</strong> for scheduled training on ${date || new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })}.</p>
+            <p>This is a notification that <strong>${targetName}</strong> was marked <strong>ABSENT</strong> for scheduled training on ${date || new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })}.</p>
             <div class="card">
               <table class="table">
                 <tr><td class="label">Student ID:</td><td class="value">${studentId}</td></tr>
-                <tr><td class="label">Athlete Name:</td><td class="value">${studentName}</td></tr>
+                <tr><td class="label">Athlete Name:</td><td class="value">${targetName}</td></tr>
                 <tr><td class="label">Date:</td><td class="value">${date || new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })}</td></tr>
                 <tr><td class="label">Status:</td><td class="value"><span class="badge-overdue">ABSENT</span></td></tr>
               </table>
             </div>
-            <p>If this absence was due to illness or personal reasons, please let our reception team know.</p>
+            <p>If this absence was due to illness or personal reasons, please inform our administration office.</p>
           `;
 
           const result = await dispatchAutomatedEmail({
             category,
-            targetEmail: studentEmail,
-            targetName: studentName,
+            targetEmail: primaryEmail,
+            targetName,
             subject,
             subtitle,
             contentHtml,
             triggeredBy: `Attendance Engine (${sessionUser.username})`,
-            preventDuplicateMinutes: 10,
+            preventDuplicateMinutes: 1440, // 24 hours per attendance event
             meta: { studentId, status, date }
           });
 
@@ -1630,7 +1716,7 @@ const server = http.createServer((req, res) => {
             id: salaryId,
             staffId: cleanStaffId,
             staffName: staffName || 'Staff Member',
-            staffEmail: staffEmail || 'staff@conzex.com',
+            staffEmail: staffEmail || 'staff@karateacademyindia.com',
             month: cleanMonth,
             paidAmount: parseInt(paidAmount || 0),
             paymentDate: paymentDate || new Date().toISOString().split('T')[0],
@@ -1722,9 +1808,9 @@ const server = http.createServer((req, res) => {
       }
 
       if (req.method === 'POST') {
-        if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
+        if (sessionUser.role !== 'admin') {
           res.writeHead(403, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: '403 Forbidden.' }));
+          res.end(JSON.stringify({ error: '403 Forbidden. Only Administrators can create or update branches.' }));
           return;
         }
 
@@ -1737,6 +1823,14 @@ const server = http.createServer((req, res) => {
             dbData.branches = dbData.branches || [];
 
             const existingIdx = dbData.branches.findIndex(b => String(b.id) === String(branchObj.id));
+            
+            // Requirement 2: Strictly enforce Admin-only branch creation
+            if (existingIdx < 0 && sessionUser.role !== 'admin') {
+              res.writeHead(403, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Only Administrators can create new branches. Managers and Receptionists are restricted.' }));
+              return;
+            }
+
             if (existingIdx >= 0) {
               dbData.branches[existingIdx] = { ...dbData.branches[existingIdx], ...branchObj };
             } else {
@@ -1961,6 +2055,20 @@ const server = http.createServer((req, res) => {
       return;
     }
 
+// Secure Public Reference Generator (Masked, Non-Sensitive Tokens for Public Contexts)
+function getStudentPublicRef(student) {
+  if (!student) return 'KAISTDXXXX';
+  if (student.publicRef) return student.publicRef;
+  const idStr = String(student.studentId || student.id || '');
+  let hash = 0;
+  for (let i = 0; i < idStr.length; i++) {
+    hash = ((hash << 5) - hash) + idStr.charCodeAt(i);
+    hash |= 0;
+  }
+  const token = Math.abs(hash).toString(36).toUpperCase().padStart(4, 'X').slice(-4);
+  return `KAISTD-${token}`;
+}
+
     // 10. Public CAPTCHA Challenge Endpoint (`/api/public/captcha`)
     if (req.url === '/api/public/captcha' && req.method === 'GET') {
       const challenge = generateCaptchaChallenge();
@@ -1969,6 +2077,39 @@ const server = http.createServer((req, res) => {
         success: true,
         token: challenge.token,
         question: challenge.question
+      }));
+      return;
+    }
+
+    // 10.1 Public Athlete Verification Endpoint (`/api/public/verify-athlete`)
+    if (req.url.startsWith('/api/public/verify-athlete') && req.method === 'GET') {
+      const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const ref = urlObj.searchParams.get('ref') || urlObj.searchParams.get('token') || '';
+
+      const dbData = readDbFile();
+      const foundStudent = (dbData.students || []).find(s =>
+        getStudentPublicRef(s) === ref || String(s.publicRef) === ref || String(s.studentId) === ref || String(s.id) === ref
+      );
+
+      if (!foundStudent) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Athlete verification record not found.' }));
+        return;
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        verification: {
+          publicRef: getStudentPublicRef(foundStudent),
+          maskedId: 'KAISTDXXXX',
+          name: foundStudent.name,
+          belt: foundStudent.belt || 'White Belt',
+          status: foundStudent.accountStatus === 'inactive' ? 'Inactive' : 'Active Pass',
+          avatar: foundStudent.avatar || '',
+          academyName: 'Karate Academy India',
+          verifiedAt: new Date().toISOString()
+        }
       }));
       return;
     }

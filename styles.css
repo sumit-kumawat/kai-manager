@@ -11,11 +11,25 @@
   --border-light: #e2e8f0;
 }
 
+html, body {
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100vw;
+}
+
 body {
   background-color: #f8fafc;
   color: #0f172a;
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Universal Sticky Site Header Standard */
+header {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
 }
 
 /* Login View Background Image */
@@ -258,7 +272,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   background: #94a3b8;
 }
 
-/* Requirement 15 & 16: Modern 50% Wider Search Box */
+/* Requirement 5 & 6: Clean & Simple Header Search Box (No Overlap, Proper Padding) */
 .modern-search-wrapper {
   position: relative;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -266,8 +280,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .modern-search-input {
   width: 100%;
   height: 44px;
-  padding-left: 2.85rem;
-  padding-right: 4.5rem;
+  padding-left: 2.75rem;
+  padding-right: 2.75rem;
   background-color: #f8fafc;
   border: 1.5px solid #e2e8f0;
   border-radius: 1rem;
@@ -288,17 +302,6 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   box-shadow: 0 0 0 3.5px rgba(220, 38, 38, 0.12), 0 4px 14px rgba(0, 0, 0, 0.06) !important;
   outline: none;
 }
-.search-kbd-badge {
-  font-size: 10px;
-  font-weight: 700;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  background: #e2e8f0;
-  color: #64748b;
-  padding: 2px 6px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  pointer-events: none;
-}
 .search-clear-btn {
   width: 22px;
   height: 22px;
@@ -308,7 +311,13 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+}
+
+/* Requirement 1: Full-Width Section Layout Enforcement */
+.col-span-full {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}  cursor: pointer;
   transition: all 0.15s ease;
 }
 .search-clear-btn:hover {

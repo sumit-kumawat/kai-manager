@@ -45,6 +45,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 
 <body class="bg-slate-50 text-slate-900 font-sans antialiased pb-24 lg:pb-8 min-h-screen">
@@ -113,15 +114,10 @@
       </form>
     </div>
 
-    <!-- PUBLIC LOGIN PAGE FOOTER WITH CONZEX ROUNDED ICON -->
+    <!-- PUBLIC LOGIN PAGE FOOTER -->
     <footer
       class="mt-8 text-center bg-slate-900/80 backdrop-blur-md px-5 py-2 rounded-full border border-white/10 shadow-lg">
-      <a href="https://www.conzex.com?utm_source=chatgpt.com" target="_blank" rel="noopener"
-        class="conzex-rainbow-text font-normal text-xs tracking-wide inline-flex items-center gap-1.5 hover:opacity-80 transition">
-        <img src="https://files.conzex.com/api/files/public/f32f130c-199c-4d0b-8fd5-4134757a71d9/icon-rounded.png"
-          alt="Conzex Icon" class="w-4 h-4 object-contain inline-block shrink-0" />
-        <span>Conzex Global Private Limited</span>
-      </a>
+      <span class="text-xs text-slate-300 font-semibold tracking-wide">Karate Academy India Management Portal</span>
     </footer>
   </div>
 
@@ -264,15 +260,10 @@
 
         </div>
 
-        <!-- BOTTOM SIDEBAR SECTION: CONZEX BRAND FOOTER -->
+        <!-- BOTTOM SIDEBAR SECTION: KAI BRAND FOOTER -->
         <div class="p-4 border-t border-slate-200 shrink-0">
-          <div class="text-center">
-            <a href="https://www.conzex.com?utm_source=chatgpt.com" target="_blank" rel="noopener"
-              class="conzex-rainbow-text text-xs tracking-wide inline-flex items-center gap-1.5">
-              <img src="https://files.conzex.com/api/files/public/f32f130c-199c-4d0b-8fd5-4134757a71d9/icon-rounded.png"
-                alt="Conzex Icon" class="w-4 h-4 object-contain inline-block shrink-0" />
-              <span>A Conzex Global Product</span>
-            </a>
+          <div class="text-center text-xs font-semibold text-slate-500 tracking-wide">
+            Karate Academy India ERP
           </div>
         </div>
       </div>
@@ -347,20 +338,17 @@
     <!-- DESKTOP STICKY HEADER (EXACT 80PX / H-20 ALIGNMENT) -->
     <!-- ========================================== -->
     <header class="hidden md:block sticky top-0 z-30 bg-white/95 backdrop-blur-md px-6 h-20 border-b border-slate-200">
-      <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 h-full">
-        <!-- MODERN 50% WIDER GLOBAL SEARCH INPUT WITH SHORTCUT BADGE & CLEAR BUTTON -->
+      <div class="max-w-[95rem] mx-auto flex items-center justify-between gap-4 h-full">
+        <!-- CLEAN & SIMPLE GLOBAL SEARCH INPUT -->
         <div class="modern-search-wrapper relative w-full max-w-xl xl:max-w-2xl">
           <span
-            class="material-symbols-outlined absolute left-4 top-2.5 text-slate-400 text-lg pointer-events-none">search</span>
+            class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">search</span>
           <input id="global-search-input" type="text"
-            placeholder="Search students, IDs, invoices, phone numbers, parents, belt ranks..."
+            placeholder="Search students, IDs, invoices, phone numbers, belt ranks..."
             class="modern-search-input" />
-          <div class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-            <kbd class="search-kbd-badge hidden sm:inline-block">⌘K</kbd>
-            <button id="global-search-clear-btn" class="search-clear-btn hidden" type="button" title="Clear search">
-              <span class="material-symbols-outlined text-xs font-bold">close</span>
-            </button>
-          </div>
+          <button id="global-search-clear-btn" class="search-clear-btn hidden absolute right-3 top-1/2 -translate-y-1/2" type="button" title="Clear search">
+            <span class="material-symbols-outlined text-xs font-bold">close</span>
+          </button>
 
           <!-- LIVE SUGGESTIONS DROPDOWN -->
           <div id="global-search-results-dropdown"
@@ -436,129 +424,324 @@
       </div>
     </header>
 
-    <!-- MAIN SCROLLABLE VIEW CONTAINER (GLOBAL SINGLE 70% DESKTOP STANDARD: MAX-W-5XL) -->
-    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 flex-1 w-full">
+    <!-- MAIN SCROLLABLE VIEW CONTAINER (30% EXPANDED ENTERPRISE STANDARD: MAX-W-[95REM]) -->
+    <main class="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 flex-1 w-full">
 
       <!-- ========================================== -->
-      <!-- MODULE 1: DASHBOARD VIEW (CLEAN CONTENT)   -->
+      <!-- MODULE 1: GRAFANA REAL-TIME ADMIN DASHBOARD-->
       <!-- ========================================== -->
       <div id="view-dashboard" class="tab-content active space-y-6">
 
-        <div
-          class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <!-- HEADER & GRAFANA CONTROL TOOLBAR -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-900 text-white p-6 rounded-2xl border border-slate-800 shadow-lg">
           <div>
-            <span class="text-xs font-bold text-red-600 uppercase tracking-wider" id="dash-subtitle">Karate Academy
-              India</span>
-            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5" id="dash-title">Academy Executive
-              Dashboard</h2>
-            <p class="text-xs text-slate-500">Real-Time Student Roster & Attendance Analytics</p>
+            <div class="flex items-center gap-2 text-xs font-bold text-red-500 uppercase tracking-widest" id="dash-subtitle">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+              <span>Karate Academy India • Live Operations Control</span>
+            </div>
+            <h2 class="text-2xl font-extrabold text-white tracking-tight mt-1" id="dash-title">Executive Grafana Dashboard</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Real-time Academy Telemetry, Attendance Analytics & Financial Operations</p>
           </div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <button
-              class="open-record-payment-modal action-btn-write px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Time-Range Filter Pills -->
+            <div class="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs font-bold">
+              <button onclick="setDashboardTimeRange('today')" id="dash-range-today" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition">Today</button>
+              <button onclick="setDashboardTimeRange('7d')" id="dash-range-7d" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition">7 Days</button>
+              <button onclick="setDashboardTimeRange('30d')" id="dash-range-30d" class="px-3 py-1.5 rounded-lg bg-red-600 text-white shadow transition">30 Days</button>
+              <button onclick="setDashboardTimeRange('month')" id="dash-range-month" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition">This Month</button>
+            </div>
+
+            <!-- Branch Selector -->
+            <select id="dash-branch-filter" onchange="updateDashboardBranchFilter(this.value)" class="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500">
+              <option value="all">All Branches</option>
+              <option value="HQ">Main Honbu Dojo (HQ)</option>
+              <option value="NORTH">North Branch Dojo</option>
+              <option value="SOUTH">South Branch Dojo</option>
+            </select>
+
+            <button class="open-record-payment-modal action-btn-write px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
               <span class="material-symbols-outlined text-sm">payments</span>
               <span>Record Payment</span>
             </button>
-            <button
-              class="open-add-student-modal action-btn-write px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+            <button class="open-add-student-modal action-btn-write px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
               <span class="material-symbols-outlined text-sm">person_add</span>
               <span>Register Student</span>
             </button>
           </div>
         </div>
 
-        <!-- DYNAMIC DASHBOARD STATS GRID -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="main-dash-stats-grid">
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2"
-            id="stat-total-students-card">
+        <!-- GRAFANA REAL-TIME KPI METRICS GRID (12 KPI CARDS) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4" id="main-dash-stats-grid">
+          
+          <!-- KPI 1: TOTAL STUDENTS -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-total-students-card">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Students</span>
-              <span class="material-symbols-outlined text-slate-400 text-lg">groups</span>
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Total Students</span>
+              <span class="material-symbols-outlined text-blue-600 text-lg">groups</span>
             </div>
-            <h3 id="stat-total-students" class="text-3xl font-extrabold text-slate-900">0</h3>
-            <p class="text-xs text-slate-500">Active Karate Athletes</p>
+            <div class="flex items-baseline justify-between">
+              <h3 id="stat-total-students" class="text-2xl font-extrabold text-slate-900">0</h3>
+              <span id="stat-growth-rate" class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">+12% growth</span>
+            </div>
+            <p class="text-[10px] text-slate-500">Registered Athletes</p>
           </div>
 
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="stat-attendance-card">
+          <!-- KPI 2: ACTIVE ATHLETES -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-active-students-card">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Today's Attendance</span>
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Active Athletes</span>
+              <span class="material-symbols-outlined text-emerald-600 text-lg">directions_run</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <h3 id="stat-active-students" class="text-2xl font-extrabold text-slate-900">0</h3>
+              <span id="stat-active-pct" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">100% active</span>
+            </div>
+            <p class="text-[10px] text-slate-500">Active Roster</p>
+          </div>
+
+          <!-- KPI 3: TODAY'S ATTENDANCE -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-attendance-card">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Attendance Rate</span>
               <span class="material-symbols-outlined text-emerald-600 text-lg">fact_check</span>
             </div>
-            <h3 id="stat-attendance-rate" class="text-3xl font-extrabold text-slate-900">0%</h3>
-            <p id="stat-attendance-counts" class="text-xs text-slate-500 font-medium">
-              <span class="text-emerald-700 font-bold" id="stat-present-count">0 Present</span> •
-              <span class="text-red-600 font-bold" id="stat-absent-count">0 Absent</span>
-            </p>
-          </div>
-
-          <!-- RECEPTIONIST / MANAGER: NEW ADMISSIONS THIS MONTH -->
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2"
-            id="stat-new-admissions-card">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">New Admissions</span>
-              <span class="material-symbols-outlined text-blue-600 text-lg">person_add</span>
+            <div class="flex items-baseline justify-between">
+              <h3 id="stat-attendance-rate" class="text-2xl font-extrabold text-slate-900">0%</h3>
+              <span id="stat-attendance-counts" class="text-[10px] font-bold text-emerald-700">0 Present</span>
             </div>
-            <h3 id="stat-new-admissions" class="text-3xl font-extrabold text-blue-700">0</h3>
-            <p class="text-xs text-slate-500">Enrolled This Month</p>
+            <p class="text-[10px] text-slate-500"><span id="stat-absent-count" class="text-red-600 font-bold">0 Absent</span> Today</p>
           </div>
 
-          <!-- RECEPTIONIST / MANAGER: PENDING ADMISSIONS APPLICATION -->
-          <div
-            class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2 cursor-pointer hover:border-red-400 transition"
-            id="stat-pending-admissions-card" onclick="openPendingAdmissionsModal()">
+          <!-- KPI 4: STAFF & INSTRUCTORS -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-staff-card">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Admissions</span>
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Staff & Instructors</span>
+              <span class="material-symbols-outlined text-indigo-600 text-lg">badge</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <h3 id="stat-total-staff" class="text-2xl font-extrabold text-slate-900">0</h3>
+              <span id="stat-active-staff" class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">0 Active</span>
+            </div>
+            <p class="text-[10px] text-slate-500">Operational Team</p>
+          </div>
+
+          <!-- KPI 5: PENDING ADMISSIONS -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5 cursor-pointer hover:border-amber-400 transition" id="stat-pending-admissions-card" onclick="openPendingAdmissionsModal()">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Pending Admissions</span>
               <span class="material-symbols-outlined text-amber-600 text-lg">pending_actions</span>
             </div>
-            <h3 id="stat-pending-admissions" class="text-3xl font-extrabold text-amber-600">0</h3>
-            <p class="text-xs text-slate-500 font-medium">Applications To Verify</p>
+            <div class="flex items-baseline justify-between">
+              <h3 id="stat-pending-admissions" class="text-2xl font-extrabold text-amber-600">0</h3>
+              <span id="stat-admissions-pct" class="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">Verification</span>
+            </div>
+            <p class="text-[10px] text-slate-500">Online Applicants</p>
           </div>
 
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="stat-revenue-card">
+          <!-- KPI 6: EMAIL ENGINE METRICS -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-email-card">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Earnings</span>
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Email Engine</span>
+              <span class="material-symbols-outlined text-purple-600 text-lg">mark_email_read</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <h3 id="stat-email-sent" class="text-2xl font-extrabold text-slate-900">0</h3>
+              <span id="stat-email-failed" class="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100">0 Failed</span>
+            </div>
+            <p class="text-[10px] text-slate-500">Dispatched Notifications</p>
+          </div>
+
+          <!-- KPI 7: GROSS TUITION INCOME -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-revenue-card">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Gross Revenue</span>
               <span class="material-symbols-outlined text-emerald-600 text-lg">payments</span>
             </div>
-            <h3 id="stat-monthly-revenue" class="text-3xl font-extrabold text-emerald-700">₹0</h3>
-            <p class="text-xs text-slate-500">Collected Tuition Fees</p>
+            <h3 id="stat-monthly-revenue" class="text-2xl font-extrabold text-emerald-700">₹0</h3>
+            <p class="text-[10px] text-slate-500">Tuition Collections</p>
           </div>
 
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="stat-dues-card">
+          <!-- KPI 8: OPERATIONAL EXPENSES -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-expenses-card">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Dues</span>
-              <span class="material-symbols-outlined text-red-600 text-lg">account_balance_wallet</span>
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Operational Expenses</span>
+              <span class="material-symbols-outlined text-red-600 text-lg">receipt_long</span>
             </div>
-            <h3 id="stat-total-dues-display" class="text-3xl font-extrabold text-red-600">₹0</h3>
-            <p class="text-xs text-slate-500">Outstanding Balances</p>
+            <h3 id="stat-total-expenses" class="text-2xl font-extrabold text-red-600">₹0</h3>
+            <p class="text-[10px] text-slate-500">Expenses & Salaries</p>
           </div>
 
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="stat-belt-card">
+          <!-- KPI 9: NET CASHFLOW -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-net-card">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Belt Candidates</span>
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Net Cash Balance</span>
+              <span class="material-symbols-outlined text-blue-600 text-lg">account_balance</span>
+            </div>
+            <h3 id="stat-net-balance" class="text-2xl font-extrabold text-blue-700">₹0</h3>
+            <p class="text-[10px] text-slate-500">Closing Balance Sheet</p>
+          </div>
+
+          <!-- KPI 10: OUTSTANDING DUES -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-dues-card">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Outstanding Dues</span>
+              <span class="material-symbols-outlined text-amber-600 text-lg">account_balance_wallet</span>
+            </div>
+            <h3 id="stat-total-dues-display" class="text-2xl font-extrabold text-amber-600">₹0</h3>
+            <p class="text-[10px] text-slate-500">Pending Dues</p>
+          </div>
+
+          <!-- KPI 11: BELT CANDIDATES -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-belt-card">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Belt Candidates</span>
               <span class="material-symbols-outlined text-amber-600 text-lg">military_tech</span>
             </div>
-            <h3 id="stat-belt-candidates" class="text-3xl font-extrabold text-slate-900">0 Ready</h3>
-            <p class="text-xs text-slate-500">Evaluation Ready</p>
+            <h3 id="stat-belt-candidates" class="text-2xl font-extrabold text-slate-900">0 Ready</h3>
+            <p class="text-[10px] text-slate-500">Evaluation Ready</p>
           </div>
+
+          <!-- KPI 12: NEW ADMISSIONS -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5" id="stat-new-admissions-card">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">New Admissions</span>
+              <span class="material-symbols-outlined text-blue-600 text-lg">person_add</span>
+            </div>
+            <h3 id="stat-new-admissions" class="text-2xl font-extrabold text-blue-700">0</h3>
+            <p class="text-[10px] text-slate-500">Enrolled Period</p>
+          </div>
+
         </div>
 
-        <!-- CLEAN FULL-WIDTH RECENT STUDENT ATTENDANCE LOG SECTION -->
-        <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-              <span class="material-symbols-outlined text-red-600">fact_check</span>
-              <span>Recent Student Attendance Roster</span>
-            </h3>
-            <a href="#" data-tab="attendance"
-              class="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1">
-              <span>View Full Tracker</span>
-              <span class="material-symbols-outlined text-sm">arrow_forward</span>
-            </a>
+        <!-- GRAFANA REAL-TIME CHARTS GRID (2 ROWS OF 3 CHARTS EACH) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- CHART 1: STUDENT ENROLMENT GROWTH TREND -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600 text-lg">trending_up</span>
+                <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Student Enrolment Growth</h4>
+              </div>
+              <span class="text-[10px] text-slate-400 font-mono">Real-Time</span>
+            </div>
+            <div class="h-56 relative">
+              <canvas id="chart-student-growth"></canvas>
+            </div>
           </div>
 
-          <div id="dash-attendance-list" class="divide-y divide-slate-100">
-            <!-- Dynamic Attendance Roster -->
+          <!-- CHART 2: ATTENDANCE BREAKDOWN -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600 text-lg">pie_chart</span>
+                <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Attendance Breakdown</h4>
+              </div>
+              <span class="text-[10px] text-slate-400 font-mono">Present vs Absent</span>
+            </div>
+            <div class="h-56 relative flex items-center justify-center">
+              <canvas id="chart-attendance-pie"></canvas>
+            </div>
           </div>
+
+          <!-- CHART 3: ADMISSIONS PIPELINE STATUS -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-600 text-lg">donut_large</span>
+                <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Admissions Pipeline</h4>
+              </div>
+              <span class="text-[10px] text-slate-400 font-mono">Status Distribution</span>
+            </div>
+            <div class="h-56 relative flex items-center justify-center">
+              <canvas id="chart-admissions-pipeline"></canvas>
+            </div>
+          </div>
+
+          <!-- CHART 4: REVENUE VS EXPENSES CASHFLOW -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600 text-lg">bar_chart</span>
+                <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Revenue vs Expenses</h4>
+              </div>
+              <span class="text-[10px] text-slate-400 font-mono">Monthly Cashflow</span>
+            </div>
+            <div class="h-56 relative">
+              <canvas id="chart-financial-cashflow"></canvas>
+            </div>
+          </div>
+
+          <!-- CHART 5: EMAIL DISPATCH PERFORMANCE -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-purple-600 text-lg">mark_email_read</span>
+                <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Email Dispatch Status</h4>
+              </div>
+              <span class="text-[10px] text-slate-400 font-mono">SMTP Logs</span>
+            </div>
+            <div class="h-56 relative">
+              <canvas id="chart-email-performance"></canvas>
+            </div>
+          </div>
+
+          <!-- CHART 6: BRANCH PERFORMANCE & ROSTER -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-slate-700 text-lg">storefront</span>
+                <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Branch Performance</h4>
+              </div>
+              <span class="text-[10px] text-slate-400 font-mono">Active Roster</span>
+            </div>
+            <div class="h-56 relative">
+              <canvas id="chart-branch-performance"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- REAL-TIME AUDIT LOG STREAM & RECENT ATTENDANCE ROSTER -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- REAL-TIME SYSTEM ACTIVITY STREAM -->
+          <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">bolt</span>
+                <span>Real-Time Audit Activity Feed</span>
+              </h3>
+              <button onclick="openActivityLogsModal()" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                <span>View Full Logs</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </button>
+            </div>
+
+            <div id="dash-activity-stream" class="divide-y divide-slate-100 max-h-80 overflow-y-auto space-y-2 pr-1">
+              <!-- Dynamic Real-Time Activity Feed -->
+            </div>
+          </div>
+
+          <!-- RECENT ATTENDANCE ROSTER -->
+          <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-red-600">fact_check</span>
+                <span>Recent Student Attendance Roster</span>
+              </h3>
+              <a href="#" data-tab="attendance" class="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1">
+                <span>View Full Tracker</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </a>
+            </div>
+
+            <div id="dash-attendance-list" class="divide-y divide-slate-100 max-h-80 overflow-y-auto pr-1">
+              <!-- Dynamic Attendance Roster -->
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -916,69 +1099,126 @@
       <!-- ========================================== -->
       <div id="view-financials" class="tab-content space-y-6">
 
-        <div
-          class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <!-- HEADER & PDF ACTION BAR -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div>
-            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Financial Ledger</h2>
-            <p class="text-xs text-slate-500">Tuition Payments, Receipts & Invoices</p>
+            <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Double-Entry Audit Ledger</span>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">Financial Ledger & Balance Sheet</h2>
+            <p class="text-xs text-slate-500">Official Accounting Statement, Cashflow Telemetry & Fee Invoices</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-3">
-            <!-- Total Earnings Metric Pill -->
-            <div
-              class="h-11 px-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 shadow-sm">
-              <span class="material-symbols-outlined text-emerald-600 text-lg">account_balance_wallet</span>
-              <div>
-                <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block leading-tight">Total
-                  Earnings</span>
-                <strong id="ledger-total-earnings"
-                  class="text-xs font-extrabold text-emerald-950 leading-tight">₹0</strong>
-              </div>
-            </div>
-
-            <!-- Total Dues Metric Pill -->
-            <div class="h-11 px-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2.5 shadow-sm">
-              <span class="material-symbols-outlined text-amber-600 text-lg">pending_actions</span>
-              <div>
-                <span class="text-[10px] font-bold text-amber-700 uppercase tracking-wider block leading-tight">Total
-                  Dues</span>
-                <strong id="ledger-total-dues" class="text-xs font-extrabold text-amber-950 leading-tight">₹0</strong>
-              </div>
-            </div>
-
-            <!-- Download Financial Ledger PDF Report Button -->
             <button id="btn-download-financial-pdf" onclick="downloadFinancialLedgerPDF()"
               class="h-11 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0"
-              title="Download Professional Financial Ledger Audit Statement PDF">
+              title="Download Professional Accounting Ledger Statement PDF">
               <span class="material-symbols-outlined text-sm text-red-400">picture_as_pdf</span>
               <span>Download PDF Report</span>
             </button>
 
-            <!-- Record Payment Button -->
-            <button
-              class="open-record-payment-modal action-btn-write h-11 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
+            <button class="open-record-payment-modal action-btn-write h-11 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
               <span class="material-symbols-outlined text-sm">payments</span>
               <span>Record Payment</span>
             </button>
           </div>
         </div>
 
+        <!-- BALANCE SHEET SUMMARY CARDS GRID -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1">
+            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Opening Balance</span>
+            <strong id="ledger-opening-balance" class="text-xl font-extrabold text-slate-800 leading-tight block">₹0</strong>
+            <span class="text-[10px] text-slate-500">Configured Reserve</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1">
+            <span class="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider block">Gross Tuition Income</span>
+            <strong id="ledger-total-income" class="text-xl font-extrabold text-emerald-700 leading-tight block">₹0</strong>
+            <span class="text-[10px] text-emerald-600 font-bold">Total Credits (+)</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1">
+            <span class="text-[10px] font-extrabold text-red-600 uppercase tracking-wider block">Expenses & Salaries</span>
+            <strong id="ledger-total-expenses" class="text-xl font-extrabold text-red-600 leading-tight block">₹0</strong>
+            <span class="text-[10px] text-red-600 font-bold">Total Debits (-)</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1">
+            <span class="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider block">Net Cashflow</span>
+            <strong id="ledger-net-balance" class="text-xl font-extrabold text-blue-700 leading-tight block">₹0</strong>
+            <span class="text-[10px] text-slate-500">Income - Expenses</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1">
+            <span class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider block">Closing Balance</span>
+            <strong id="ledger-closing-balance" class="text-xl font-extrabold text-slate-900 leading-tight block">₹0</strong>
+            <span class="text-[10px] text-slate-500">End Balance</span>
+          </div>
+        </div>
+
+        <!-- ACCOUNTING FILTER & SEARCH TOOLBAR -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-3 text-xs font-bold">
+          <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <!-- Search Bar -->
+            <div class="relative flex-1 sm:w-64">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm pointer-events-none">search</span>
+              <input type="text" id="financials-search-input" onkeyup="renderFinancialLedger()" placeholder="Search ref #, student, payee, note..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-600 focus:outline-none" />
+            </div>
+
+            <!-- Time Range -->
+            <select id="fin-filter-range" onchange="renderFinancialLedger()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none">
+              <option value="all">All Dates</option>
+              <option value="today">Today</option>
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="month">This Month</option>
+            </select>
+
+            <!-- Branch Scope -->
+            <select id="fin-filter-branch" onchange="renderFinancialLedger()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none">
+              <option value="all">All Branches</option>
+              <option value="HQ">Main Honbu Dojo (HQ)</option>
+              <option value="NORTH">North Branch Dojo</option>
+              <option value="SOUTH">South Branch Dojo</option>
+            </select>
+
+            <!-- Type Scope -->
+            <select id="fin-filter-type" onchange="renderFinancialLedger()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none">
+              <option value="all">All Types</option>
+              <option value="income">Income (Credits)</option>
+              <option value="expense">Expenses (Debits)</option>
+              <option value="salary">Staff Salaries</option>
+            </select>
+
+            <!-- Method Scope -->
+            <select id="fin-filter-method" onchange="renderFinancialLedger()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none">
+              <option value="all">All Methods</option>
+              <option value="UPI">UPI Payment</option>
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Card">Card</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ACCOUNTING TRANSACTION TABLE -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto table-scroll-container">
             <table class="w-full text-left text-xs text-slate-700">
-              <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-[11px] border-b border-slate-200">
+              <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-[10px] border-b border-slate-200 sticky top-0 z-10">
                 <tr>
-                  <th class="py-3.5 px-6">Invoice #</th>
-                  <th class="py-3.5 px-6">Student Name</th>
-                  <th class="py-3.5 px-6">Original Fee</th>
-                  <th class="py-3.5 px-6">Discount</th>
-                  <th class="py-3.5 px-6">Final Paid</th>
-                  <th class="py-3.5 px-6">Status</th>
-                  <th class="py-3.5 px-6 text-right">Actions</th>
+                  <th class="py-3.5 px-4">Date</th>
+                  <th class="py-3.5 px-4">Ref / Receipt #</th>
+                  <th class="py-3.5 px-4">Description / Payee</th>
+                  <th class="py-3.5 px-4">Category</th>
+                  <th class="py-3.5 px-4">Branch</th>
+                  <th class="py-3.5 px-4 text-right">Debit (₹)</th>
+                  <th class="py-3.5 px-4 text-right">Credit (₹)</th>
+                  <th class="py-3.5 px-4 text-right">Running Balance (₹)</th>
+                  <th class="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="financials-table-body" class="divide-y divide-slate-100 font-medium">
-                <!-- Dynamic -->
+                <!-- Dynamic Financial Ledger Rows -->
               </tbody>
             </table>
           </div>
@@ -1055,7 +1295,7 @@
             <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Multiple Branch Management</h2>
             <p class="text-xs text-slate-500">Configure Dojo Locations, Regional Training Facilities & Access Scoping</p>
           </div>
-          <button onclick="openAddBranchModal()" class="action-btn-write px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
+          <button id="btn-create-branch" onclick="openAddBranchModal()" class="action-btn-write px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
             <span class="material-symbols-outlined text-sm">add_business</span>
             <span>+ Create New Branch</span>
           </button>
@@ -2176,7 +2416,7 @@
   <div id="kai-lightbox-modal"
     class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container"
     data-dismissible="true">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box relative">
       <div class="flex items-start gap-4">
         <div id="lb-icon-box"
           class="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
@@ -2188,11 +2428,20 @@
         </div>
       </div>
 
+      <!-- DYNAMIC INPUT FIELDS CONTAINER FOR PROMPT & FORM MODALS -->
+      <div id="lb-fields-container" class="hidden space-y-3 pt-2"></div>
+
+      <!-- VALIDATION ERROR MESSAGE BOX -->
+      <div id="lb-error-box" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-semibold rounded-xl space-y-1"></div>
+
       <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 text-xs font-bold" id="lb-actions">
-        <button id="lb-btn-cancel"
-          class="hidden px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition">Cancel</button>
-        <button id="lb-btn-confirm"
-          class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow transition">OK</button>
+        <button id="lb-btn-cancel" type="button"
+          class="hidden px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition">Cancel</button>
+        <button id="lb-btn-confirm" type="button"
+          class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow transition flex items-center gap-1.5">
+          <span id="lb-confirm-text">OK</span>
+          <span id="lb-confirm-spinner" class="hidden material-symbols-outlined text-sm animate-spin">progress_activity</span>
+        </button>
       </div>
     </div>
   </div>
@@ -2266,177 +2515,174 @@
     class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container"
     data-dismissible="true">
     <div
-      class="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 max-h-[90vh] overflow-y-auto modal-box">
+      class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 max-h-[90vh] overflow-y-auto modal-box">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">
-          <span class="material-symbols-outlined text-red-600">person_add</span>
-          <span>Register New Student (KAI Format)</span>
-        </h3>
+        <div>
+          <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">
+            <span class="material-symbols-outlined text-red-600">person_add</span>
+            <span>Register New Student Wizard</span>
+          </h3>
+          <p class="text-[11px] text-slate-500 font-medium">Complete all required steps to generate official KAI Athlete Pass</p>
+        </div>
         <button id="close-add-student-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
-      <form id="add-student-form" class="space-y-3.5 text-xs">
+      <!-- WIZARD PROGRESS STEP BAR -->
+      <div class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold py-1">
+        <div id="wiz-step-pill-1" class="py-2 px-1 rounded-xl bg-red-600 text-white shadow-sm border border-red-700 transition">1. Personal Info</div>
+        <div id="wiz-step-pill-2" class="py-2 px-1 rounded-xl bg-slate-100 text-slate-500 border border-slate-200 transition">2. Belt & Address</div>
+        <div id="wiz-step-pill-3" class="py-2 px-1 rounded-xl bg-slate-100 text-slate-500 border border-slate-200 transition">3. Contacts</div>
+        <div id="wiz-step-pill-4" class="py-2 px-1 rounded-xl bg-slate-100 text-slate-500 border border-slate-200 transition">4. Fee & Review</div>
+      </div>
 
-        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-          <label class="font-semibold text-slate-800 block text-xs">Student Profile Photo</label>
-          <div class="flex items-center gap-4">
-            <div
-              class="w-16 h-16 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
-              <img id="photo-preview-img"
-                src="https://images.unsplash.com/photo-1555597673-b21d5c935865?w=100&auto=format&fit=crop&q=80"
-                alt="Preview" class="w-full h-full object-cover" />
+      <form id="add-student-form" class="space-y-4 text-xs">
+
+        <!-- STEP 1: PERSONAL INFO & PHOTO -->
+        <div id="add-student-step-1" class="space-y-3.5">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+            <label class="font-semibold text-slate-800 block text-xs">Student Profile Photo</label>
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+                <img id="photo-preview-img" src="https://images.unsplash.com/photo-1555597673-b21d5c935865?w=100&auto=format&fit=crop&q=80" alt="Preview" class="w-full h-full object-cover" />
+              </div>
+              <div class="space-y-1.5 flex-1">
+                <input type="file" id="new-student-photo-file" accept="image/png, image/jpeg, image/jpg" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-red-50 file:text-red-600 hover:file:bg-red-100" />
+                <input type="url" id="new-student-photo-url" placeholder="e.g. https://domain.com/photo.jpg" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs" />
+              </div>
             </div>
-            <div class="space-y-1.5 flex-1">
-              <input type="file" id="new-student-photo-file" accept="image/png, image/jpeg, image/jpg"
-                class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-red-50 file:text-red-600 hover:file:bg-red-100" />
-              <input type="url" id="new-student-photo-url" placeholder="e.g. https://domain.com/photo.jpg"
-                class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs" />
-            </div>
           </div>
-        </div>
 
-        <!-- SEPARATE NAME TEXTBOXES: FIRST NAME, MIDDLE NAME (OPTIONAL), LAST NAME -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label class="font-semibold text-slate-700 block mb-1">First Name *</label>
-            <input type="text" id="new-student-first-name" required placeholder="e.g. Rahul"
-              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none transition" />
-          </div>
-          <div>
-            <label class="font-semibold text-slate-700 block mb-1">Middle Name <span
-                class="text-slate-400 font-normal">(Optional)</span></label>
-            <input type="text" id="new-student-middle-name" placeholder="e.g. Kumar"
-              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none transition" />
-          </div>
-          <div>
-            <label class="font-semibold text-slate-700 block mb-1">Last Name *</label>
-            <input type="text" id="new-student-last-name" required placeholder="e.g. Sharma"
-              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none transition" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3">
-          <div>
-            <label class="font-semibold text-slate-700 block mb-1">Belt Rank *</label>
-            <select id="new-student-belt"
-              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
-              <option value="White Belt">White Belt</option>
-              <option value="Yellow Belt">Yellow Belt</option>
-              <option value="Orange Belt">Orange Belt</option>
-              <option value="Green Belt">Green Belt</option>
-              <option value="Blue Belt">Blue Belt</option>
-              <option value="Purple Belt">Purple Belt</option>
-              <option value="Brown Belt">Brown Belt</option>
-              <option value="Black Belt">Black Belt</option>
-            </select>
-          </div>
-          <div>
-            <label class="font-semibold text-slate-700 block mb-1">Gender</label>
-            <select id="new-student-gender"
-              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label class="font-semibold text-slate-700 block mb-1">Date of Birth</label>
-            <input type="date" id="new-student-dob"
-              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900" />
-          </div>
-        </div>
-
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-          <label class="font-semibold text-slate-800 block text-[11px] uppercase tracking-wider">Residential
-            Address</label>
-          <input type="text" id="new-student-address" placeholder="e.g. Flat / House No., Street Name, Area, Landmark"
-            class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl" />
-          <div class="grid grid-cols-3 gap-2">
-            <input type="text" id="new-student-city" placeholder="e.g. New Delhi"
-              class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl" />
-            <input type="text" id="new-student-state" placeholder="e.g. Delhi"
-              class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl" />
-            <input type="text" id="new-student-pincode" placeholder="e.g. 110001"
-              class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl" />
-          </div>
-        </div>
-
-        <!-- MANDATORY PRIMARY CONTACT PHONE AND MANDATORY PRIMARY CONTACT EMAIL -->
-        <div class="grid grid-cols-2 gap-3">
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-            <label class="font-semibold text-slate-800 block text-[11px] uppercase tracking-wider">Primary Contact
-              *</label>
-            <input type="text" id="new-student-contact-name" placeholder="Contact Person Name"
-              class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl" />
-            <input type="text" id="new-student-contact-phone" required placeholder="Primary Contact Phone *"
-              class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl font-bold" />
-            <input type="email" id="new-student-contact-email" required placeholder="Primary Contact Email *"
-              class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl font-bold" />
-          </div>
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-            <label class="font-semibold text-slate-800 block text-[11px] uppercase tracking-wider">Emergency
-              Contact</label>
-            <input type="text" id="new-student-emerg-name" placeholder="e.g. Rajesh Sharma"
-              class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl" />
-            <input type="text" id="new-student-emerg-phone" placeholder="e.g. +91 98765 00000"
-              class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl" />
-            <input type="text" id="new-student-emerg-rel" placeholder="e.g. Father / Mother"
-              class="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl" />
-          </div>
-        </div>
-
-        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-          <h4 class="font-semibold text-slate-900 uppercase tracking-wider text-[11px]">Membership Plan & Fee Calculator
-          </h4>
-
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label class="font-semibold text-slate-700 block mb-1">Select Membership</label>
-              <select id="new-student-plan"
-                class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-900">
-                <option value="2500">Monthly Plan (₹2,500)</option>
-                <option value="7000">Quarterly Plan (₹7,000)</option>
-                <option value="13000">Half-Yearly Plan (₹13,000)</option>
+              <label class="font-semibold text-slate-700 block mb-1">First Name *</label>
+              <input type="text" id="new-student-first-name" required placeholder="e.g. Rahul" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none transition" />
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Middle Name <span class="text-slate-400 font-normal">(Optional)</span></label>
+              <input type="text" id="new-student-middle-name" placeholder="e.g. Kumar" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none transition" />
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Last Name *</label>
+              <input type="text" id="new-student-last-name" required placeholder="e.g. Sharma" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:ring-2 focus:ring-red-600 focus:bg-white focus:outline-none transition" />
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: BELT, GENDER & ADDRESS -->
+        <div id="add-student-step-2" class="hidden space-y-3.5">
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Belt Rank *</label>
+              <select id="new-student-belt" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
+                <option value="White Belt">White Belt</option>
+                <option value="Yellow Belt">Yellow Belt</option>
+                <option value="Orange Belt">Orange Belt</option>
+                <option value="Green Belt">Green Belt</option>
+                <option value="Blue Belt">Blue Belt</option>
+                <option value="Purple Belt">Purple Belt</option>
+                <option value="Brown Belt">Brown Belt</option>
+                <option value="Black Belt">Black Belt</option>
               </select>
             </div>
             <div>
-              <label class="font-semibold text-slate-700 block mb-1">Discount Amount (₹)</label>
-              <input type="number" id="new-student-discount" value="0" min="0"
-                class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-900" />
+              <label class="font-semibold text-slate-700 block mb-1">Gender</label>
+              <select id="new-student-gender" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Date of Birth</label>
+              <input type="date" id="new-student-dob" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900" />
             </div>
           </div>
 
-          <!-- UNIFORM FEE LINE ITEM CHECKBOX -->
-          <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200">
-            <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-xs">
-              <input type="checkbox" id="new-student-uniform-check" checked
-                class="rounded text-red-600 focus:ring-red-600 w-4 h-4" />
-              <span>Karate Uniform Kit Fee</span>
-            </label>
-            <span class="font-extrabold text-slate-900 text-xs">+ ₹2,500</span>
-          </div>
-
-          <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs space-y-1">
-            <div class="flex justify-between text-slate-600"><span>Registration Fee (One-Time):</span> <strong
-                id="calc-reg-display">₹1,000</strong></div>
-            <div class="flex justify-between text-slate-600"><span>Membership Plan Fee:</span> <strong
-                id="calc-orig">₹2,500</strong></div>
-            <div class="flex justify-between text-slate-600" id="calc-uniform-row"><span>Karate Uniform Fee:</span>
-              <strong>+ ₹2,500</strong></div>
-            <div class="flex justify-between text-red-600"><span>Discount Applied:</span> <strong id="calc-disc">-
-                ₹0</strong></div>
-            <div class="flex justify-between text-slate-900 font-extrabold text-sm border-t border-slate-100 pt-1">
-              <span>Final Total Payable:</span> <strong id="calc-final" class="text-red-600">₹6,000</strong>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <label class="font-semibold text-slate-800 block text-[11px] uppercase tracking-wider">Residential Address</label>
+            <input type="text" id="new-student-address" placeholder="e.g. Flat / House No., Street Name, Area, Landmark" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl" />
+            <div class="grid grid-cols-3 gap-2">
+              <input type="text" id="new-student-city" placeholder="e.g. Jaipur" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl" />
+              <input type="text" id="new-student-state" placeholder="e.g. Rajasthan" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl" />
+              <input type="text" id="new-student-pincode" placeholder="e.g. 302001" class="px-3 py-1.5 bg-white border border-slate-200 rounded-xl" />
             </div>
           </div>
         </div>
 
-        <button type="submit"
-          class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition">
-          Generate KAI Student ID & Complete Enrollment
-        </button>
+        <!-- STEP 3: CONTACTS & GUARDIAN -->
+        <div id="add-student-step-3" class="hidden space-y-3.5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <label class="font-semibold text-slate-800 block text-[11px] uppercase tracking-wider">Primary Contact *</label>
+              <input type="text" id="new-student-contact-name" placeholder="Contact Person Name" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl" />
+              <input type="text" id="new-student-contact-phone" required placeholder="Primary Contact Phone *" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl font-bold" />
+              <input type="email" id="new-student-contact-email" required placeholder="Primary Contact Email *" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl font-bold" />
+            </div>
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <label class="font-semibold text-slate-800 block text-[11px] uppercase tracking-wider">Emergency Contact</label>
+              <input type="text" id="new-student-emerg-name" placeholder="e.g. Rajesh Sharma" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl" />
+              <input type="text" id="new-student-emerg-phone" placeholder="e.g. +91 98765 00000" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl" />
+              <input type="text" id="new-student-emerg-rel" placeholder="e.g. Father / Mother" class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl" />
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: FEE & REVIEW -->
+        <div id="add-student-step-4" class="hidden space-y-3.5">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+            <h4 class="font-semibold text-slate-900 uppercase tracking-wider text-[11px]">Membership Plan & Fee Calculator</h4>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="font-semibold text-slate-700 block mb-1">Select Membership</label>
+                <select id="new-student-plan" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-900">
+                  <option value="2500">Monthly Plan (₹2,500)</option>
+                  <option value="7000">Quarterly Plan (₹7,000)</option>
+                  <option value="13000">Half-Yearly Plan (₹13,000)</option>
+                </select>
+              </div>
+              <div>
+                <label class="font-semibold text-slate-700 block mb-1">Discount Amount (₹)</label>
+                <input type="number" id="new-student-discount" value="0" min="0" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-900" />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200">
+              <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-xs">
+                <input type="checkbox" id="new-student-uniform-check" checked class="rounded text-red-600 focus:ring-red-600 w-4 h-4" />
+                <span>Karate Uniform Kit Fee</span>
+              </label>
+              <span class="font-extrabold text-slate-900 text-xs">+ ₹2,500</span>
+            </div>
+
+            <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs space-y-1">
+              <div class="flex justify-between text-slate-600"><span>Registration Fee (One-Time):</span> <strong id="calc-reg-display">₹1,000</strong></div>
+              <div class="flex justify-between text-slate-600"><span>Membership Plan Fee:</span> <strong id="calc-orig">₹2,500</strong></div>
+              <div class="flex justify-between text-slate-600" id="calc-uniform-row"><span>Karate Uniform Fee:</span> <strong>+ ₹2,500</strong></div>
+              <div class="flex justify-between text-red-600"><span>Discount Applied:</span> <strong id="calc-disc">- ₹0</strong></div>
+              <div class="flex justify-between text-slate-900 font-extrabold text-sm border-t border-slate-100 pt-1">
+                <span>Final Total Payable:</span> <strong id="calc-final" class="text-red-600">₹6,000</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WIZARD CONTROLS FOOTER -->
+        <div class="flex items-center justify-between border-t border-slate-100 pt-3">
+          <button type="button" id="wiz-prev-btn" onclick="wizardStepPrev()" class="hidden px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">Back</button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" id="wiz-next-btn" onclick="wizardStepNext()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1">
+              <span>Next Step</span>
+              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </button>
+            <button type="submit" id="wiz-submit-btn" class="hidden px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1">
+              <span>Generate KAI ID & Complete</span>
+              <span class="material-symbols-outlined text-sm">check_circle</span>
+            </button>
+          </div>
+        </div>
       </form>
     </div>
   </div>
@@ -2853,6 +3099,109 @@
         </div>
 
       </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: STAFF PROFILE & SALARY DIRECTORY    -->
+  <!-- ========================================== -->
+  <div id="staff-details-modal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container"
+    data-dismissible="true">
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 max-h-[90vh] overflow-y-auto modal-box">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
+            <span class="material-symbols-outlined text-2xl">badge</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2" id="stf-modal-name">Staff Profile Console</h3>
+            <div class="flex items-center gap-2 text-xs">
+              <span id="stf-modal-id" class="font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">KAISTF202601</span>
+              <span id="stf-modal-username" class="font-mono text-slate-500">@username</span>
+              <span id="stf-modal-role-badge" class="role-badge role-manager">Manager</span>
+            </div>
+          </div>
+        </div>
+        <button id="close-staff-details-modal" onclick="closeStaffDetailsModal()" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- NAVIGATION TABS -->
+      <div class="flex items-center gap-2 border-b border-slate-200 text-xs font-bold">
+        <button id="stf-tab-btn-profile" onclick="switchStaffTab('profile')" class="px-4 py-2 text-red-600 border-b-2 border-red-600 font-extrabold transition">Profile & Tenure</button>
+        <button id="stf-tab-btn-salary" onclick="switchStaffTab('salary')" class="px-4 py-2 text-slate-600 hover:text-slate-900 border-b-2 border-transparent transition">Salary History & Payslips</button>
+      </div>
+
+      <!-- TAB 1: PROFILE DETAILS & TENURE -->
+      <div id="stf-tab-content-profile" class="space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+            <h4 class="font-extrabold text-slate-900 text-xs uppercase tracking-wider text-blue-700">Account Credentials</h4>
+            <div><strong class="text-slate-700">Full Name:</strong> <span id="stf-prof-name" class="font-bold text-slate-900">N/A</span></div>
+            <div><strong class="text-slate-700">Username:</strong> <span id="stf-prof-user" class="font-mono font-bold text-slate-900">N/A</span></div>
+            <div><strong class="text-slate-700">Staff ID:</strong> <span id="stf-prof-id" class="font-mono font-extrabold text-blue-600">N/A</span></div>
+            <div><strong class="text-slate-700">Role Title:</strong> <span id="stf-prof-role" class="font-bold text-slate-900">N/A</span></div>
+            <div><strong class="text-slate-700">Assigned Branch:</strong> <span id="stf-prof-branch" class="font-bold text-slate-900">HQ</span></div>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+            <h4 class="font-extrabold text-slate-900 text-xs uppercase tracking-wider text-blue-700">Contact & Employment</h4>
+            <div><strong class="text-slate-700">Email Address:</strong> <span id="stf-prof-email" class="font-medium text-slate-900">N/A</span></div>
+            <div><strong class="text-slate-700">Contact Phone:</strong> <span id="stf-prof-phone" class="font-mono font-bold text-slate-900">N/A</span></div>
+            <div><strong class="text-slate-700">Monthly Salary:</strong> <span id="stf-prof-salary" class="font-mono font-extrabold text-emerald-700">₹0</span></div>
+            <div><strong class="text-slate-700">Account Status:</strong> <span id="stf-prof-status" class="status-badge status-active text-[9px]">active</span></div>
+          </div>
+        </div>
+
+        <!-- TENURE CALCULATOR CARD -->
+        <div class="bg-blue-50/70 p-4 rounded-xl border border-blue-200 flex items-center justify-between">
+          <div class="space-y-0.5">
+            <span class="text-[10px] font-extrabold text-blue-800 uppercase tracking-wider">Employment Tenure & Experience</span>
+            <div class="text-sm font-extrabold text-blue-950" id="stf-prof-tenure">Calculating tenure...</div>
+            <div class="text-[10px] text-blue-600" id="stf-prof-joining">Joining Date: N/A</div>
+          </div>
+          <span class="material-symbols-outlined text-blue-600 text-3xl">history_edu</span>
+        </div>
+
+        <!-- ACTIONS FOOTER -->
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+          <button id="stf-btn-toggle-status" onclick="toggleStaffModalStatus()" class="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-xl text-xs transition">
+            Toggle Status
+          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="openStaffInvoiceFromModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">receipt_long</span>
+              <span>Disburse Salary Payslip</span>
+            </button>
+            <button id="stf-btn-delete-account" onclick="deleteStaffModalAccount()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow transition">
+              Delete Staff Account
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: SALARY TRANSACTION HISTORY & PAYSLIPS -->
+      <div id="stf-tab-content-salary" class="hidden space-y-3 text-xs">
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-600">
+                <th class="py-2.5 px-4">Ref ID</th>
+                <th class="py-2.5 px-4">Salary Month</th>
+                <th class="py-2.5 px-4">Payment Date</th>
+                <th class="py-2.5 px-4">Net Paid (₹)</th>
+                <th class="py-2.5 px-4">Payment Method</th>
+                <th class="py-2.5 px-4 text-right">Payslip PDF</th>
+              </tr>
+            </thead>
+            <tbody id="stf-salary-history-tbody">
+              <tr><td colspan="6" class="py-4 text-center text-slate-400">No salary transactions found for this staff member.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
