@@ -337,7 +337,7 @@
     <!-- DESKTOP STICKY HEADER (EXACT 80PX / H-20 ALIGNMENT) -->
     <!-- ========================================== -->
     <header class="hidden md:block sticky top-0 z-30 bg-white/95 backdrop-blur-md px-6 h-20 border-b border-slate-200">
-      <div class="w-full max-w-[1600px] mx-auto flex items-center justify-between gap-4 h-full">
+      <div class="w-full max-w-[1360px] mx-auto flex items-center justify-between gap-4 h-full">
         <!-- CLEAN & SIMPLE GLOBAL SEARCH INPUT -->
         <div class="modern-search-wrapper relative w-full max-w-xl xl:max-w-2xl">
           <span
@@ -423,8 +423,8 @@
       </div>
     </header>
 
-    <!-- MAIN SCROLLABLE VIEW CONTAINER (EXPANDED ~30% USABLE CONTENT CONTAINER: MAX-W-[1600PX]) -->
-    <main class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 flex-1">
+    <!-- MAIN SCROLLABLE VIEW CONTAINER (BALANCED CONTENT CONTAINER: MAX-W-[1360PX]) -->
+    <main class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 flex-1">
 
       <!-- ========================================== -->
       <!-- MODULE 1: DASHBOARD VIEW (CLEAN CONTENT)   -->
@@ -1683,16 +1683,16 @@
     data-dismissible="true">
     <div
       class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh] h-[580px] modal-box">
-      <div class="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+      <div class="p-5 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
         <div class="flex items-center gap-2.5">
-          <span class="material-symbols-outlined text-red-500 text-2xl">notifications</span>
+          <span class="material-symbols-outlined text-red-600 text-2xl">notifications</span>
           <div>
-            <h3 class="font-extrabold text-base text-white">System Activity Logs</h3>
-            <p class="text-xs text-slate-400">Complete Audit Trail of Application Operations</p>
+            <h3 class="font-extrabold text-base text-slate-900">System Activity Logs</h3>
+            <p class="text-xs text-slate-500">Complete Audit Trail of Application Operations</p>
           </div>
         </div>
         <button id="close-logs-modal"
-          class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          class="p-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1700,7 +1700,7 @@
       <!-- Filter Buttons -->
       <div
         class="p-3 bg-slate-100 border-b border-slate-200 flex items-center gap-1.5 text-xs font-bold overflow-x-auto shrink-0">
-        <button data-log-filter="all" class="log-filter-btn px-3 py-1.5 rounded-lg bg-slate-900 text-white">All
+        <button data-log-filter="all" class="log-filter-btn px-3 py-1.5 rounded-lg bg-red-600 text-white">All
           Logs</button>
         <button data-log-filter="attendance"
           class="log-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-600 hover:bg-slate-200">Attendance</button>
@@ -1735,24 +1735,24 @@
     <div
       class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-auto max-h-[90vh] md:h-[700px] modal-box">
 
-      <!-- Modal Header -->
-      <div class="p-6 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+      <!-- Modal Header (Light Theme) -->
+      <div class="p-6 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
         <div class="flex items-center gap-4">
           <img id="sd-header-photo" src="" alt="Student"
             class="w-14 h-14 rounded-full object-cover border-2 border-red-500 shadow" />
           <div>
             <div class="flex items-center gap-2">
-              <h3 class="font-extrabold text-lg text-white" id="sd-header-name">Student Name</h3>
+              <h3 class="font-extrabold text-lg text-slate-900" id="sd-header-name">Student Name</h3>
               <span id="sd-header-belt" class="belt-badge text-[10px] py-0.5 px-2">Belt</span>
             </div>
-            <div class="text-xs text-slate-400 font-mono flex items-center gap-2 mt-0.5">
-              <span>ID: <strong class="text-red-400" id="sd-header-id">KAI202601</strong></span>
+            <div class="text-xs text-slate-500 font-mono flex items-center gap-2 mt-0.5">
+              <span>ID: <strong class="text-red-600" id="sd-header-id">KAI202601</strong></span>
               <span>•</span>
               <span id="sd-header-status" class="status-badge status-active text-[9px]">Active</span>
             </div>
           </div>
         </div>
-        <button id="close-sd-modal" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+        <button id="close-sd-modal" class="p-2 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1917,16 +1917,16 @@
     data-dismissible="true">
     <div
       class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-auto max-h-[90vh] md:h-[680px] modal-box">
-      <div class="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+      <div class="p-5 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
         <div class="flex items-center gap-3">
-          <span class="material-symbols-outlined text-amber-500 text-2xl">edit_square</span>
+          <span class="material-symbols-outlined text-amber-600 text-2xl">edit_square</span>
           <div>
-            <h3 class="font-extrabold text-base text-white">Edit Student Profile</h3>
-            <p class="text-xs text-slate-400">Update complete athlete onboarding and registration records</p>
+            <h3 class="font-extrabold text-base text-slate-900">Edit Student Profile</h3>
+            <p class="text-xs text-slate-500">Update complete athlete onboarding and registration records</p>
           </div>
         </div>
         <button id="close-edit-student-modal"
-          class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          class="p-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -2567,25 +2567,25 @@
     <div
       class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-auto max-h-[90vh] md:h-[740px] modal-box">
 
-      <!-- Modal Header -->
-      <div class="p-6 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+      <!-- Modal Header (Light Theme) -->
+      <div class="p-6 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
         <div class="flex items-center gap-3">
           <div
-            class="w-10 h-10 rounded-xl bg-red-600/30 border border-red-500/50 flex items-center justify-center text-red-400">
+            class="w-10 h-10 rounded-xl bg-red-100 border border-red-200 flex items-center justify-center text-red-600">
             <span class="material-symbols-outlined text-2xl">how_to_reg</span>
           </div>
           <div>
-            <h3 class="font-extrabold text-lg text-white flex items-center gap-2">
+            <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">
               <span>Online Student Admissions</span>
               <span id="adm-modal-count-badge"
                 class="bg-red-600 text-white font-mono text-[10px] font-extrabold px-2 py-0.5 rounded-full">0
                 Pending</span>
             </h3>
-            <p class="text-xs text-slate-400">Manager Verification & Document Verification Workflow</p>
+            <p class="text-xs text-slate-500">Manager Verification & Document Verification Workflow</p>
           </div>
         </div>
         <button id="close-admissions-modal"
-          class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          class="p-2 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -2628,10 +2628,10 @@
     data-dismissible="true">
     <div
       class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[700px] max-h-[92vh] modal-box">
-      <div class="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+      <div class="p-4 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
         <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-red-500">description</span>
-          <span class="font-extrabold text-sm" id="doc-preview-title">Document Preview</span>
+          <span class="material-symbols-outlined text-red-600">description</span>
+          <span class="font-extrabold text-sm text-slate-900" id="doc-preview-title">Document Preview</span>
         </div>
         <div class="flex items-center gap-2">
           <a id="doc-preview-download-btn" href="#" download="document"
@@ -2639,7 +2639,7 @@
             <span class="material-symbols-outlined text-sm">download</span>
             <span>Download</span>
           </a>
-          <button id="close-doc-preview-modal" class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300">
+          <button id="close-doc-preview-modal" class="p-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -2659,20 +2659,20 @@
     <div
       class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[720px] max-h-[92vh] modal-box">
 
-      <!-- Header -->
-      <div class="p-6 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+      <!-- Header (Light Theme) -->
+      <div class="p-6 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
         <div class="flex items-center gap-3">
           <div
-            class="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-blue-400">
+            class="w-10 h-10 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600">
             <span class="material-symbols-outlined text-2xl">table_view</span>
           </div>
           <div>
-            <h3 class="font-extrabold text-lg text-white">Bulk Student CSV Import Verification</h3>
-            <p class="text-xs text-slate-400">Review and validate student records before committing to the database
+            <h3 class="font-extrabold text-lg text-slate-900">Bulk Student CSV Import Verification</h3>
+            <p class="text-xs text-slate-500">Review and validate student records before committing to the database
               roster</p>
           </div>
         </div>
-        <button id="close-csv-modal" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+        <button id="close-csv-modal" class="p-2 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -2860,19 +2860,19 @@
     data-dismissible="true">
     <div
       class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] modal-box">
-      <div class="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+      <div class="p-5 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
         <div class="flex items-center gap-3">
           <div
-            class="w-10 h-10 rounded-2xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-400">
+            class="w-10 h-10 rounded-2xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600">
             <span class="material-symbols-outlined text-xl">preview</span>
           </div>
           <div>
-            <h3 class="font-extrabold text-base text-white">Email Preview</h3>
-            <p class="text-[11px] text-slate-400 font-mono" id="email-preview-subject-header">Subject line</p>
+            <h3 class="font-extrabold text-base text-slate-900">Email Preview</h3>
+            <p class="text-[11px] text-slate-500 font-mono" id="email-preview-subject-header">Subject line</p>
           </div>
         </div>
         <button onclick="closeEmailPreviewModal()"
-          class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          class="p-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
       </div>
@@ -2882,7 +2882,7 @@
       <div class="p-4 bg-white border-t border-slate-200 flex items-center justify-between gap-3 text-xs shrink-0">
         <div class="text-slate-500 text-[11px]" id="email-preview-meta-info">Recipient: info@example.com</div>
         <button type="button" onclick="closeEmailPreviewModal()"
-          class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-sm transition">
+          class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-sm transition">
           Close Preview
         </button>
       </div>
@@ -3005,26 +3005,26 @@
     <div
       class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-auto max-h-[90vh] md:h-[720px] modal-box">
 
-      <!-- Modal Header -->
-      <div class="p-6 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+      <!-- Modal Header (Light Theme) -->
+      <div class="p-6 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
         <div class="flex items-center gap-4">
           <img id="sp-header-photo" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Staff"
             class="w-14 h-14 rounded-full object-cover border-2 border-blue-500 shadow" />
           <div>
             <div class="flex items-center gap-2">
-              <h3 class="font-extrabold text-lg text-white" id="sp-header-name">Staff Name</h3>
+              <h3 class="font-extrabold text-lg text-slate-900" id="sp-header-name">Staff Name</h3>
               <span id="sp-header-role" class="bg-blue-600 text-white text-[10px] font-bold py-0.5 px-2 rounded-full uppercase">Role</span>
             </div>
-            <div class="text-xs text-slate-400 font-mono flex items-center gap-2 mt-0.5">
-              <span>Staff ID: <strong class="text-blue-400" id="sp-header-id">KAISTF202601</strong></span>
+            <div class="text-xs text-slate-600 font-mono flex items-center gap-2 mt-0.5">
+              <span>Staff ID: <strong class="text-blue-600" id="sp-header-id">KAISTF202601</strong></span>
               <span>•</span>
-              <span>Tenure: <strong class="text-emerald-400" id="sp-header-tenure">0 Days</strong></span>
+              <span>Tenure: <strong class="text-emerald-600" id="sp-header-tenure">0 Days</strong></span>
               <span>•</span>
               <span id="sp-header-status" class="status-badge status-active text-[9px]">Active</span>
             </div>
           </div>
         </div>
-        <button id="close-sp-modal" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+        <button id="close-sp-modal" class="p-2 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>

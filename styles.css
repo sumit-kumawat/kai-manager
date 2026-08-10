@@ -436,8 +436,8 @@ html, body {
 }
 
 .student-id-card-header {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #ffffff;
+  background: #f8fafc;
+  color: #0f172a;
   padding: 1.25rem 1rem;
   text-align: center;
   border-bottom: 3px solid #d90429;

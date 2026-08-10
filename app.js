@@ -3577,7 +3577,7 @@ async function renderIDCards() {
         </div>
 
         <div class="pt-3 border-t border-slate-100 flex items-center justify-center no-print">
-          <button onclick="downloadIDCardPNG('${s.id}')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition text-center flex items-center justify-center gap-1.5 shadow text-xs">
+          <button onclick="downloadIDCardPNG('${s.id}')" class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition text-center flex items-center justify-center gap-1.5 shadow text-xs">
             <span class="material-symbols-outlined text-sm">download</span><span>Download PNG</span>
           </button>
         </div>
@@ -3952,12 +3952,14 @@ async function shareReceiptWhatsApp(inv) {
   } catch (e) { }
 
   downloadReceiptPDF(inv.id);
-  const student = appState.students.find(s => String(s.studentId) === String(inv.studentId));
+  const student = appState.students.find(s => String(s.studentId) === String(inv.studentId) || String(s.id) === String(inv.studentId));
+  const candidateId = student ? getStudentPublicRef(student) : (inv.studentId || 'N/A');
   let phone = student?.contactPhone || student?.phone || '7040925257';
   phone = phone.replace(/[^0-9]/g, '');
   if (phone.length === 10) phone = '91' + phone;
 
-  const text = encodeURIComponent(`*${appState.config.appSubtitle.toUpperCase()} - RECEIPT CONFIRMATION*\n\nDear *${inv.studentName}* (${inv.studentId}),\n\nWe have received your payment of *₹${(inv.finalPaid || inv.amount).toLocaleString('en-IN')}*.\nInvoice #: *${inv.id}*\nPayment Method: ${inv.paymentMethod}\nStatus: PAID / VERIFIED\n\nReceipt PDF downloaded to device. Thank you!`);
+  const appTitle = (appState.config?.appSubtitle || 'KARATE ACADEMY INDIA').toUpperCase();
+  const text = encodeURIComponent(`*${appTitle} - PAYMENT RECEIPT*\n\nAthlete Name: *${inv.studentName}*\nCandidate ID / Ref: *${candidateId}*\nAmount Paid: *₹${(inv.finalPaid || inv.amount).toLocaleString('en-IN')}*\nInvoice #: *${inv.id}*\nPayment Method: ${inv.paymentMethod}\nStatus: PAID / VERIFIED\n\nOfficial PDF receipt generated. Thank you!`);
   window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
 }
 
