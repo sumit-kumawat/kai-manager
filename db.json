@@ -271,6 +271,15 @@
         "email": "info@karateacademyindia.com",
         "role": "admin"
       }
+    },
+    {
+      "token": "kai_sec_token_23njg69vly41787242509432",
+      "user": {
+        "name": "KAI Administrator",
+        "username": "admin",
+        "email": "info@karateacademyindia.com",
+        "role": "admin"
+      }
     }
   ]
 }

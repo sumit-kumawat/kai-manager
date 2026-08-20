@@ -2,8 +2,10 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import nodemailer from 'nodemailer';
 
+const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
@@ -16,13 +18,11 @@ const SERVER_BUILD_ID = 'BUILD_V2.0_STABLE';
 // Dynamic Native SQLite Database Connection
 let sqliteDb = null;
 try {
-  const sqliteModule = await import('node:sqlite');
-  if (sqliteModule && sqliteModule.DatabaseSync) {
-    sqliteDb = new sqliteModule.DatabaseSync(SQLITE_FILE);
-    console.log('[Server DB Engine] Native SQLite Database Engine Loaded.');
-  }
+  const { DatabaseSync } = require('node:sqlite');
+  sqliteDb = new DatabaseSync(SQLITE_FILE);
+  console.log('[Server DB Engine] Native node:sqlite Database Engine Loaded.');
 } catch (e) {
-  console.warn('[Server DB Engine] Native node:sqlite not available on this Node runtime. Operating in resilient JSON database mode.');
+  console.warn('[Server DB Engine] Operating in resilient JSON database mode.');
   sqliteDb = null;
 }
 
@@ -1246,11 +1246,18 @@ const server = http.createServer((req, res) => {
 
             activeSessions.set(token, sessionUser);
 
-            // Persist session to SQLite database
+            // Persist session to SQLite or JSON database
             try {
-              sqliteDb.prepare(`INSERT OR REPLACE INTO sessions (token, userJson, createdAt) VALUES (?, ?, ?)`).run(token, JSON.stringify(sessionUser), new Date().toISOString());
+              if (sqliteDb) {
+                sqliteDb.prepare(`INSERT OR REPLACE INTO sessions (token, userJson, createdAt) VALUES (?, ?, ?)`).run(token, JSON.stringify(sessionUser), new Date().toISOString());
+              }
+              const dbData = readDbFile();
+              dbData.sessions = dbData.sessions || [];
+              dbData.sessions = dbData.sessions.filter(s => s.token !== token);
+              dbData.sessions.push({ token, user: sessionUser, createdAt: new Date().toISOString() });
+              writeDbFile(dbData);
             } catch (e) {
-              console.warn('[SQLite Session Insert Warning]', e.message);
+              console.warn('[Session Insert Warning]', e.message);
             }
 
             console.log('[SQLite Server] Login successful for:', sessionUser.username, 'role:', sessionUser.role);
@@ -3276,6 +3283,9 @@ function getStudentPublicRef(student) {
 
   // Static File Serving with Single Page Application (SPA) Fallback
   let relativePath = (pathname === '/' || pathname === '') ? 'index.html' : pathname.replace(/^\/+/, '');
+  if (relativePath === 'admission') relativePath = 'admission.html';
+  if (relativePath === 'belt-exam' || relativePath === 'belt_exam') relativePath = 'belt_exam.html';
+
   let filePath = path.join(__dirname, relativePath);
   const ext = path.extname(filePath);
   let contentType = MIME_TYPES[ext] || 'text/html; charset=utf-8';
