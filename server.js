@@ -1153,13 +1153,17 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Extract clean pathname without query parameters
+  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const pathname = parsedUrl.pathname;
+
   // REST API Endpoints
-  if (req.url.startsWith('/api/')) {
+  if (pathname.startsWith('/api/')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     // 0. Auth Logout Endpoint
-    if (req.url === '/api/logout' && req.method === 'POST') {
+    if (pathname === '/api/logout' && req.method === 'POST') {
       const authHeader = req.headers['authorization'];
       if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.substring(7);
@@ -1171,7 +1175,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 1. Auth Login Endpoint
-    if (req.url === '/api/login' && req.method === 'POST') {
+    if (pathname === '/api/login' && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => body += chunk.toString());
       req.on('end', () => {
@@ -1284,14 +1288,14 @@ const server = http.createServer((req, res) => {
     }
 
     // 1b. Version & Build Token Endpoint (`/api/version`)
-    if (req.url === '/api/version' && req.method === 'GET') {
+    if (pathname === '/api/version' && req.method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: true, buildId: SERVER_BUILD_ID, version: '2.1.0' }));
       return;
     }
 
     // 2. Session Verification Endpoint (`/api/verify-session`)
-    if (req.url === '/api/verify-session' && (req.method === 'GET' || req.method === 'POST')) {
+    if (pathname === '/api/verify-session' && (req.method === 'GET' || req.method === 'POST')) {
       const authHeader = req.headers['authorization'] || '';
       let token = authHeader.replace('Bearer ', '').trim();
 
@@ -1359,7 +1363,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 3. Protected Database GET (Masks SMTP Password & Hides Root Admin for Non-Admins)
-    if (req.url === '/api/db' && req.method === 'GET') {
+    if (pathname === '/api/db' && req.method === 'GET') {
       if (!sessionUser) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '401 Unauthorized. Please login.' }));
@@ -1404,7 +1408,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 4. Protected Database POST (Strict RBAC Enforcement)
-    if (req.url === '/api/db' && req.method === 'POST') {
+    if (pathname === '/api/db' && req.method === 'POST') {
       if (!sessionUser) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '401 Unauthorized. Access restricted.' }));
@@ -1468,7 +1472,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 5. Admin SMTP Config Endpoint (`/api/admin/smtp-config`)
-    if (req.url === '/api/admin/smtp-config' && req.method === 'POST') {
+    if (pathname === '/api/admin/smtp-config' && req.method === 'POST') {
       if (!sessionUser || sessionUser.role !== 'admin') {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Only Admin can configure SMTP.' }));
@@ -1509,7 +1513,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 6. Admin Send Test Email Endpoint (`/api/admin/test-email`)
-    if (req.url === '/api/admin/test-email' && req.method === 'POST') {
+    if (pathname === '/api/admin/test-email' && req.method === 'POST') {
       if (!sessionUser || sessionUser.role !== 'admin') {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Only Admin can test SMTP.' }));
@@ -1580,7 +1584,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 7. Generic Send Email Endpoint (`/api/send-email`) for Admin, Manager & Receptionist
-    if (req.url === '/api/send-email' && req.method === 'POST') {
+    if (pathname === '/api/send-email' && req.method === 'POST') {
       if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager' && sessionUser.role !== 'receptionist')) {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Only authorized staff can send emails.' }));
@@ -1746,7 +1750,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 7.1 Email History & Logs API Endpoint (`/api/emails/logs`)
-    if (req.url === '/api/emails/logs' && req.method === 'GET') {
+    if (pathname === '/api/emails/logs' && req.method === 'GET') {
       if (!sessionUser) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '401 Unauthorized.' }));
@@ -1770,7 +1774,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 7.2 Email Retry Endpoint (`/api/emails/retry`)
-    if (req.url === '/api/emails/retry' && req.method === 'POST') {
+    if (pathname === '/api/emails/retry' && req.method === 'POST') {
       if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Only Manager or Admin can retry email dispatch.' }));
@@ -1825,7 +1829,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 7.3 Email Clear Logs Endpoint (`/api/emails/clear-logs`)
-    if (req.url === '/api/emails/clear-logs' && req.method === 'POST') {
+    if (pathname === '/api/emails/clear-logs' && req.method === 'POST') {
       if (!sessionUser || sessionUser.role !== 'admin') {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Only Root Admin can clear email logs.' }));
@@ -1842,7 +1846,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 7.4 Automated ID Card Email Endpoint (`/api/students/idcard-email`)
-    if (req.url === '/api/students/idcard-email' && req.method === 'POST') {
+    if (pathname === '/api/students/idcard-email' && req.method === 'POST') {
       if (!sessionUser) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '401 Unauthorized.' }));
@@ -1892,7 +1896,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 7.5 Automated Attendance Notification Endpoint (`/api/attendance/notify`)
-    if (req.url === '/api/attendance/notify' && req.method === 'POST') {
+    if (pathname === '/api/attendance/notify' && req.method === 'POST') {
       if (!sessionUser) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '401 Unauthorized.' }));
@@ -1992,7 +1996,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 7.6 Staff Salary Disbursement & Automatic PDF Payslip Endpoint (`/api/staff-salary`)
-    if (req.url === '/api/staff-salary' && req.method === 'POST') {
+    if (pathname === '/api/staff-salary' && req.method === 'POST') {
       if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Only Managers and Admins can manage staff salaries.' }));
@@ -2095,7 +2099,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 7.7 Multiple Branch Management Endpoint (`/api/branches`)
-    if (req.url.startsWith('/api/branches')) {
+    if (pathname.startsWith('/api/branches')) {
       if (!sessionUser) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '401 Unauthorized.' }));
@@ -2131,7 +2135,7 @@ const server = http.createServer((req, res) => {
             dbData.branches = dbData.branches || [];
 
             if (req.method === 'DELETE') {
-              const urlParts = req.url.split('/');
+              const urlParts = pathname.split('/');
               const branchId = urlParts[urlParts.length - 1];
               dbData.branches = dbData.branches.filter(b => String(b.id) !== String(branchId) && String(b.code) !== String(branchId));
               writeDbFile(dbData);
@@ -2170,7 +2174,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 7.8 Expense Management Endpoint (`/api/expenses`)
-    if (req.url.startsWith('/api/expenses')) {
+    if (pathname.startsWith('/api/expenses')) {
       if (!sessionUser) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '401 Unauthorized.' }));
@@ -2232,7 +2236,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 7.9 Financial Ledger PDF Report Generator (`/api/reports/financial-ledger-pdf`)
-    if (req.url.startsWith('/api/reports/financial-ledger-pdf') && req.method === 'GET') {
+    if (pathname.startsWith('/api/reports/financial-ledger-pdf') && req.method === 'GET') {
       if (!sessionUser) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '401 Unauthorized.' }));
@@ -2254,7 +2258,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 8. Transactional User Deletion API Endpoint (`/api/users/delete`)
-    if (req.url === '/api/users/delete' && req.method === 'POST') {
+    if (pathname === '/api/users/delete' && req.method === 'POST') {
       if (!sessionUser || sessionUser.role !== 'admin') {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Only Root Admin can delete user accounts.' }));
@@ -2307,7 +2311,7 @@ const server = http.createServer((req, res) => {
     }
 
     // 9. Backend Email Receipt Endpoint (`/api/email-receipt`)
-    if (req.url === '/api/email-receipt' && req.method === 'POST') {
+    if (pathname === '/api/email-receipt' && req.method === 'POST') {
       if (!sessionUser) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '401 Unauthorized.' }));
@@ -2382,7 +2386,7 @@ function getStudentPublicRef(student) {
 }
 
     // 10. Public CAPTCHA Challenge Endpoint (`/api/public/captcha`)
-    if (req.url === '/api/public/captcha' && req.method === 'GET') {
+    if (pathname === '/api/public/captcha' && req.method === 'GET') {
       const challenge = generateCaptchaChallenge();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
@@ -2394,7 +2398,7 @@ function getStudentPublicRef(student) {
     }
 
     // 10.1 Public Athlete Verification Endpoint (`/api/public/verify-athlete`)
-    if (req.url.startsWith('/api/public/verify-athlete') && req.method === 'GET') {
+    if (pathname.startsWith('/api/public/verify-athlete') && req.method === 'GET') {
       const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
       const ref = urlObj.searchParams.get('ref') || urlObj.searchParams.get('token') || '';
 
@@ -2427,7 +2431,7 @@ function getStudentPublicRef(student) {
     }
 
     // 11. Public Student Admission Submission Endpoint (`/api/public/admissions`)
-    if ((req.url === '/api/public/admissions' || req.url === '/api/admissions') && req.method === 'POST') {
+    if ((pathname === '/api/public/admissions' || pathname === '/api/admissions') && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => {
         body += chunk.toString();
@@ -2588,7 +2592,7 @@ function getStudentPublicRef(student) {
     }
 
     // 11.1 Public Candidate Details Lookup Endpoint (`/api/public/candidate-details`)
-    if (req.url.startsWith('/api/public/candidate-details') && req.method === 'GET') {
+    if (pathname.startsWith('/api/public/candidate-details') && req.method === 'GET') {
       const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
       const studentId = (urlObj.searchParams.get('studentId') || '').trim();
 
@@ -2623,7 +2627,7 @@ function getStudentPublicRef(student) {
     }
 
     // 11.2 Public Belt Exam Application Endpoint (`/api/public/belt-exam`)
-    if ((req.url === '/api/public/belt-exam' || req.url === '/api/belt-exam') && req.method === 'POST') {
+    if ((pathname === '/api/public/belt-exam' || pathname === '/api/belt-exam') && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => body += chunk.toString());
       req.on('end', () => {
@@ -2706,7 +2710,7 @@ function getStudentPublicRef(student) {
     }
 
     // 11.3 Mark All Logs Read Endpoint (`/api/logs/mark-all-read`)
-    if (req.url === '/api/logs/mark-all-read' && req.method === 'POST') {
+    if (pathname === '/api/logs/mark-all-read' && req.method === 'POST') {
       const dbData = readDbFile();
       if (Array.isArray(dbData.activityLogs)) {
         dbData.activityLogs.forEach(l => l.isRead = true);
@@ -2719,7 +2723,7 @@ function getStudentPublicRef(student) {
     }
 
     // 12. Protected Pending Admissions List Endpoint (`/api/admissions/pending`)
-    if (req.url === '/api/admissions/pending' && req.method === 'GET') {
+    if (pathname === '/api/admissions/pending' && req.method === 'GET') {
       if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Manager permission required.' }));
@@ -2735,7 +2739,7 @@ function getStudentPublicRef(student) {
     }
 
     // 13. Protected Admission Approval Endpoint (`/api/admissions/approve`)
-    if (req.url === '/api/admissions/approve' && req.method === 'POST') {
+    if (pathname === '/api/admissions/approve' && req.method === 'POST') {
       if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Only Managers and Admins can approve admissions.' }));
@@ -2890,7 +2894,7 @@ function getStudentPublicRef(student) {
     }
 
     // 14. Protected Admission Rejection Endpoint (`/api/admissions/reject`)
-    if (req.url === '/api/admissions/reject' && req.method === 'POST') {
+    if (pathname === '/api/admissions/reject' && req.method === 'POST') {
       if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Only Managers and Admins can reject admissions.' }));
@@ -2967,7 +2971,7 @@ function getStudentPublicRef(student) {
     }
 
     // 15. Staff User Creation & Payroll Endpoint (`/api/staff`)
-    if (req.url === '/api/staff' && req.method === 'POST') {
+    if (pathname === '/api/staff' && req.method === 'POST') {
       if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Only Managers and Admins can create staff accounts.' }));
@@ -3028,7 +3032,7 @@ function getStudentPublicRef(student) {
     }
 
     // 16.1 Staff Account Status Toggle (`/api/staff/status`)
-    if (req.url === '/api/staff/status' && req.method === 'POST') {
+    if (pathname === '/api/staff/status' && req.method === 'POST') {
       if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Only Managers and Admins can modify staff account status.' }));
@@ -3067,7 +3071,7 @@ function getStudentPublicRef(student) {
     }
 
     // 16.2 Staff Deletion Endpoint (`/api/staff/delete` - Admin Only)
-    if (req.url === '/api/staff/delete' && req.method === 'POST') {
+    if (pathname === '/api/staff/delete' && req.method === 'POST') {
       if (!sessionUser || sessionUser.role !== 'admin') {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '403 Forbidden. Only Root Administrators can delete staff accounts.' }));
@@ -3112,7 +3116,7 @@ function getStudentPublicRef(student) {
     }
 
     // 16. Staff Salary Invoice Generation Endpoint (`/api/staff/invoice`)
-    if (req.url === '/api/staff/invoice' && req.method === 'POST') {
+    if (pathname === '/api/staff/invoice' && req.method === 'POST') {
       if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Only Managers and Admins can generate staff salary invoices.' }));
@@ -3173,7 +3177,7 @@ function getStudentPublicRef(student) {
                 </div>
                 <p>An official PDF payslip receipt is attached to this email for your financial records.</p>
               `,
-              triggeredBy: `Payroll Generation (${sessionUser.username})`,
+              triggeredBy: `Payroll Generation (${sessionUser.name})`,
               preventDuplicateMinutes: 0,
               meta: { invoiceObj: payslipEntry }
             }).catch(() => { });
@@ -3194,7 +3198,7 @@ function getStudentPublicRef(student) {
     }
 
     // 17. Holiday Attendance Notification Endpoint (`/api/attendance/holiday`)
-    if (req.url === '/api/attendance/holiday' && req.method === 'POST') {
+    if (pathname === '/api/attendance/holiday' && req.method === 'POST') {
       if (!sessionUser || sessionUser.role === 'viewer') {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Permission denied.' }));
@@ -3251,9 +3255,6 @@ function getStudentPublicRef(student) {
     return;
   }
 
-  // Extract clean pathname without query strings
-  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const pathname = parsedUrl.pathname;
   const normalizedUrl = pathname.toLowerCase();
 
   // Restrict direct static file serving for db.json

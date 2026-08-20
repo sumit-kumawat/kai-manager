@@ -280,6 +280,15 @@
         "email": "info@karateacademyindia.com",
         "role": "admin"
       }
+    },
+    {
+      "token": "kai_sec_token_s7gmp91q991787247343995",
+      "user": {
+        "name": "KAI Administrator",
+        "username": "admin",
+        "email": "info@karateacademyindia.com",
+        "role": "admin"
+      }
     }
   ]
 }
