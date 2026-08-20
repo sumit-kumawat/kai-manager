@@ -2,7 +2,6 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { DatabaseSync } from 'node:sqlite';
 import nodemailer from 'nodemailer';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,8 +13,18 @@ const SQLITE_FILE = path.join(__dirname, 'kai_manager.sqlite');
 // Stable Server Build Identifier Token
 const SERVER_BUILD_ID = 'BUILD_V2.0_STABLE';
 
-// Native SQLite Database Connection
-const sqliteDb = new DatabaseSync(SQLITE_FILE);
+// Dynamic Native SQLite Database Connection
+let sqliteDb = null;
+try {
+  const sqliteModule = await import('node:sqlite');
+  if (sqliteModule && sqliteModule.DatabaseSync) {
+    sqliteDb = new sqliteModule.DatabaseSync(SQLITE_FILE);
+    console.log('[Server DB Engine] Native SQLite Database Engine Loaded.');
+  }
+} catch (e) {
+  console.warn('[Server DB Engine] Native node:sqlite not available on this Node runtime. Operating in resilient JSON database mode.');
+  sqliteDb = null;
+}
 
 // In-memory active session tokens map: token -> user object
 const activeSessions = new Map();
@@ -33,6 +42,7 @@ const MIME_TYPES = {
 
 // Initialize SQLite Schema
 function initSqliteTables() {
+  if (!sqliteDb) return;
   sqliteDb.exec(`
     CREATE TABLE IF NOT EXISTS config (
       key TEXT PRIMARY KEY,
@@ -288,70 +298,94 @@ function seedSqliteFromJson(data) {
 }
 
 function readDbFile() {
-  initSqliteTables();
-
-  const users = sqliteDb.prepare('SELECT * FROM users').all();
-  const students = sqliteDb.prepare('SELECT * FROM students').all();
-  const financials = sqliteDb.prepare('SELECT * FROM financials').all();
-  const attendance = sqliteDb.prepare('SELECT * FROM attendance').all();
-  const expenses = sqliteDb.prepare('SELECT * FROM expenses').all();
-  const staffSalaries = sqliteDb.prepare('SELECT * FROM staff_salaries').all();
-  const activityLogs = sqliteDb.prepare('SELECT * FROM activity_logs ORDER BY id DESC').all().map(l => ({ ...l, isRead: Boolean(l.isRead) }));
-  const pendingAdmissions = sqliteDb.prepare('SELECT * FROM pending_admissions').all().map(a => ({ ...a, documents: JSON.parse(a.documentsJson || '[]') }));
-  const pendingBeltExams = sqliteDb.prepare('SELECT * FROM belt_exams').all();
-  const branches = sqliteDb.prepare('SELECT * FROM branches').all();
-
-  const configRows = sqliteDb.prepare('SELECT * FROM config').all();
-  const config = {};
-  configRows.forEach(r => {
+  if (sqliteDb) {
+    initSqliteTables();
     try {
-      config[r.key] = JSON.parse(r.value);
+      const users = sqliteDb.prepare('SELECT * FROM users').all();
+      const students = sqliteDb.prepare('SELECT * FROM students').all();
+      const financials = sqliteDb.prepare('SELECT * FROM financials').all();
+      const attendance = sqliteDb.prepare('SELECT * FROM attendance').all();
+      const expenses = sqliteDb.prepare('SELECT * FROM expenses').all();
+      const staffSalaries = sqliteDb.prepare('SELECT * FROM staff_salaries').all();
+      const activityLogs = sqliteDb.prepare('SELECT * FROM activity_logs ORDER BY id DESC').all().map(l => ({ ...l, isRead: Boolean(l.isRead) }));
+      const pendingAdmissions = sqliteDb.prepare('SELECT * FROM pending_admissions').all().map(a => ({ ...a, documents: JSON.parse(a.documentsJson || '[]') }));
+      const pendingBeltExams = sqliteDb.prepare('SELECT * FROM belt_exams').all();
+      const branches = sqliteDb.prepare('SELECT * FROM branches').all();
+
+      const configRows = sqliteDb.prepare('SELECT * FROM config').all();
+      const config = {};
+      configRows.forEach(r => {
+        try {
+          config[r.key] = JSON.parse(r.value);
+        } catch (e) {
+          config[r.key] = r.value === 'true' ? true : r.value === 'false' ? false : r.value;
+        }
+      });
+
+      const sessionRows = sqliteDb.prepare('SELECT * FROM sessions').all();
+      const sessions = sessionRows.map(s => ({ token: s.token, user: JSON.parse(s.userJson || '{}') }));
+
+      const resObj = { users, students, financials, attendance, expenses, staffSalaries, activityLogs, pendingAdmissions, pendingBeltExams, branches, config, sessions };
+      fs.writeFile(DB_FILE, JSON.stringify(resObj, null, 2), 'utf8', () => {});
+      return resObj;
     } catch (e) {
-      config[r.key] = r.value === 'true' ? true : r.value === 'false' ? false : r.value;
+      console.warn('[SQLite Read Warning]', e.message);
     }
-  });
+  }
 
-  const sessionRows = sqliteDb.prepare('SELECT * FROM sessions').all();
-  const sessions = sessionRows.map(s => ({ token: s.token, user: JSON.parse(s.userJson || '{}') }));
-
-  return {
-    users,
-    students,
-    financials,
-    attendance,
-    expenses,
-    staffSalaries,
-    activityLogs,
-    pendingAdmissions,
-    pendingBeltExams,
-    branches,
-    config,
-    sessions
-  };
+  // Fallback to db.json file
+  if (cachedDb && (Date.now() - cachedDbTime < 1000)) {
+    return cachedDb;
+  }
+  try {
+    const raw = fs.readFileSync(DB_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    parsed.users = parsed.users || [];
+    parsed.students = parsed.students || [];
+    parsed.financials = parsed.financials || [];
+    parsed.attendance = parsed.attendance || [];
+    parsed.activityLogs = parsed.activityLogs || [];
+    parsed.sessions = parsed.sessions || [];
+    parsed.pendingAdmissions = parsed.pendingAdmissions || [];
+    parsed.pendingBeltExams = parsed.pendingBeltExams || [];
+    cachedDb = parsed;
+    cachedDbTime = Date.now();
+    return parsed;
+  } catch (e) {
+    return { users: [], config: {}, students: [], financials: [], attendance: [], activityLogs: [], sessions: [], pendingAdmissions: [], pendingBeltExams: [] };
+  }
 }
+
+let cachedDb = null;
+let cachedDbTime = 0;
 
 function writeDbFile(data) {
-  initSqliteTables();
-  seedSqliteFromJson(data);
+  cachedDb = data;
+  cachedDbTime = Date.now();
+  if (sqliteDb) {
+    initSqliteTables();
+    seedSqliteFromJson(data);
+  }
+  fs.writeFile(DB_FILE, JSON.stringify(data, null, 2), 'utf8', (err) => {
+    if (err) console.error('[Server DB Write Error]', err);
+  });
 }
 
-// Hydrate sessions from SQLite database
+// Hydrate active sessions from SQLite or db.json
 function hydrateActiveSessions() {
   activeSessions.clear();
   try {
-    initSqliteTables();
-    const rows = sqliteDb.prepare('SELECT * FROM sessions').all();
-    rows.forEach(r => {
-      if (r.token && r.userJson) {
-        try {
-          const user = JSON.parse(r.userJson);
-          activeSessions.set(r.token, user);
-        } catch (e) {}
-      }
-    });
-    console.log(`[SQLite Server] Hydrated ${activeSessions.size} active sessions from SQLite database.`);
+    const dbData = readDbFile();
+    if (dbData.sessions && Array.isArray(dbData.sessions)) {
+      dbData.sessions.forEach(s => {
+        if (s.token && s.user) {
+          activeSessions.set(s.token, s.user);
+        }
+      });
+      console.log(`[Server] Hydrated ${activeSessions.size} active sessions.`);
+    }
   } catch (e) {
-    console.warn('[SQLite Server] Error hydrating sessions:', e.message);
+    console.warn('[Server] Error hydrating sessions:', e.message);
   }
 }
 
