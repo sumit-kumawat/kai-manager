@@ -1117,27 +1117,16 @@ async function performLogin(username, password) {
       if (res) data = await res.json();
     } catch (err1) {
       networkError = err1;
-      console.warn('Primary login fetch failed, trying secondary 127.0.0.1 endpoint:', err1.message);
-      // 2. Secondary 127.0.0.1 IPv4 Retry
-      try {
-        res = await fetch('http://127.0.0.1:3000/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: userVal, password: passVal })
-        });
-        if (res) data = await res.json();
-      } catch (err2) {
-        console.warn('Secondary login fetch failed, trying localhost endpoint:', err2.message);
-        // 3. Tertiary localhost Retry
+      if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
         try {
-          res = await fetch('http://localhost:3000/api/login', {
+          res = await fetch('http://127.0.0.1:3000/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: userVal, password: passVal })
           });
           if (res) data = await res.json();
-        } catch (err3) {
-          networkError = err3;
+        } catch (err2) {
+          networkError = err2;
         }
       }
     }
