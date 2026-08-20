@@ -66,35 +66,77 @@ body {
   display: block !important;
 }
 
-/* Minimal Form Controls & Modern Date Pickers */
+/* Global Light Theme Input & Dropdown Component Engine */
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
 input[type="url"],
 input[type="date"],
+input[type="tel"],
+input[type="search"],
+input[type="month"],
+input[type="time"],
+input[type="datetime-local"],
+input:not([type]),
 select,
 textarea {
-  font-size: 0.75rem;
-  line-height: 1rem;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
   border-radius: 0.75rem;
-  border-color: #e2e8f0;
-  background-color: #f8fafc;
-  transition: all 0.15s ease-in-out;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="number"]:focus,
-input[type="url"]:focus,
-input[type="date"]:focus,
+input::placeholder,
+textarea::placeholder {
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+
+select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  font-weight: 500;
+  padding: 8px 12px;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+  background-color: #fee2e2 !important;
+  color: #d90429 !important;
+  font-weight: 700;
+}
+
+input:focus,
 select:focus,
 textarea:focus {
-  background-color: #ffffff;
-  border-color: #d90429;
-  box-shadow: 0 0 0 2px rgba(217, 4, 41, 0.15);
-  outline: none;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #d90429 !important;
+  box-shadow: 0 0 0 3px rgba(217, 4, 41, 0.15) !important;
+  outline: none !important;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: #94a3b8 !important;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: #f1f5f9 !important;
+  color: #64748b !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed !important;
 }
 
 /* Custom Modern Date Picker Styling for Mobile & Desktop */

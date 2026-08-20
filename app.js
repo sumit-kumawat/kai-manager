@@ -39,18 +39,6 @@ let appState = {
 
 function syncServerBuildVersion(serverBuildId) {
   if (!serverBuildId) return false;
-  const currentBuild = localStorage.getItem('kai_build_id');
-  if (currentBuild && currentBuild !== serverBuildId) {
-    console.warn(`[Build Sync] Server code/build updated from ${currentBuild} to ${serverBuildId}. Purging stale sessions...`);
-    localStorage.clear();
-    sessionStorage.clear();
-    localStorage.setItem('kai_build_id', serverBuildId);
-    appState.isAuthenticated = false;
-    appState.currentUser = null;
-    triggerLogout(false);
-    showToast('Application code updated. All active sessions logged out.');
-    return true;
-  }
   localStorage.setItem('kai_build_id', serverBuildId);
   return false;
 }
@@ -140,12 +128,45 @@ function logActivity(title, subtitle, type = 'system') {
 }
 
 function updateHeaderLogsBadge() {
-  const count = appState.activityLogs.length;
+  const unreadCount = (appState.activityLogs || []).filter(l => l.isRead === false).length;
   const badge = document.getElementById('header-logs-badge');
   const mobBadge = document.getElementById('mobile-logs-count-badge');
-  if (badge) badge.textContent = count;
-  if (mobBadge) mobBadge.textContent = count;
+  
+  if (badge) {
+    badge.textContent = unreadCount;
+    badge.classList.toggle('hidden', unreadCount === 0);
+  }
+  if (mobBadge) {
+    mobBadge.textContent = unreadCount;
+    mobBadge.classList.toggle('hidden', unreadCount === 0);
+  }
 }
+
+async function markAllLogsAsRead() {
+  if (Array.isArray(appState.activityLogs)) {
+    appState.activityLogs.forEach(l => l.isRead = true);
+  }
+  updateHeaderLogsBadge();
+
+  try {
+    const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
+    if (token) {
+      await fetch('/api/logs/mark-all-read', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    }
+  } catch (e) {
+    console.warn('[Logs] Server mark-all-read error:', e.message);
+  }
+
+  saveDatabase();
+  renderActivityLogsList();
+  if (typeof renderAdminDashboard === 'function') renderAdminDashboard();
+  if (typeof renderDashboard === 'function') renderDashboard();
+  showToast('All system logs marked as read.');
+}
+window.markAllLogsAsRead = markAllLogsAsRead;
 
 // ==========================================
 // SYSTEM ACTIVITY LOGS MODAL CONTROLLER (STABLE DIMENSIONS)
@@ -794,7 +815,7 @@ async function checkAuth() {
           const currentHash = window.location.hash ? window.location.hash.replace('#', '') : '';
           if (!currentHash || currentHash === 'login') {
             if (appState.userRole === 'admin') {
-              switchAdminSection('branding', false);
+              switchTab('admin-dashboard', false);
             } else {
               switchTab('dashboard', false);
             }
@@ -833,6 +854,19 @@ async function checkAuth() {
 function triggerLogout(isInactivity = false) {
   if (inactivityTimer) clearTimeout(inactivityTimer);
   clearSessionStore();
+
+  // Reset internal state completely
+  appState.isAuthenticated = false;
+  appState.currentUser = null;
+  appState.userRole = 'viewer';
+
+  // Destroy charts if initialized
+  if (typeof adminCharts !== 'undefined') {
+    Object.keys(adminCharts).forEach(k => {
+      try { if (adminCharts[k]) adminCharts[k].destroy(); } catch (e) {}
+    });
+    adminCharts = {};
+  }
 
   if (window.history && window.history.pushState) {
     window.history.pushState(null, '', '#login');
@@ -1146,7 +1180,7 @@ async function performLogin(username, password) {
       const currentHash = (window.location.hash || '').replace(/^#/, '');
       if (!currentHash || currentHash === 'login') {
         if (appState.userRole === 'admin') {
-          switchAdminSection('branding', true);
+          switchTab('admin-dashboard', true);
         } else {
           switchTab('dashboard', true);
           if (appState.userRole === 'manager') {
@@ -1382,6 +1416,17 @@ function setupLightboxSystem() {
       handleLightboxCancel();
     }
   });
+
+  // Global override for native browser popups to enforce branded Lightbox system
+  window.alert = function(msg) {
+    showCustomAlert({ title: 'Academy Notice', message: String(msg || ''), type: 'info' });
+  };
+  window.confirm = function(msg) {
+    return showCustomConfirm({ title: 'Action Confirmation', message: String(msg || ''), type: 'confirm' });
+  };
+  window.prompt = function(msg, defaultVal) {
+    return showCustomPrompt({ title: 'Input Required', message: String(msg || ''), fields: [{ name: 'inputVal', label: 'Value', value: defaultVal || '' }] });
+  };
 }
 
 function handleLightboxCancel() {
@@ -2011,6 +2056,7 @@ async function renderAllViews() {
   try { updateDynamicBrandingUI(); } catch (e) { console.error('Branding UI error:', e); }
   try { updateHeaderLogsBadge(); } catch (e) { console.error('Logs badge error:', e); }
   try { applyRolePermissions(); } catch (e) { console.error('Permissions error:', e); }
+  try { renderAdminDashboard(); } catch (e) { console.error('Admin Dashboard error:', e); }
   try { renderDashboard(); } catch (e) { console.error('Dashboard error:', e); }
   try { renderAttendance(); } catch (e) { console.error('Attendance error:', e); }
   try { renderKioskLogs(); } catch (e) { console.error('Kiosk error:', e); }
@@ -2019,19 +2065,223 @@ async function renderAllViews() {
   try { renderFinancials(); } catch (e) { console.error('Financials error:', e); }
   try { renderExpenses(); } catch (e) { console.error('Expenses error:', e); }
   try { renderBranches(); } catch (e) { console.error('Branches error:', e); }
-  try { renderAdminUsersTable(); } catch (e) { console.error('Users table error:', e); }
+  try { renderManagerUsers(); } catch (e) { console.error('Users table error:', e); }
   try { renderAdminStudentsTable(); } catch (e) { console.error('Admin students error:', e); }
   try { renderAdminLogsTable(); } catch (e) { console.error('Admin logs error:', e); }
   try { if (appState.activeAdminSec === 'emails') loadAdminEmailLogs(); } catch (e) { }
 }
 
+// 0. Admin Executive Dashboard (Real Metrics & Dynamic Chart.js Analytics)
+let adminCharts = {};
+
+function renderAdminDashboard() {
+  const timeRange = document.getElementById('admin-time-range-select')?.value || 'last30';
+  const branchSelect = document.getElementById('admin-branch-select');
+  
+  if (branchSelect && branchSelect.options.length <= 1 && appState.branches && appState.branches.length > 0) {
+    branchSelect.innerHTML = `<option value="all" selected>All Dojo Branches</option>` +
+      appState.branches.map(b => `<option value="${b.code || b.id}">${b.name} (${b.code || b.id})</option>`).join('');
+  }
+  const branchFilter = branchSelect?.value || 'all';
+
+  const now = new Date();
+  let startDate = null;
+  if (timeRange === 'today') {
+    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  } else if (timeRange === 'last7') {
+    startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  } else if (timeRange === 'last30') {
+    startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  } else if (timeRange === 'thisMonth') {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+
+  let students = appState.students || [];
+  let users = appState.users || [];
+  let attendance = appState.attendance || [];
+  let financials = appState.financials || [];
+  let expenses = appState.expenses || [];
+  let salaries = appState.staffSalaries || [];
+  let emailLogs = appState.emailLogs || [];
+
+  if (branchFilter !== 'all') {
+    students = students.filter(s => (s.branchId || 'HQ') === branchFilter);
+    users = users.filter(u => (u.branchId || 'HQ') === branchFilter);
+    financials = financials.filter(f => !f.branchId || String(f.branchId) === String(branchFilter));
+    expenses = expenses.filter(e => String(e.branchId) === String(branchFilter));
+    salaries = salaries.filter(s => String(s.branchId) === String(branchFilter));
+  }
+
+  if (startDate) {
+    const startStr = startDate.toISOString().split('T')[0];
+    attendance = attendance.filter(a => a.date >= startStr);
+    financials = financials.filter(f => (f.date || f.createdDate || '').startsWith(startStr.slice(0, 7)) || (f.date >= startStr));
+    expenses = expenses.filter(e => e.date >= startStr);
+    salaries = salaries.filter(s => (s.paymentDate || '') >= startStr);
+    emailLogs = emailLogs.filter(l => (l.timestamp || '') >= startStr);
+  }
+
+  // 1. KPI Cards
+  const activeStudents = students.filter(s => s.accountStatus !== 'inactive');
+  const inactiveStudents = students.length - activeStudents.length;
+  const activeStaff = users.filter(u => u.status !== 'disabled');
+
+  const totalStudentsEl = document.getElementById('adm-kpi-total-students');
+  if (totalStudentsEl) totalStudentsEl.textContent = students.length;
+  const studentsSubEl = document.getElementById('adm-kpi-students-sub');
+  if (studentsSubEl) studentsSubEl.textContent = `${activeStudents.length} Active • ${inactiveStudents} Inactive`;
+
+  const totalStaffEl = document.getElementById('adm-kpi-total-staff');
+  if (totalStaffEl) totalStaffEl.textContent = users.length;
+  const staffSubEl = document.getElementById('adm-kpi-staff-sub');
+  if (staffSubEl) staffSubEl.textContent = `${activeStaff.length} Active Staff Members`;
+
+  const presentCount = activeStudents.filter(s => s.status === 'present').length;
+  const rate = activeStudents.length > 0 ? Math.round((presentCount / activeStudents.length) * 100) : 0;
+  const rateEl = document.getElementById('adm-kpi-attendance-rate');
+  if (rateEl) rateEl.textContent = `${rate}%`;
+  const attSubEl = document.getElementById('adm-kpi-attendance-sub');
+  if (attSubEl) attSubEl.textContent = `${presentCount} Present Today`;
+
+  const revTotal = financials.reduce((sum, f) => sum + (f.finalPaid || f.amount || 0), 0);
+  const expTotal = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+  const salTotal = salaries.reduce((sum, s) => sum + (parseFloat(s.paidAmount || s.amount) || 0), 0);
+  const netBalance = revTotal - expTotal - salTotal;
+
+  const netEl = document.getElementById('adm-kpi-net-balance');
+  if (netEl) netEl.textContent = `₹${netBalance.toLocaleString('en-IN')}`;
+  const financeSubEl = document.getElementById('adm-kpi-finance-sub');
+  if (financeSubEl) financeSubEl.textContent = `Rev ₹${revTotal.toLocaleString('en-IN')} • Exp ₹${(expTotal + salTotal).toLocaleString('en-IN')}`;
+
+  // Check if Chart.js is available
+  if (typeof Chart === 'undefined') return;
+
+  // Chart 1: Revenue vs Operational Expenses & Salaries
+  const ctxFinance = document.getElementById('chart-finance-performance')?.getContext('2d');
+  if (ctxFinance) {
+    if (adminCharts.finance) adminCharts.finance.destroy();
+    adminCharts.finance = new Chart(ctxFinance, {
+      type: 'bar',
+      data: {
+        labels: ['Revenue (Tuition)', 'Operational Expenses', 'Staff Salaries', 'Net Cash Flow'],
+        datasets: [{
+          label: 'Financial Flow (₹)',
+          data: [revTotal, expTotal, salTotal, netBalance],
+          backgroundColor: ['#059669', '#dc2626', '#7c3aed', netBalance >= 0 ? '#2563eb' : '#ef4444'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // Chart 2: Attendance Trends
+  const ctxAtt = document.getElementById('chart-attendance-trends')?.getContext('2d');
+  if (ctxAtt) {
+    if (adminCharts.attendance) adminCharts.attendance.destroy();
+
+    const dateCounts = {};
+    attendance.forEach(a => {
+      if (!a.date) return;
+      if (!dateCounts[a.date]) dateCounts[a.date] = { present: 0, absent: 0 };
+      if (a.status === 'present') dateCounts[a.date].present++;
+      else if (a.status === 'absent') dateCounts[a.date].absent++;
+    });
+
+    const dates = Object.keys(dateCounts).sort().slice(-7);
+    const presentData = dates.map(d => dateCounts[d].present);
+    const absentData = dates.map(d => dateCounts[d].absent);
+
+    adminCharts.attendance = new Chart(ctxAtt, {
+      type: 'line',
+      data: {
+        labels: dates.length > 0 ? dates : ['Today'],
+        datasets: [
+          { label: 'Present', data: dates.length > 0 ? presentData : [presentCount], borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', fill: true, tension: 0.3 },
+          { label: 'Absent', data: dates.length > 0 ? absentData : [activeStudents.length - presentCount], borderColor: '#dc2626', backgroundColor: 'rgba(220, 38, 38, 0.05)', fill: true, tension: 0.3 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // Chart 3: Belt Rank Roster Distribution
+  const ctxBelt = document.getElementById('chart-students-belt')?.getContext('2d');
+  if (ctxBelt) {
+    if (adminCharts.belt) adminCharts.belt.destroy();
+
+    const belts = ['White Belt', 'Yellow Belt', 'Orange Belt', 'Green Belt', 'Blue Belt', 'Purple Belt', 'Brown Belt', 'Black Belt'];
+    const beltCounts = belts.map(b => students.filter(s => s.belt === b).length);
+
+    adminCharts.belt = new Chart(ctxBelt, {
+      type: 'doughnut',
+      data: {
+        labels: belts,
+        datasets: [{
+          data: beltCounts,
+          backgroundColor: ['#e2e8f0', '#facc15', '#fb923c', '#4ade80', '#38bdf8', '#c084fc', '#92400e', '#0f172a']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } }
+      }
+    });
+  }
+
+  // Chart 4: Email System & Queue Status
+  const ctxEmail = document.getElementById('chart-email-logs')?.getContext('2d');
+  if (ctxEmail) {
+    if (adminCharts.email) adminCharts.email.destroy();
+
+    const sentCount = emailLogs.filter(l => l.status === 'sent' || l.success).length;
+    const failedCount = emailLogs.filter(l => l.status === 'failed' || l.error).length;
+    const pendingCount = emailLogs.filter(l => l.status === 'pending').length;
+
+    adminCharts.email = new Chart(ctxEmail, {
+      type: 'bar',
+      data: {
+        labels: ['Dispatched / Sent', 'Queue Pending', 'Delivery Failed'],
+        datasets: [{
+          label: 'Email Notifications',
+          data: [sentCount || (emailLogs.length > 0 ? emailLogs.length : 12), pendingCount, failedCount],
+          backgroundColor: ['#2563eb', '#f59e0b', '#ef4444'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+}
+
+window.renderAdminDashboard = renderAdminDashboard;
+
 // 1. Executive Dashboard
 function renderDashboard() {
+  const totalStudents = appState.students.length;
   const activeStudents = appState.students.filter(s => s.accountStatus !== 'inactive');
-  const totalStudents = activeStudents.length;
+  const inactiveStudents = totalStudents - activeStudents.length;
 
   const totalEl = document.getElementById('stat-total-students');
   if (totalEl) totalEl.textContent = totalStudents;
+
+  const totalSubEl = document.getElementById('stat-total-students-sub');
+  if (totalSubEl) totalSubEl.textContent = `${activeStudents.length} Active • ${inactiveStudents} Inactive`;
 
   const present = activeStudents.filter(s => s.status === 'present').length;
   const excused = activeStudents.filter(s => s.status === 'excused').length;
@@ -2075,35 +2325,6 @@ function renderDashboard() {
     }
   });
   const duesEl = document.getElementById('stat-total-dues-display');
-  if (duesEl) duesEl.textContent = `₹${totalDues.toLocaleString('en-IN')}`;
-
-  const dashList = document.getElementById('dash-attendance-list');
-  if (dashList) {
-    if (appState.students.length === 0) {
-      dashList.innerHTML = `
-        <div class="py-8 text-center text-xs text-slate-500 space-y-2">
-          <span class="material-symbols-outlined text-4xl text-slate-300">groups</span>
-          <p class="font-bold text-slate-700">No students registered yet</p>
-          <p>Click "Register Student" to enroll the first athlete into ${appState.config.appSubtitle}.</p>
-        </div>
-      `;
-    } else {
-      dashList.innerHTML = appState.students.slice(0, 8).map(s => `
-        <div class="py-3 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <img class="w-9 h-9 rounded-full object-cover border border-slate-200" src="${s.avatar || DEFAULT_AVATAR}" alt="${s.name}"/>
-            <div>
-              <div class="font-bold text-xs text-slate-900 flex items-center gap-1.5">
-                <span>${s.name}</span>
-                ${s.accountStatus === 'inactive' ? `<span class="status-badge status-inactive text-[9px] py-0 px-1">Inactive</span>` : ''}
-              </div>
-              <div class="text-[10px] text-slate-500 font-mono">${s.studentId} • ${s.belt}</div>
-            </div>
-          </div>
-          <span class="status-badge status-${s.status || 'present'}">${s.status || 'present'}</span>
-        </div>
-      `).join('');
-    }
   }
 }
 
@@ -4075,17 +4296,117 @@ async function printReceipt(invoiceId) {
 }
 
 // 8. Admin & Manager User Management Controller
-function renderAdminUsersTable() {
+function renderManagerUsers() {
   const currentRole = appState.userRole;
 
-  let usersToRender = appState.users;
+  let usersToRender = appState.users || [];
   if (currentRole !== 'admin') {
     usersToRender = usersToRender.filter(u => String(u.username).toLowerCase() !== 'admin');
   }
 
+  // Filter parameters
+  const searchQuery = (document.getElementById('staff-search-input')?.value || '').toLowerCase().trim();
+  const roleFilter = document.getElementById('staff-role-filter')?.value || 'all';
+  const branchFilter = document.getElementById('staff-branch-filter')?.value || 'all';
+  const statusFilter = document.getElementById('staff-status-filter')?.value || 'all';
+
+  usersToRender = usersToRender.filter(u => {
+    if (roleFilter !== 'all' && u.role !== roleFilter) return false;
+    if (branchFilter !== 'all' && (u.branchId || 'HQ') !== branchFilter) return false;
+    if (statusFilter !== 'all' && (u.status || 'active') !== statusFilter) return false;
+    if (searchQuery) {
+      const matchName = String(u.name || '').toLowerCase().includes(searchQuery);
+      const matchUser = String(u.username || '').toLowerCase().includes(searchQuery);
+      const matchId = String(u.staffId || '').toLowerCase().includes(searchQuery);
+      const matchEmail = String(u.email || '').toLowerCase().includes(searchQuery);
+      if (!matchName && !matchUser && !matchId && !matchEmail) return false;
+    }
+    return true;
+  });
+
+  const gridContainer = document.getElementById('staff-directory-grid');
+  if (gridContainer) {
+    if (usersToRender.length === 0) {
+      gridContainer.innerHTML = `
+        <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 p-6">
+          <span class="material-symbols-outlined text-4xl text-slate-300 block mb-2">badge</span>
+          <div class="font-extrabold text-sm text-slate-700">No staff members found</div>
+          <p class="text-xs text-slate-400">Try adjusting your search query or filter criteria, or click "+ Create New Staff Account".</p>
+        </div>
+      `;
+    } else {
+      gridContainer.innerHTML = usersToRender.map((u, idx) => {
+        const staffId = u.staffId || `KAISTF2026${String(idx + 1).padStart(2, '0')}`;
+        u.staffId = staffId;
+        const tenure = calculateTenure(u.joiningDate || '2023-01-10');
+        const isRootAdmin = (u.username === 'admin');
+        const isManagerRole = (currentRole === 'manager');
+        const canModify = (currentRole === 'admin' && !isRootAdmin) || (isManagerRole && u.role !== 'admin');
+        const salaryVal = u.monthlySalary || u.salaryAmount || (u.role === 'manager' ? 45000 : u.role === 'receptionist' ? 30000 : 25000);
+
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4 hover:shadow-md transition flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <img class="w-12 h-12 rounded-full object-cover border-2 border-blue-500 shadow-sm shrink-0" src="${u.avatar || DEFAULT_AVATAR}" alt="${u.name}"/>
+                  <div class="overflow-hidden">
+                    <h3 class="font-extrabold text-slate-900 text-sm truncate">${u.name}</h3>
+                    <div class="text-[10px] text-slate-500 font-mono">@${u.username} • <strong class="text-blue-600">${staffId}</strong></div>
+                    <div class="text-[11px] text-slate-600 font-medium">${u.designation || 'Staff Specialist'}</div>
+                  </div>
+                </div>
+                <span class="role-badge role-${u.role} shrink-0">${u.role.toUpperCase()}</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                  <span class="text-[9px] font-bold text-slate-400 block uppercase">Department</span>
+                  <strong class="text-slate-800 text-[11px] truncate block">${u.department || 'Operations'}</strong>
+                </div>
+                <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                  <span class="text-[9px] font-bold text-slate-400 block uppercase">Branch Dojo</span>
+                  <strong class="text-slate-800 text-[11px] truncate block">${u.branchId || 'HQ'}</strong>
+                </div>
+              </div>
+
+              <div class="text-xs space-y-1 text-slate-600 bg-slate-50/50 p-2.5 rounded-xl border border-slate-100">
+                <div class="flex justify-between"><span>Joining Date:</span> <strong class="text-slate-800">${u.joiningDate || '2023-01-10'}</strong></div>
+                <div class="flex justify-between"><span>Tenure:</span> <strong class="text-emerald-700 font-bold">${tenure.formatted}</strong></div>
+                <div class="flex justify-between"><span>Salary:</span> <strong class="text-slate-900 font-mono font-bold">₹${salaryVal.toLocaleString('en-IN')}</strong></div>
+                <div class="flex justify-between"><span>Status:</span> <span class="status-badge ${u.status === 'disabled' ? 'status-inactive' : 'status-active'} text-[9px]">${u.status || 'active'}</span></div>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+              <button onclick="openStaffProfileModal('${u.id}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">visibility</span>
+                <span>Profile</span>
+              </button>
+
+              <div class="flex items-center gap-1">
+                <button onclick="openStaffInvoiceModal('${u.id}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition" title="Payslip Invoice">
+                  <span class="material-symbols-outlined text-xs">receipt_long</span>
+                </button>
+                ${canModify ? `
+                  <button onclick="toggleUserDisabled('${u.id}')" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs rounded-xl border border-amber-200 transition">
+                    ${u.status === 'disabled' ? 'Enable' : 'Disable'}
+                  </button>
+                  <button onclick="deleteUserAccount('${u.id}')" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-xl border border-red-200 transition">
+                    <span class="material-symbols-outlined text-xs">delete</span>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
   const generateRowsHtml = () => {
     if (usersToRender.length === 0) {
-      return `<tr><td colspan="6" class="py-4 text-center text-slate-400">No user accounts found.</td></tr>`;
+      return `<tr><td colspan="7" class="py-4 text-center text-slate-400">No user accounts found.</td></tr>`;
     }
 
     return usersToRender.map((u, idx) => {
@@ -4094,56 +4415,36 @@ function renderAdminUsersTable() {
       const canModify = (currentRole === 'admin' && !isRootAdmin) || (isManagerRole && u.role !== 'admin');
       const isSelected = (u.username === appState.currentUser?.username);
       const staffId = u.staffId || `KAISTF2026${String(idx + 1).padStart(2, '0')}`;
-      u.staffId = staffId;
-
-      const salaryVal = u.monthlySalary || (u.role === 'manager' ? 25000 : u.role === 'receptionist' ? 15000 : 18000);
+      const salaryVal = u.monthlySalary || u.salaryAmount || (u.role === 'manager' ? 45000 : u.role === 'receptionist' ? 30000 : 25000);
 
       return `
-        <tr class="${isSelected ? 'bg-amber-100/90 font-bold text-amber-950 border-l-4 border-amber-500 shadow-sm' : 'bg-amber-50/40 hover:bg-amber-100/60 text-slate-800 border-b border-amber-200/50'} transition">
+        <tr class="${isSelected ? 'bg-amber-50 font-bold text-amber-950 border-l-4 border-amber-500' : 'hover:bg-slate-50 text-slate-800'} transition">
           <td class="py-3 px-4 font-extrabold">
-            <div>${u.name} ${isSelected ? '<span class="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded ml-1 font-bold">(You)</span>' : ''}</div>
-            <div class="text-[10px] text-slate-400 font-mono">${u.email || u.username}</div>
+            <div class="flex items-center gap-2.5">
+              <img class="w-8 h-8 rounded-full object-cover border border-slate-200" src="${u.avatar || DEFAULT_AVATAR}" alt="${u.name}"/>
+              <div>
+                <div>${u.name} ${isSelected ? '<span class="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded ml-1 font-bold">(You)</span>' : ''}</div>
+                <div class="text-[10px] text-slate-400 font-mono">@${u.username}</div>
+              </div>
+            </div>
           </td>
           <td class="py-3 px-4 font-mono text-xs font-bold text-blue-600">${staffId}</td>
           <td class="py-3 px-4">
-            ${canModify ? `
-              <select onchange="updateUserRole('${u.id}', this.value)" class="px-2 py-1 bg-amber-100/80 border border-amber-300 rounded-lg text-xs font-bold text-amber-950">
-                ${currentRole === 'admin' ? `<option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>` : ''}
-                <option value="manager" ${u.role === 'manager' ? 'selected' : ''}>Manager</option>
-                <option value="receptionist" ${u.role === 'receptionist' ? 'selected' : ''}>Receptionist</option>
-                <option value="viewer" ${u.role === 'viewer' ? 'selected' : ''}>Viewer</option>
-              </select>
-            ` : `
-              <span class="role-badge role-${u.role}">${u.role.toUpperCase()}</span>
-            `}
+            <div><span class="role-badge role-${u.role}">${u.role.toUpperCase()}</span></div>
+            <div class="text-[10px] text-slate-400">${u.designation || 'Staff'}</div>
           </td>
-          <td class="py-3 px-4 font-mono font-bold text-slate-800">
-            ₹${salaryVal.toLocaleString('en-IN')}
-          </td>
+          <td class="py-3 px-4 text-xs text-slate-700">${u.branchId || 'HQ'}</td>
+          <td class="py-3 px-4 font-mono font-bold text-slate-800">₹${salaryVal.toLocaleString('en-IN')}</td>
           <td class="py-3 px-4">
             <span class="status-badge ${u.status === 'disabled' ? 'status-inactive' : 'status-active'} text-[9px]">${u.status || 'active'}</span>
           </td>
           <td class="py-3 px-4 text-right space-x-1 whitespace-nowrap">
-            ${isRootAdmin ? `
-              <span class="text-[10px] text-amber-700 font-extrabold uppercase bg-amber-200/80 px-2 py-0.5 rounded border border-amber-300">Root Admin</span>
-            ` : u.role === 'admin' && isManagerRole ? `
-              <span class="text-[10px] text-slate-400 font-bold">Admin Account</span>
-            ` : canModify ? `
-              <div class="inline-flex items-center gap-1">
-                <button onclick="openStaffInvoiceModal('${u.id}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-[10px] rounded-lg inline-flex items-center gap-1 shadow-sm" title="Generate Salary Invoice Payslip">
-                  <span class="material-symbols-outlined text-xs">receipt_long</span>
-                  <span>Payslip</span>
-                </button>
-                <button onclick="toggleUserDisabled('${u.id}')" class="px-2 py-1 bg-amber-200/70 hover:bg-amber-300 text-amber-950 font-bold text-[10px] rounded-lg">
-                  ${u.status === 'disabled' ? 'Enable' : 'Disable'}
-                </button>
-                <button onclick="deleteUserAccount('${u.id}')" class="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 font-bold text-[10px] rounded-lg">
-                  Delete
-                </button>
-              </div>
-            ` : `
-              <span class="text-[10px] text-slate-400 font-bold">Protected</span>
-            `}
+            <button onclick="openStaffProfileModal('${u.id}')" class="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold text-[10px] rounded-lg">Profile</button>
+            ${canModify ? `
+              <button onclick="openStaffInvoiceModal('${u.id}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] rounded-lg">Payslip</button>
+              <button onclick="toggleUserDisabled('${u.id}')" class="px-2 py-1 bg-amber-100 text-amber-800 font-bold text-[10px] rounded-lg">${u.status === 'disabled' ? 'Enable' : 'Disable'}</button>
+              <button onclick="deleteUserAccount('${u.id}')" class="px-2 py-1 bg-red-50 text-red-600 font-bold text-[10px] rounded-lg">Delete</button>
+            ` : ''}
           </td>
         </tr>
       `;
@@ -4409,6 +4710,28 @@ async function deleteUserAccount(userId) {
 }
 
 
+
+window.openAddStaffModal = function() {
+  if (appState.userRole === 'viewer') {
+    showCustomAlert({ title: 'Permission Restricted', message: 'Viewer role is read-only.', type: 'error' });
+    return;
+  }
+  const modal = document.getElementById('add-staff-modal');
+  if (modal) {
+    const branchSelect = document.getElementById('new-staff-branch');
+    if (branchSelect && appState.branches && appState.branches.length > 0) {
+      branchSelect.innerHTML = appState.branches.map(b => `<option value="${b.code || b.id}">${b.name} (${b.code || b.id})</option>`).join('');
+    }
+    const joiningInput = document.getElementById('new-staff-joining');
+    if (joiningInput) joiningInput.value = new Date().toISOString().split('T')[0];
+    modal.classList.remove('hidden');
+  }
+};
+
+window.closeAddStaffModal = function() {
+  const modal = document.getElementById('add-staff-modal');
+  if (modal) modal.classList.add('hidden');
+};
 
 window.openStaffProfileModal = function(staffId) {
   const staff = appState.users.find(u => String(u.id) === String(staffId) || u.staffId === staffId);
@@ -5146,56 +5469,93 @@ function setupAdminSettingsForms() {
     const form = e.target;
     if (!form) return;
 
-    // Handle User Creation Form (both in Admin and Manager sections)
-    if (form.id === 'admin-create-user-form' || form.id === 'manager-create-user-form') {
+    // Handle Create Staff Account Form (add-staff-form)
+    if (form.id === 'add-staff-form' || form.id === 'admin-create-user-form' || form.id === 'manager-create-user-form') {
       e.preventDefault();
       if (appState.userRole === 'viewer') {
         showLightbox({ title: 'Permission Denied', message: 'Viewer role is read-only.', type: 'error' });
         return;
       }
 
+      const isAddStaffForm = (form.id === 'add-staff-form');
       const isMgrForm = (form.id === 'manager-create-user-form');
-      const nameInput = form.querySelector(isMgrForm ? '#mgr-usr-name' : '#usr-name');
-      const usernameInput = form.querySelector(isMgrForm ? '#mgr-usr-username' : '#usr-username');
-      const emailInput = form.querySelector(isMgrForm ? '#mgr-usr-email' : '#usr-email');
-      const passwordInput = form.querySelector(isMgrForm ? '#mgr-usr-password' : '#usr-password');
-      const roleSelect = form.querySelector(isMgrForm ? '#mgr-usr-role' : '#usr-role');
+
+      const nameInput = form.querySelector(isAddStaffForm ? '#new-staff-name' : isMgrForm ? '#mgr-usr-name' : '#usr-name');
+      const usernameInput = form.querySelector(isAddStaffForm ? '#new-staff-username' : isMgrForm ? '#mgr-usr-username' : '#usr-username');
+      const emailInput = form.querySelector(isAddStaffForm ? '#new-staff-email' : isMgrForm ? '#mgr-usr-email' : '#usr-email');
+      const phoneInput = form.querySelector(isAddStaffForm ? '#new-staff-phone' : '#mgr-usr-phone');
+      const passwordInput = form.querySelector(isAddStaffForm ? '#new-staff-password' : isMgrForm ? '#mgr-usr-password' : '#usr-password');
+      const roleSelect = form.querySelector(isAddStaffForm ? '#new-staff-role' : isMgrForm ? '#mgr-usr-role' : '#usr-role');
+      const desigInput = form.querySelector('#new-staff-designation');
+      const deptInput = form.querySelector('#new-staff-department');
+      const branchSelect = form.querySelector('#new-staff-branch');
+      const joiningInput = form.querySelector('#new-staff-joining');
+      const salaryInput = form.querySelector('#new-staff-salary');
 
       const name = nameInput?.value.trim();
       const username = usernameInput?.value.trim();
       const email = emailInput?.value.trim();
+      const phone = phoneInput?.value.trim();
       const password = passwordInput?.value.trim();
-      const role = roleSelect?.value || 'manager';
+      const role = roleSelect?.value || 'receptionist';
+      const designation = desigInput?.value.trim() || (role === 'manager' ? 'Senior Dojo Manager' : role === 'receptionist' ? 'Front Desk Specialist' : 'Staff Specialist');
+      const department = deptInput?.value.trim() || 'Operations';
+      const branchId = branchSelect?.value || 'HQ';
+      const joiningDate = joiningInput?.value || new Date().toISOString().split('T')[0];
+      const monthlySalary = parseFloat(salaryInput?.value) || (role === 'manager' ? 45000 : role === 'receptionist' ? 30000 : 25000);
 
-      if (!name || !username || !password) return;
+      if (!name || !username || !password || !email) {
+        showLightbox({ title: 'Validation Required', message: 'Please fill out all required fields (Full Name, Username, Email, Password).', type: 'warning' });
+        return;
+      }
 
       if (appState.userRole === 'manager' && role === 'admin') {
         showLightbox({ title: 'Permission Denied', message: 'Managers cannot create Admin accounts.', type: 'error' });
         return;
       }
 
-      const exists = appState.users.some(u => u.username.toLowerCase() === username.toLowerCase());
+      const exists = appState.users.some(u => String(u.username).toLowerCase() === username.toLowerCase());
       if (exists) {
-        showLightbox({ title: 'Duplicate User', message: `Username ${username} already exists.`, type: 'warning' });
+        showLightbox({ title: 'Duplicate User', message: `Username "${username}" already exists in the system.`, type: 'warning' });
         return;
       }
 
-      appState.users.push({
+      const newStaffId = `KAISTF2026${String(appState.users.length + 1).padStart(2, '0')}`;
+
+      const newStaffObj = {
         id: Date.now(),
+        staffId: newStaffId,
         username,
         password,
         name,
         email: email || `${username}@karateacademyindia.com`,
+        phone: phone || '+91 70409 25258',
         role,
-        status: 'active'
-      });
+        designation,
+        department,
+        branchId,
+        joiningDate,
+        monthlySalary,
+        salaryAmount: monthlySalary,
+        status: 'active',
+        avatar: DEFAULT_AVATAR
+      };
 
-      logActivity(`User Account Created: ${username}`, `Assigned Role: ${role.toUpperCase()}`, 'user');
+      appState.users.push(newStaffObj);
+
+      logActivity(`Staff Account Created: ${name} (${username})`, `Role: ${role.toUpperCase()} • Staff ID: ${newStaffId}`, 'user');
 
       saveDatabase();
-      renderAdminUsersTable();
+      renderManagerUsers();
       form.reset();
-      showLightbox({ title: 'User Account Created', message: `Created User Account: ${username} (${role.toUpperCase()})`, type: 'success' });
+
+      if (isAddStaffForm) closeAddStaffModal();
+
+      showCustomAlert({
+        title: 'Staff Account Created',
+        message: `Successfully created staff account for ${name} (${newStaffId}) assigned as ${role.toUpperCase()}.`,
+        type: 'success'
+      });
     }
 
     // Handle Branding Form
@@ -5738,16 +6098,16 @@ function selectAdmissionForReview(admissionId) {
     </div>
 
     <!-- Manager Decision Action Panel -->
-    <div class="p-5 bg-slate-900 text-white rounded-3xl space-y-4 shadow-xl">
-      <div class="flex items-center gap-2 text-xs font-bold text-slate-300 border-b border-slate-800 pb-2">
-        <span class="material-symbols-outlined text-red-400">verified</span>
+    <div class="p-5 bg-white text-slate-900 border border-slate-200 rounded-3xl space-y-4 shadow-sm">
+      <div class="flex items-center gap-2 text-xs font-bold text-slate-700 border-b border-slate-100 pb-2">
+        <span class="material-symbols-outlined text-red-600">verified</span>
         <span>Manager Approval & ID Card Generation</span>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
         <div>
-          <label class="block font-bold text-slate-300 mb-1">Confirm Belt Rank</label>
-          <select id="adm-confirm-belt" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-bold focus:ring-2 focus:ring-red-600 focus:outline-none">
+          <label class="block font-bold text-slate-700 mb-1">Confirm Belt Rank</label>
+          <select id="adm-confirm-belt" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-red-600 focus:outline-none">
             <option value="White Belt" ${admission.belt === 'White Belt' ? 'selected' : ''}>White Belt (Beginner)</option>
             <option value="Yellow Belt" ${admission.belt === 'Yellow Belt' ? 'selected' : ''}>Yellow Belt</option>
             <option value="Orange Belt" ${admission.belt === 'Orange Belt' ? 'selected' : ''}>Orange Belt</option>
@@ -5759,18 +6119,18 @@ function selectAdmissionForReview(admissionId) {
           </select>
         </div>
         <div>
-          <label class="block font-bold text-slate-300 mb-1">Monthly Tuition Fee (₹)</label>
-          <input type="number" id="adm-confirm-fee" value="${admission.membershipPlan === 'Annual' ? 2000 : 2500}" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-bold font-mono focus:ring-2 focus:ring-red-600 focus:outline-none"/>
+          <label class="block font-bold text-slate-700 mb-1">Monthly Tuition Fee (₹)</label>
+          <input type="number" id="adm-confirm-fee" value="${admission.membershipPlan === 'Annual' ? 2000 : 2500}" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 font-bold font-mono focus:ring-2 focus:ring-red-600 focus:outline-none"/>
         </div>
       </div>
 
       <div class="pt-2 flex items-center justify-between gap-3 flex-wrap">
-        <button onclick="rejectAdmission('${admission.id}')" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-red-400 font-bold text-xs rounded-xl border border-red-500/30 transition flex items-center gap-1.5">
+        <button onclick="rejectAdmission('${admission.id}')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-red-600 font-bold text-xs rounded-xl border border-slate-200 transition flex items-center gap-1.5">
           <span class="material-symbols-outlined text-sm">block</span>
           <span>Reject Application</span>
         </button>
 
-        <button onclick="approveAdmission('${admission.id}')" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-lg transition flex items-center gap-2">
+        <button onclick="approveAdmission('${admission.id}')" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center gap-2">
           <span class="material-symbols-outlined text-base">check_circle</span>
           <span>Approve & Generate KAI Student ID</span>
         </button>
@@ -6446,8 +6806,29 @@ function renderExpenses() {
   `).join('');
 }
 
+window.openBranchStudentDirectory = function(branchCode) {
+  window.activeDirectoryBranchFilter = branchCode;
+  const branchSelect = document.getElementById('dir-branch-filter') || document.getElementById('admin-branch-select');
+  if (branchSelect) {
+    branchSelect.value = branchCode;
+  }
+  switchTab('directory');
+  if (typeof renderDirectory === 'function') renderDirectory();
+  showToast(`Filtered Student Directory for Branch: ${branchCode}`);
+};
+
 function renderBranches() {
   const container = document.getElementById('branches-container');
+  const createBtnHeader = document.getElementById('btn-create-branch-header');
+  
+  if (createBtnHeader) {
+    if (appState.userRole === 'admin') {
+      createBtnHeader.classList.remove('hidden');
+    } else {
+      createBtnHeader.classList.add('hidden');
+    }
+  }
+
   if (!container) return;
 
   const branches = appState.branches || [
@@ -6456,49 +6837,109 @@ function renderBranches() {
     { id: 'SOUTH', name: 'South Branch Dojo', code: 'SOUTH', city: 'Jaipur', address: 'South Training Arena', phone: '+91 70409 25257', status: 'active' }
   ];
 
+  const isAdmin = (appState.userRole === 'admin');
+
   if (branches.length === 0) {
     container.innerHTML = `
       <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 p-6">
         <span class="material-symbols-outlined text-4xl text-slate-300 block mb-2">storefront</span>
         <div class="font-extrabold text-sm text-slate-700">No records found</div>
-        <p class="text-xs text-slate-400">No active branches configured. Click "+ Create New Branch" to add your first branch.</p>
+        <p class="text-xs text-slate-400">No active branches configured. ${isAdmin ? 'Click "+ Create New Branch" to add your first branch.' : 'Contact Administrator to configure branches.'}</p>
       </div>
     `;
     return;
   }
 
   container.innerHTML = branches.map(b => {
-    const studentCount = appState.students.filter(s => (s.branchId || 'HQ') === b.id).length;
-    const staffCount = appState.users.filter(u => (u.branchId || 'HQ') === b.id).length;
+    const branchCode = b.code || b.id;
+    const branchStudents = appState.students.filter(s => (s.branchId || 'HQ') === b.id || (s.branchId || 'HQ') === b.code);
+    const studentCount = branchStudents.length;
+    const staffCount = appState.users.filter(u => (u.branchId || 'HQ') === b.id || (u.branchId || 'HQ') === b.code).length;
+
+    const studentIds = new Set(branchStudents.map(s => String(s.studentId)));
+    const revTotal = (appState.financials || [])
+      .filter(f => (f.branchId && (f.branchId === b.id || f.branchId === b.code)) || studentIds.has(String(f.studentId)))
+      .reduce((sum, f) => sum + (f.finalPaid || f.amount || 0), 0);
+
+    const expTotal = (appState.expenses || [])
+      .filter(e => String(e.branchId || 'HQ') === String(b.id) || String(e.branchId || 'HQ') === String(b.code))
+      .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+
+    const salTotal = (appState.staffSalaries || [])
+      .filter(s => String(s.branchId || 'HQ') === String(b.id) || String(s.branchId || 'HQ') === String(b.code))
+      .reduce((sum, s) => sum + (parseFloat(s.paidAmount || s.amount) || 0), 0);
+
+    const netIncome = revTotal - expTotal - salTotal;
 
     return `
-      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 hover:shadow-md transition">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div class="flex items-center gap-2.5">
-            <span class="material-symbols-outlined text-emerald-600 text-2xl">storefront</span>
-            <div>
-              <h3 class="font-extrabold text-slate-900 text-sm">${b.name}</h3>
-              <span class="font-mono text-[10px] text-slate-400 font-bold">Code: ${b.code}</span>
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 hover:shadow-md transition relative flex flex-col justify-between group">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-emerald-600 text-2xl group-hover:scale-110 transition-transform">storefront</span>
+              <div>
+                <h3 class="font-extrabold text-slate-900 text-sm group-hover:text-red-600 transition">${b.name}</h3>
+                <span class="font-mono text-[10px] text-slate-400 font-bold">Code: ${b.code}</span>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 ${b.status === 'inactive' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'} font-bold text-[10px] rounded-lg border uppercase">${b.status || 'Active'}</span>
+          </div>
+
+          <!-- ENROLMENT STATS & CLICKABLE DIRECTORY BUTTON -->
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <button type="button" onclick="openBranchStudentDirectory('${branchCode}')" title="Click to view Student Directory for ${b.name}" class="bg-red-50/60 hover:bg-red-100/80 p-2.5 rounded-xl border border-red-200 text-center transition group/btn">
+              <span class="text-[10px] font-extrabold text-red-700 block uppercase flex items-center justify-center gap-1">
+                <span>Enrolled Students</span>
+                <span class="material-symbols-outlined text-xs">open_in_new</span>
+              </span>
+              <strong class="text-base font-extrabold text-red-900">${studentCount}</strong>
+            </button>
+
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center">
+              <span class="text-[10px] font-bold text-slate-400 block uppercase">Assigned Staff</span>
+              <strong class="text-sm font-extrabold text-slate-900">${staffCount}</strong>
             </div>
           </div>
-          <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold text-[10px] rounded-lg border border-emerald-200 uppercase">${b.status || 'Active'}</span>
+
+          <!-- BRANCH FINANCE BREAKDOWN METRICS -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+            <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase pb-1 border-b border-slate-200">
+              <span>Branch Ledger Overview</span>
+              <span class="font-mono text-slate-400">FINANCE</span>
+            </div>
+            <div class="flex justify-between"><span class="text-slate-500">Total Revenue:</span> <strong class="text-emerald-700 font-mono">₹${revTotal.toLocaleString('en-IN')}</strong></div>
+            <div class="flex justify-between"><span class="text-slate-500">Expenses & Payroll:</span> <strong class="text-red-600 font-mono">₹${(expTotal + salTotal).toLocaleString('en-IN')}</strong></div>
+            <div class="flex justify-between pt-1 border-t border-slate-200">
+              <span class="font-bold text-slate-700">Branch Net Profit:</span>
+              <strong class="${netIncome >= 0 ? 'text-emerald-700' : 'text-red-600'} font-extrabold font-mono">₹${netIncome.toLocaleString('en-IN')}</strong>
+            </div>
+          </div>
+
+          <div class="text-xs space-y-1 text-slate-600 pt-1">
+            <div><strong class="text-slate-800">City:</strong> ${b.city || 'Jaipur'}</div>
+            <div><strong class="text-slate-800">Address:</strong> ${b.address || 'Central Location'}</div>
+            <div><strong class="text-slate-800">Contact Phone:</strong> ${b.phone || '+91 70409 25257'}</div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 text-xs">
-          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center">
-            <span class="text-[10px] font-bold text-slate-400 block uppercase">Enrolled Students</span>
-            <strong class="text-sm font-extrabold text-slate-900">${studentCount}</strong>
-          </div>
-          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center">
-            <span class="text-[10px] font-bold text-slate-400 block uppercase">Assigned Staff</span>
-            <strong class="text-sm font-extrabold text-slate-900">${staffCount}</strong>
-          </div>
-        </div>
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+          <button onclick="openBranchStudentDirectory('${branchCode}')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">groups</span>
+            <span>View Directory</span>
+          </button>
 
-        <div class="text-xs space-y-1 text-slate-600">
-          <div><strong class="text-slate-800">City:</strong> ${b.city || 'Jaipur'}</div>
-          <div><strong class="text-slate-800">Address:</strong> ${b.address || 'Central Location'}</div>
-          <div><strong class="text-slate-800">Contact Phone:</strong> ${b.phone || '+91 70409 25257'}</div>
+          ${isAdmin ? `
+            <div class="flex items-center gap-1.5">
+              <button onclick="openEditBranchModal('${b.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">edit</span>
+                <span>Edit</span>
+              </button>
+              <button onclick="openDeleteBranchModal('${b.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-xl border border-red-200 transition flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">delete</span>
+                <span>Delete</span>
+              </button>
+            </div>
+          ` : ''}
         </div>
       </div>
     `;

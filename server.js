@@ -9,8 +9,8 @@ const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'db.json');
 
-// Unique Build Timestamp Token (Changes on every server boot / code push)
-const SERVER_BUILD_ID = 'BUILD_' + Date.now();
+// Stable Server Build Identifier Token
+const SERVER_BUILD_ID = 'BUILD_V2.0_STABLE';
 
 // In-memory active session tokens map: token -> user object
 const activeSessions = new Map();
@@ -26,7 +26,13 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
+let cachedDb = null;
+let cachedDbTime = 0;
+
 function readDbFile() {
+  if (cachedDb && (Date.now() - cachedDbTime < 1000)) {
+    return cachedDb;
+  }
   try {
     const raw = fs.readFileSync(DB_FILE, 'utf8');
     const parsed = JSON.parse(raw);
@@ -37,14 +43,21 @@ function readDbFile() {
     parsed.activityLogs = parsed.activityLogs || [];
     parsed.sessions = parsed.sessions || [];
     parsed.pendingAdmissions = parsed.pendingAdmissions || [];
+    parsed.pendingBeltExams = parsed.pendingBeltExams || [];
+    cachedDb = parsed;
+    cachedDbTime = Date.now();
     return parsed;
   } catch (e) {
-    return { users: [], config: {}, students: [], financials: [], attendance: [], activityLogs: [], sessions: [], pendingAdmissions: [] };
+    return { users: [], config: {}, students: [], financials: [], attendance: [], activityLogs: [], sessions: [], pendingAdmissions: [], pendingBeltExams: [] };
   }
 }
 
 function writeDbFile(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+  cachedDb = data;
+  cachedDbTime = Date.now();
+  fs.writeFile(DB_FILE, JSON.stringify(data, null, 2), 'utf8', (err) => {
+    if (err) console.error('[Server DB Write Error]', err);
+  });
 }
 
 // Purge sessions on code update/boot so active browser sessions invalidate automatically
@@ -1036,37 +1049,40 @@ const server = http.createServer((req, res) => {
         return;
       }
 
-      fs.readFile(DB_FILE, 'utf8', (err, rawData) => {
-        if (err) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Failed to read database' }));
-          return;
+      try {
+        const dbObj = JSON.parse(JSON.stringify(readDbFile()));
+
+        // Mask SMTP password for non-admin roles
+        if (sessionUser.role !== 'admin' && dbObj.config && dbObj.config.smtp) {
+          if (dbObj.config.smtp.password) {
+            dbObj.config.smtp.password = '••••••••';
+          }
         }
 
-        try {
-          const dbObj = JSON.parse(rawData);
-
-          // Mask SMTP password for non-admin roles
-          if (sessionUser.role !== 'admin' && dbObj.config && dbObj.config.smtp) {
-            if (dbObj.config.smtp.password) {
-              dbObj.config.smtp.password = '••••••••';
-            }
-          }
-
-          // STRICT SECURITY REQUIREMENT: Root admin MUST be hidden from non-admin roles at API level!
-          if (sessionUser.role !== 'admin' && Array.isArray(dbObj.users)) {
-            dbObj.users = dbObj.users.filter(u => u.username !== 'admin' && u.role !== 'admin');
-          }
-
-          dbObj.buildId = SERVER_BUILD_ID;
-
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(dbObj));
-        } catch (e) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(rawData);
+        // Hide Root Admin for Non-Admins
+        if (sessionUser.role !== 'admin' && Array.isArray(dbObj.users)) {
+          dbObj.users = dbObj.users.filter(u => u.username !== 'admin' && u.role !== 'admin');
         }
-      });
+
+        // Sort data for clean presentation
+        if (Array.isArray(dbObj.students)) {
+          dbObj.students.sort((a, b) => (b.studentId || '').localeCompare(a.studentId || ''));
+        }
+        if (Array.isArray(dbObj.financials)) {
+          dbObj.financials.sort((a, b) => (b.dueDate || '').localeCompare(a.dueDate || ''));
+        }
+        if (Array.isArray(dbObj.activityLogs)) {
+          dbObj.activityLogs.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+        }
+
+        dbObj.buildId = SERVER_BUILD_ID;
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(dbObj));
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to process database data: ' + e.message }));
+      }
       return;
     }
 
@@ -1782,10 +1798,11 @@ const server = http.createServer((req, res) => {
         return;
       }
 
-      if (req.method === 'POST') {
-        if (sessionUser.role !== 'admin' && sessionUser.role !== 'manager') {
+      // Branch mutation methods (POST, PUT, DELETE) strictly restricted to Admin
+      if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
+        if (sessionUser.role !== 'admin') {
           res.writeHead(403, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: '403 Forbidden. Permission denied.' }));
+          res.end(JSON.stringify({ error: '403 Forbidden. Only Administrators can create, edit, or delete branches.' }));
           return;
         }
 
@@ -1793,26 +1810,29 @@ const server = http.createServer((req, res) => {
         req.on('data', chunk => body += chunk.toString());
         req.on('end', () => {
           try {
-            const branchObj = JSON.parse(body);
             const dbData = readDbFile();
             dbData.branches = dbData.branches || [];
 
-            const existingIdx = dbData.branches.findIndex(b => String(b.id) === String(branchObj.id));
-            
-            // Requirement 2: Strictly enforce Admin-only branch creation
-            if (existingIdx < 0 && sessionUser.role !== 'admin') {
-              res.writeHead(403, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ error: 'Only Administrators can create new branches. Managers and Receptionists are restricted.' }));
+            if (req.method === 'DELETE') {
+              const urlParts = req.url.split('/');
+              const branchId = urlParts[urlParts.length - 1];
+              dbData.branches = dbData.branches.filter(b => String(b.id) !== String(branchId) && String(b.code) !== String(branchId));
+              writeDbFile(dbData);
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: true, branches: dbData.branches, message: 'Branch deleted successfully.' }));
               return;
             }
 
+            const branchObj = body ? JSON.parse(body) : {};
+            const existingIdx = dbData.branches.findIndex(b => String(b.id) === String(branchObj.id) || (branchObj.code && String(b.code) === String(branchObj.code)));
+            
             if (existingIdx >= 0) {
               dbData.branches[existingIdx] = { ...dbData.branches[existingIdx], ...branchObj };
             } else {
               const newBranch = {
                 id: branchObj.code || 'BRANCH_' + Date.now(),
                 name: branchObj.name || 'New Branch',
-                code: branchObj.code || 'BR',
+                code: (branchObj.code || 'BR').toUpperCase(),
                 city: branchObj.city || 'Jaipur',
                 address: branchObj.address || '',
                 phone: branchObj.phone || '+91 70409 25257',
@@ -2105,7 +2125,7 @@ function getStudentPublicRef(student) {
         try {
           const payload = JSON.parse(body);
           const {
-            name, firstName, middleName, lastName, gender, dob, bloodGroup, medicalNotes,
+            name, firstName, middleName, lastName, gender, dob, medicalNotes,
             belt, membershipPlan, parentName, phone, email,
             emergName, emergPhone, emergRelation,
             address, city, state, pincode,
@@ -2168,7 +2188,6 @@ function getStudentPublicRef(student) {
             lastName: lastName || cleanName.split(' ').slice(1).join(' ') || '',
             gender: gender || 'Male',
             dob: dob || '',
-            bloodGroup: bloodGroup || 'O+',
             medicalNotes: medicalNotes || '',
             belt: belt || 'White Belt',
             membershipPlan: membershipPlan || 'Monthly',
@@ -2251,6 +2270,137 @@ function getStudentPublicRef(student) {
       return;
     }
 
+    // 11.1 Public Candidate Details Lookup Endpoint (`/api/public/candidate-details`)
+    if (req.url.startsWith('/api/public/candidate-details') && req.method === 'GET') {
+      const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const studentId = (urlObj.searchParams.get('studentId') || '').trim();
+
+      const dbData = readDbFile();
+      const student = (dbData.students || []).find(s => 
+        String(s.studentId).toLowerCase() === studentId.toLowerCase() || 
+        String(s.id) === studentId || 
+        String(s.phone) === studentId
+      );
+
+      if (!student) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Candidate Student ID not found in database.' }));
+        return;
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        candidate: {
+          studentId: student.studentId,
+          name: student.name,
+          belt: student.belt || 'White Belt',
+          branchId: student.branchId || 'HQ',
+          joinDate: student.joinDate || 'N/A',
+          matHours: student.matHours || 0,
+          status: student.accountStatus || 'active',
+          avatar: student.avatar || ''
+        }
+      }));
+      return;
+    }
+
+    // 11.2 Public Belt Exam Application Endpoint (`/api/public/belt-exam`)
+    if ((req.url === '/api/public/belt-exam' || req.url === '/api/belt-exam') && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk.toString());
+      req.on('end', () => {
+        try {
+          const dbData = readDbFile();
+          
+          // Activation Check
+          if (dbData.config && dbData.config.beltExamEnabled === false) {
+            res.writeHead(403, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Belt Examination Applications are currently closed by Academy Management.' }));
+            return;
+          }
+
+          const payload = JSON.parse(body);
+          const { studentId, targetBelt, instructorRec, notes, captchaToken, captchaAnswer } = payload;
+
+          if (!verifyCaptcha(captchaToken, captchaAnswer)) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Security CAPTCHA verification failed.' }));
+            return;
+          }
+
+          const student = (dbData.students || []).find(s => 
+            String(s.studentId).toLowerCase() === String(studentId || '').trim().toLowerCase() ||
+            String(s.id) === String(studentId || '').trim()
+          );
+
+          if (!student) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Student record not found for Student ID provided.' }));
+            return;
+          }
+
+          dbData.pendingBeltExams = dbData.pendingBeltExams || [];
+          const year = new Date().getFullYear();
+          const examAppId = `KAIBELT${year}${String(dbData.pendingBeltExams.length + 1).padStart(3, '0')}`;
+
+          const application = {
+            id: examAppId,
+            studentId: student.studentId,
+            candidateName: student.name,
+            currentBelt: student.belt || 'White Belt',
+            targetBelt: targetBelt || 'Yellow Belt',
+            branchId: student.branchId || 'HQ',
+            instructorRec: instructorRec || 'Recommended',
+            notes: notes || '',
+            submittedAt: new Date().toISOString(),
+            status: 'pending'
+          };
+
+          dbData.pendingBeltExams.unshift(application);
+
+          dbData.activityLogs = dbData.activityLogs || [];
+          dbData.activityLogs.unshift({
+            id: Date.now(),
+            timestamp: new Date().toLocaleString('en-US', { hour12: true }),
+            type: 'system',
+            user: student.name,
+            action: `Belt Exam Application submitted: ${student.name} (${student.studentId}) for ${application.targetBelt}`,
+            isRead: false
+          });
+
+          writeDbFile(dbData);
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            success: true,
+            examAppId: examAppId,
+            candidateName: student.name,
+            currentBelt: student.belt,
+            targetBelt: application.targetBelt,
+            message: 'Belt Examination Application submitted successfully and queued for Evaluation.'
+          }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid Belt Exam Application payload: ' + e.message }));
+        }
+      });
+      return;
+    }
+
+    // 11.3 Mark All Logs Read Endpoint (`/api/logs/mark-all-read`)
+    if (req.url === '/api/logs/mark-all-read' && req.method === 'POST') {
+      const dbData = readDbFile();
+      if (Array.isArray(dbData.activityLogs)) {
+        dbData.activityLogs.forEach(l => l.isRead = true);
+      }
+      writeDbFile(dbData);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, message: 'All system activity logs marked as read.' }));
+      return;
+    }
+
     // 12. Protected Pending Admissions List Endpoint (`/api/admissions/pending`)
     if (req.url === '/api/admissions/pending' && req.method === 'GET') {
       if (!sessionUser || (sessionUser.role !== 'admin' && sessionUser.role !== 'manager')) {
@@ -2309,7 +2459,6 @@ function getStudentPublicRef(student) {
             belt: beltRank,
             dob: admission.dob,
             gender: admission.gender || 'Male',
-            bloodGroup: admission.bloodGroup || 'O+',
             medicalNotes: admission.medicalNotes || '',
             membershipPlan: admission.membershipPlan || 'Monthly',
             parentName: admission.parentName || admission.name,

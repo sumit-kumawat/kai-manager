@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Belt Examination Application • Karate Academy India</title>
+  <link rel="icon" type="image/png" href="https://www.karateacademyindia.com/logo.png" />
+
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="h-full font-sans text-slate-900 bg-slate-50 flex flex-col min-h-screen">
+
+  <!-- TOP HEADER BRANDING BAR -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 group">
+        <img src="https://www.karateacademyindia.com/logo.png" alt="KAI Logo" class="h-10 w-10 object-contain" />
+        <div>
+          <h1 class="font-extrabold text-base text-slate-900 tracking-tight leading-none group-hover:text-red-600 transition">
+            KARATE ACADEMY INDIA
+          </h1>
+          <span class="text-[11px] font-bold text-red-600 tracking-wider uppercase">Official Belt Exam Portal</span>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-2">
+        <a href="admission.html" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">person_add</span>
+          <span class="hidden sm:inline">New Admission</span>
+        </a>
+        <a href="index.html" class="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">login</span>
+          <span class="hidden sm:inline">Portal Login</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-8">
+
+    <!-- DISABLED PAGE MESSAGE CONTAINER (Shown when Admin deactivates Belt Exam) -->
+    <div id="disabled-notice-card" class="hidden bg-white rounded-3xl border border-slate-200 shadow-xl p-8 sm:p-12 text-center space-y-6 max-w-2xl mx-auto my-12">
+      <div class="w-20 h-20 rounded-3xl bg-amber-50 border-2 border-amber-200 text-amber-600 mx-auto flex items-center justify-center shadow-inner">
+        <span class="material-symbols-outlined text-4xl">military_tech</span>
+      </div>
+      <div class="space-y-2">
+        <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full uppercase tracking-wider">Form Status: Inactive</span>
+        <h2 class="text-2xl font-extrabold text-slate-900">Belt Examination Applications Closed</h2>
+        <p class="text-xs text-slate-600 leading-relaxed max-w-md mx-auto">
+          Online Belt Rank Examination applications are currently inactive or deactivated by Academy Management. Applications open prior to scheduled grading events.
+        </p>
+      </div>
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-500 space-y-1">
+        <strong>Need Information regarding upcoming grading?</strong>
+        <p>Please contact your Dojo Chief Instructor or reach out to Administration at <strong class="text-slate-800">+91 70409 25257</strong>.</p>
+      </div>
+      <div class="pt-2">
+        <a href="index.html" class="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">
+          <span class="material-symbols-outlined text-base">arrow_back</span>
+          <span>Return to Portal</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ACTIVE BELT EXAM APPLICATION WIZARD CARD -->
+    <div id="exam-form-card" class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+      
+      <!-- FORM HEADER -->
+      <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 p-6 sm:p-8 text-white relative">
+        <div class="flex items-center gap-3 text-red-400 mb-2">
+          <span class="material-symbols-outlined text-2xl">workspace_premium</span>
+          <span class="text-xs font-extrabold tracking-wider uppercase">Official Kyu / Dan Grading Application</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Karate Belt Examination Application</h2>
+        <p class="text-xs text-slate-300 mt-1 max-w-xl">
+          Enter your Student ID to verify current belt rank status and submit your candidacy for official belt examination.
+        </p>
+      </div>
+
+      <!-- APPLICATION FORM -->
+      <form id="belt-exam-form" class="p-6 sm:p-8 space-y-6">
+
+        <!-- SECTION 1: CANDIDATE LOOKUP -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+            <span class="material-symbols-outlined text-red-600">badge</span>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">1. Candidate Identification</h3>
+          </div>
+
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+            <label class="block text-xs font-bold text-slate-700">Enter Student ID *</label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="text" id="exam-student-id" required placeholder="e.g. KAISTD202601"
+                class="flex-1 px-4 py-2.5 bg-white border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none uppercase" />
+              <button type="button" id="btn-fetch-candidate" onclick="fetchCandidateDetails()"
+                class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 shrink-0">
+                <span class="material-symbols-outlined text-base">search</span>
+                <span>Fetch Details</span>
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500">Your Student ID is listed on your Digital ID Card or enrolment receipt (e.g. KAISTD202601).</p>
+          </div>
+
+          <!-- DYNAMIC CANDIDATE DETAILS CARD -->
+          <div id="candidate-details-card" class="hidden bg-emerald-50/50 border border-emerald-200 rounded-2xl p-5 space-y-4">
+            <div class="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+              <img id="cand-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Athlete Photo"
+                class="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-500 shadow-sm shrink-0" />
+              <div class="flex-1 space-y-1">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                  <h4 class="font-extrabold text-slate-900 text-base" id="cand-name">Athlete Name</h4>
+                  <span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold font-mono text-xs rounded-lg border border-emerald-300" id="cand-id-badge">KAISTD202601</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-600 pt-1">
+                  <div><span class="text-slate-400 block text-[10px] uppercase font-bold">Branch Dojo</span><strong id="cand-branch" class="text-slate-800 font-bold">HQ Main Dojo</strong></div>
+                  <div><span class="text-slate-400 block text-[10px] uppercase font-bold">Join Date</span><strong id="cand-join-date" class="text-slate-800 font-bold">2026-08-01</strong></div>
+                  <div><span class="text-slate-400 block text-[10px] uppercase font-bold">Mat Hours</span><strong id="cand-mat-hours" class="text-emerald-700 font-bold">24 Hrs Attended</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CURRENT BELT DISPLAY -->
+            <div class="pt-3 border-t border-emerald-200 flex items-center justify-between bg-white p-3.5 rounded-xl border border-emerald-100">
+              <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-amber-600">workspace_premium</span>
+                <span>Verified Current Belt:</span>
+              </span>
+              <span id="cand-current-belt" class="px-3.5 py-1.5 bg-amber-500 text-white font-extrabold text-xs rounded-xl shadow-sm tracking-wide">White Belt</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: BELT SELECTION -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+            <span class="material-symbols-outlined text-red-600">military_tech</span>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">2. Exam Rank & Evaluation Selection</h3>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Applying Belt For? *</label>
+              <select id="exam-target-belt" required
+                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none">
+                <option value="Yellow Belt">Yellow Belt (8th Kyu)</option>
+                <option value="Orange Belt">Orange Belt (7th Kyu)</option>
+                <option value="Green Belt">Green Belt (6th Kyu)</option>
+                <option value="Blue Belt">Blue Belt (5th Kyu)</option>
+                <option value="Purple Belt">Purple Belt (4th Kyu)</option>
+                <option value="Brown Belt 3rd Kyu">Brown Belt (3rd Kyu)</option>
+                <option value="Brown Belt 2nd Kyu">Brown Belt (2nd Kyu)</option>
+                <option value="Brown Belt 1st Kyu">Brown Belt (1st Kyu)</option>
+                <option value="Black Belt 1st Dan">Black Belt (1st Dan)</option>
+                <option value="Black Belt 2nd Dan">Black Belt (2nd Dan)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Sensei / Instructor Recommendation *</label>
+              <select id="exam-instructor-rec" required
+                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none">
+                <option value="Recommended by Chief Instructor">Recommended by Chief Dojo Instructor</option>
+                <option value="Pre-qualified via Mat Attendance">Pre-qualified via Minimum Attendance</option>
+                <option value="Self Application for Evaluation">Self Application for Open Examination</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Additional Candidate Notes / Achievements (Optional)</label>
+            <input type="text" id="exam-notes" placeholder="e.g. Completed Kata 1 & 2, regular morning session attendance"
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-red-600 focus:outline-none text-xs" />
+          </div>
+        </div>
+
+        <!-- SECTION 3: SECURITY & DECLARATION -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+            <span class="material-symbols-outlined text-red-600">security</span>
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">3. Security Verification & Candidate Declaration</h3>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="flex items-center gap-2 font-mono font-extrabold text-sm text-slate-900 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shrink-0 shadow-sm">
+              <span id="captcha-question">Loading CAPTCHA...</span>
+              <button type="button" id="btn-refresh-captcha" onclick="loadCaptcha()" class="text-slate-400 hover:text-red-600 transition" title="Reload CAPTCHA">
+                <span class="material-symbols-outlined text-base">refresh</span>
+              </button>
+            </div>
+            <input type="hidden" id="captcha-token" />
+            <input type="number" id="captcha-answer" required placeholder="Enter CAPTCHA sum"
+              class="w-full sm:w-48 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-mono text-slate-900 font-bold focus:ring-2 focus:ring-red-600 focus:outline-none text-xs" />
+          </div>
+
+          <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 space-y-2">
+            <span class="text-xs font-extrabold text-amber-900 block">Candidate Evaluation Terms</span>
+            <p class="text-[11px] text-amber-800 leading-relaxed">
+              By submitting this application, candidate agrees to abide by official WKF / Karate Academy India Belt Examination regulations and grading criteria.
+            </p>
+            <label class="flex items-start gap-3 cursor-pointer pt-2">
+              <input type="checkbox" id="exam-declaration" required class="w-4 h-4 mt-0.5 text-red-600 rounded border-slate-300 focus:ring-red-500" />
+              <span class="text-xs text-slate-700 font-medium leading-relaxed">
+                I declare that the information submitted above is accurate and I am ready for official Belt Examination evaluation.
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ERROR BOX -->
+        <div id="form-error-box" class="hidden p-4 rounded-2xl bg-red-50 border border-red-200 text-xs font-bold text-red-700 flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg shrink-0">error</span>
+          <span id="form-error-text"></span>
+        </div>
+
+        <!-- SUBMIT BUTTON -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end">
+          <button type="submit" id="btn-submit-exam"
+            class="w-full sm:w-auto px-8 py-3.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-base">military_tech</span>
+            <span>Submit Belt Examination Application</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </main>
+
+  <!-- SUCCESS CONFIRMATION MODAL -->
+  <div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-8 max-w-lg w-full text-center space-y-4">
+      <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
+        <span class="material-symbols-outlined text-3xl">check_circle</span>
+      </div>
+      <h3 class="text-xl font-extrabold text-slate-900">Belt Exam Application Submitted!</h3>
+      <p class="text-xs text-slate-600 leading-relaxed" id="success-msg-text">
+        Your candidacy for Belt Examination has been received and queued for Senior Sensei Review.
+      </p>
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
+        <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Exam Application Reference ID</span>
+        <div class="font-mono text-base font-extrabold text-red-600" id="success-app-id">KAIBELT2026001</div>
+      </div>
+      <div class="pt-2 flex gap-3">
+        <button onclick="window.location.reload()" class="flex-1 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">
+          Apply Another Candidate
+        </button>
+        <a href="index.html" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition flex items-center justify-center">
+          Go to Portal
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div><strong>Karate Academy India</strong> • Official Mat Examination Portal</div>
+      <div><span class="font-bold text-slate-600">Karate Academy India Official ERP</span></div>
+    </div>
+  </footer>
+
+  <script>
+    let activeStudentData = null;
+
+    async function checkFormActivation() {
+      try {
+        const res = await fetch('/api/db');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.config && data.config.beltExamEnabled === false) {
+            document.getElementById('disabled-notice-card')?.classList.remove('hidden');
+            document.getElementById('exam-form-card')?.classList.add('hidden');
+            return false;
+          }
+        }
+      } catch (e) {
+        console.warn('Config check error:', e.message);
+      }
+      return true;
+    }
+
+    async function loadCaptcha() {
+      try {
+        const res = await fetch('/api/public/captcha');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('captcha-question').textContent = `${data.question} = ?`;
+          document.getElementById('captcha-token').value = data.token;
+        }
+      } catch (e) {
+        document.getElementById('captcha-question').textContent = '5 + 3 = ?';
+      }
+    }
+
+    async function fetchCandidateDetails() {
+      const studentId = document.getElementById('exam-student-id').value.trim();
+      const errBox = document.getElementById('form-error-box');
+      errBox.classList.add('hidden');
+
+      if (!studentId) {
+        showError('Please enter a Student ID to fetch candidate details.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/public/candidate-details?studentId=${encodeURIComponent(studentId)}`);
+        const data = await res.json();
+
+        if (res.ok && data.success && data.candidate) {
+          const c = data.candidate;
+          activeStudentData = c;
+          
+          document.getElementById('cand-name').textContent = c.name;
+          document.getElementById('cand-id-badge').textContent = c.studentId;
+          document.getElementById('cand-branch').textContent = c.branchId || 'HQ Main Dojo';
+          document.getElementById('cand-join-date').textContent = c.joinDate || 'N/A';
+          document.getElementById('cand-mat-hours').textContent = `${c.matHours || 0} Hours Attended`;
+          document.getElementById('cand-current-belt').textContent = c.belt || 'White Belt';
+
+          if (c.avatar) {
+            document.getElementById('cand-avatar').src = c.avatar;
+          }
+
+          // Suggest next belt automatically
+          suggestNextBelt(c.belt);
+
+          document.getElementById('candidate-details-card').classList.remove('hidden');
+        } else {
+          showError(data.error || 'Student ID not found in database.');
+          document.getElementById('candidate-details-card').classList.add('hidden');
+        }
+      } catch (e) {
+        showError('Error connecting to database. Please check Student ID.');
+      }
+    }
+
+    function suggestNextBelt(currentBelt) {
+      const beltSelect = document.getElementById('exam-target-belt');
+      const sequence = [
+        'White Belt', 'Yellow Belt', 'Orange Belt', 'Green Belt',
+        'Blue Belt', 'Purple Belt', 'Brown Belt 3rd Kyu',
+        'Brown Belt 2nd Kyu', 'Brown Belt 1st Kyu',
+        'Black Belt 1st Dan', 'Black Belt 2nd Dan'
+      ];
+      const curIndex = sequence.findIndex(b => b.toLowerCase() === String(currentBelt || '').toLowerCase());
+      if (curIndex !== -1 && curIndex < sequence.length - 1) {
+        beltSelect.value = sequence[curIndex + 1];
+      }
+    }
+
+    function showError(msg) {
+      const errBox = document.getElementById('form-error-box');
+      const errText = document.getElementById('form-error-text');
+      errText.textContent = msg;
+      errBox.classList.remove('hidden');
+    }
+
+    document.getElementById('belt-exam-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errBox = document.getElementById('form-error-box');
+      errBox.classList.add('hidden');
+
+      const studentId = document.getElementById('exam-student-id').value.trim();
+      const targetBelt = document.getElementById('exam-target-belt').value;
+      const instructorRec = document.getElementById('exam-instructor-rec').value;
+      const notes = document.getElementById('exam-notes').value.trim();
+      const captchaToken = document.getElementById('captcha-token').value;
+      const captchaAnswer = document.getElementById('captcha-answer').value;
+
+      if (!studentId) {
+        showError('Please enter Student ID and fetch candidate details.');
+        return;
+      }
+
+      if (!activeStudentData) {
+        await fetchCandidateDetails();
+        if (!activeStudentData) return;
+      }
+
+      const btnSubmit = document.getElementById('btn-submit-exam');
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<span class="material-symbols-outlined animate-spin text-base">sync</span><span>Submitting...</span>`;
+
+      try {
+        const res = await fetch('/api/public/belt-exam', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            studentId,
+            targetBelt,
+            instructorRec,
+            notes,
+            captchaToken,
+            captchaAnswer
+          })
+        });
+
+        const result = await res.json();
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<span class="material-symbols-outlined text-base">military_tech</span><span>Submit Belt Examination Application</span>`;
+
+        if (res.ok && result.success) {
+          document.getElementById('success-app-id').textContent = result.examAppId;
+          document.getElementById('success-msg-text').textContent = `Application for ${result.candidateName} (${result.currentBelt} ➔ ${result.targetBelt}) has been successfully logged.`;
+          document.getElementById('success-modal').classList.remove('hidden');
+        } else {
+          showError(result.error || 'Failed to submit application.');
+        }
+      } catch (err) {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<span class="material-symbols-outlined text-base">military_tech</span><span>Submit Belt Examination Application</span>`;
+        showError('Network error submitting application. Please try again.');
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await checkFormActivation();
+      await loadCaptcha();
+    });
+  </script>
+</body>
+</html>

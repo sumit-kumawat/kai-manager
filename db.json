@@ -16,6 +16,7 @@
     "receiptFooter": "Thank you for training with Karate Academy India! For queries contact +917040925257.",
     "contactPhone": "+917040925257",
     "contactEmail": "info@karateacademyindia.com",
+    "beltExamEnabled": true,
     "smtp": {
       "host": "smtp.gmail.com",
       "port": "465",
@@ -27,9 +28,27 @@
     }
   },
   "batches": [
-    { "id": "BATCH_MORNING", "name": "Morning Dojo Session", "startTime": "06:00", "endTime": "07:30", "status": "active" },
-    { "id": "BATCH_EVENING", "name": "Evening Tatami Session", "startTime": "17:00", "endTime": "18:30", "status": "active" },
-    { "id": "BATCH_NIGHT", "name": "Night Advance Session", "startTime": "19:00", "endTime": "20:30", "status": "active" }
+    {
+      "id": "BATCH_MORNING",
+      "name": "Morning Dojo Session",
+      "startTime": "06:00",
+      "endTime": "07:30",
+      "status": "active"
+    },
+    {
+      "id": "BATCH_EVENING",
+      "name": "Evening Tatami Session",
+      "startTime": "17:00",
+      "endTime": "18:30",
+      "status": "active"
+    },
+    {
+      "id": "BATCH_NIGHT",
+      "name": "Night Advance Session",
+      "startTime": "19:00",
+      "endTime": "20:30",
+      "status": "active"
+    }
   ],
   "users": [
     {
@@ -120,7 +139,6 @@
       "belt": "White Belt",
       "dob": "2010-05-15",
       "gender": "Male",
-      "bloodGroup": "O+",
       "medicalNotes": "",
       "membershipPlan": "Monthly Plan",
       "parentName": "Ramesh Sharma",
@@ -149,7 +167,6 @@
       "belt": "White Belt",
       "dob": "2010-05-15",
       "gender": "Male",
-      "bloodGroup": "O+",
       "medicalNotes": "",
       "membershipPlan": "Monthly Plan",
       "parentName": "Ramesh Sharma",
@@ -310,6 +327,14 @@
   ],
   "activityLogs": [
     {
+      "id": 1787231563044,
+      "timestamp": "8/20/2026, 6:42:43 PM",
+      "type": "system",
+      "user": "Aarav Sharma",
+      "action": "Belt Exam Application submitted: Aarav Sharma (KAISTD202602) for Yellow Belt",
+      "isRead": false
+    },
+    {
       "id": 1786292062581,
       "title": "Email Receipt Dispatched: KAISTD202603A",
       "subtitle": "Sent to aarav.sharma@karateacademyindia.com for Aarav Sharma (Delivered)",
@@ -436,7 +461,6 @@
       "lastName": "Sharma",
       "gender": "Male",
       "dob": "2010-05-15",
-      "bloodGroup": "O+",
       "medicalNotes": "",
       "belt": "White Belt",
       "membershipPlan": "Monthly Plan",
@@ -476,7 +500,6 @@
       "lastName": "Sharma",
       "gender": "Male",
       "dob": "2010-05-15",
-      "bloodGroup": "O+",
       "medicalNotes": "",
       "belt": "White Belt",
       "membershipPlan": "Monthly Plan",
@@ -705,6 +728,20 @@
       "meta": {
         "applicationId": "KAI-ADM-2026-0001"
       }
+    }
+  ],
+  "pendingBeltExams": [
+    {
+      "id": "KAIBELT2026001",
+      "studentId": "KAISTD202602",
+      "candidateName": "Aarav Sharma",
+      "currentBelt": "White Belt",
+      "targetBelt": "Yellow Belt",
+      "branchId": "HQ",
+      "instructorRec": "Recommended",
+      "notes": "Excellent kata practice",
+      "submittedAt": "2026-08-20T13:12:43.044Z",
+      "status": "pending"
     }
   ]
 }

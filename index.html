@@ -40,9 +40,10 @@
   <!-- Custom Light Theme & Production Styles -->
   <link href="styles.css" rel="stylesheet" />
 
-  <!-- JS Libraries for QR, PDF, Canvas & Camera Scanning -->
+  <!-- JS Libraries for QR, PDF, Canvas, Camera & Dynamic Charts -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -202,6 +203,11 @@
               <span class="material-symbols-outlined text-lg text-emerald-600">storefront</span>
               <span>Branch Management</span>
             </a>
+            <a href="belt_exam.html" target="_blank"
+              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-amber-700 hover:bg-amber-50 transition">
+              <span class="material-symbols-outlined text-lg text-amber-600">military_tech</span>
+              <span>Belt Exam Application</span>
+            </a>
 
             <!-- STAFF USER MANAGEMENT LINK FOR MANAGERS -->
             <div id="bottom-manager-users-box" class="hidden">
@@ -220,6 +226,11 @@
               <span class="material-symbols-outlined text-sm">shield</span>
               <span>System Administration</span>
             </div>
+            <a href="#" data-tab="admin-dashboard" id="nav-admin-dashboard-link"
+              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg">dashboard</span>
+              <span>Admin Executive Dashboard</span>
+            </a>
             <a href="#" data-tab="admin-settings" data-admin-sec="branding"
               class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
               <span class="material-symbols-outlined text-lg">tune</span>
@@ -427,6 +438,144 @@
     <main class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 flex-1">
 
       <!-- ========================================== -->
+      <!-- MODULE 0: ADMIN EXECUTIVE DASHBOARD VIEW   -->
+      <!-- ========================================== -->
+      <div id="view-admin-dashboard" class="tab-content space-y-6">
+
+        <!-- Header Bar with Time Range & Branch Filters -->
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <span class="text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">shield</span>
+              <span>Root Administrator Console</span>
+            </span>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">Admin Executive Dashboard</h2>
+            <p class="text-xs text-slate-500">Real-Time Operations, Student Growth, Financial Performance & System Metrics</p>
+          </div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <select id="admin-time-range-select" onchange="renderAdminDashboard()" class="px-3.5 py-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-800 shadow-sm">
+              <option value="today">Today</option>
+              <option value="last7">Last 7 Days</option>
+              <option value="last30" selected>Last 30 Days</option>
+              <option value="thisMonth">This Month</option>
+              <option value="all">All Time</option>
+            </select>
+            <select id="admin-branch-select" onchange="renderAdminDashboard()" class="px-3.5 py-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-800 shadow-sm">
+              <option value="all" selected>All Dojo Branches</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Dynamic Admin KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="admin-kpi-grid">
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Athletes</span>
+              <span class="material-symbols-outlined text-blue-600 text-lg">groups</span>
+            </div>
+            <h3 id="adm-kpi-total-students" class="text-3xl font-extrabold text-slate-900">0</h3>
+            <p id="adm-kpi-students-sub" class="text-xs text-slate-500 font-medium">0 Active • 0 Inactive</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Operational Staff</span>
+              <span class="material-symbols-outlined text-purple-600 text-lg">badge</span>
+            </div>
+            <h3 id="adm-kpi-total-staff" class="text-3xl font-extrabold text-slate-900">0</h3>
+            <p id="adm-kpi-staff-sub" class="text-xs text-slate-500 font-medium">0 Active Staff Members</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Attendance Rate</span>
+              <span class="material-symbols-outlined text-emerald-600 text-lg">fact_check</span>
+            </div>
+            <h3 id="adm-kpi-attendance-rate" class="text-3xl font-extrabold text-emerald-700">0%</h3>
+            <p id="adm-kpi-attendance-sub" class="text-xs text-slate-500 font-medium">0 Present Today</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Net Financial Balance</span>
+              <span class="material-symbols-outlined text-emerald-600 text-lg">payments</span>
+            </div>
+            <h3 id="adm-kpi-net-balance" class="text-3xl font-extrabold text-emerald-700">₹0</h3>
+            <p id="adm-kpi-finance-sub" class="text-xs text-slate-500 font-medium">Revenue ₹0 • Expenses ₹0</p>
+          </div>
+        </div>
+
+        <!-- Dynamic Chart.js Analytics Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Chart 1: Revenue vs Operational Expenses -->
+          <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">finance_mode</span>
+                <span>Financial Performance & Cash Flow</span>
+              </h3>
+              <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded border border-emerald-200">Revenue & Expenses</span>
+            </div>
+            <div class="relative h-64 w-full">
+              <canvas id="chart-finance-performance"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Attendance Rate & Trends -->
+          <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">trending_up</span>
+                <span>Student Attendance & Check-In Trends</span>
+              </h3>
+              <span class="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded border border-blue-200">Daily Activity</span>
+            </div>
+            <div class="relative h-64 w-full">
+              <canvas id="chart-attendance-trends"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 3: Student Belt Distribution -->
+          <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-600">military_tech</span>
+                <span>Belt Rank Roster Distribution</span>
+              </h3>
+              <span class="text-[10px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded border border-amber-200">Athletes by Belt</span>
+            </div>
+            <div class="relative h-64 w-full flex items-center justify-center">
+              <canvas id="chart-students-belt"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 4: Email System & Logs Status -->
+          <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-purple-600">outgoing_mail</span>
+                <span>Email Notifications & Queue Status</span>
+              </h3>
+              <div class="flex items-center gap-2">
+                <button onclick="markAllLogsAsRead()" class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 font-extrabold text-[10px] rounded-lg border border-purple-200 transition flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">done_all</span>
+                  <span>Mark All Read</span>
+                </button>
+                <span class="text-[10px] bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded border border-purple-200">System Logs</span>
+              </div>
+            </div>
+            <div class="relative h-64 w-full">
+              <canvas id="chart-email-logs"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
       <!-- MODULE 1: DASHBOARD VIEW (CLEAN CONTENT)   -->
       <!-- ========================================== -->
       <div id="view-dashboard" class="tab-content active space-y-6">
@@ -526,25 +675,6 @@
             </div>
             <h3 id="stat-belt-candidates" class="text-3xl font-extrabold text-slate-900">0 Ready</h3>
             <p class="text-xs text-slate-500">Evaluation Ready</p>
-          </div>
-        </div>
-
-        <!-- CLEAN FULL-WIDTH RECENT STUDENT ATTENDANCE LOG SECTION -->
-        <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-              <span class="material-symbols-outlined text-red-600">fact_check</span>
-              <span>Recent Student Attendance Roster</span>
-            </h3>
-            <a href="#" data-tab="attendance"
-              class="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1">
-              <span>View Full Tracker</span>
-              <span class="material-symbols-outlined text-sm">arrow_forward</span>
-            </a>
-          </div>
-
-          <div id="dash-attendance-list" class="divide-y divide-slate-100">
-            <!-- Dynamic Attendance Roster -->
           </div>
         </div>
 
@@ -941,6 +1071,14 @@
               <span>Download PDF Report</span>
             </button>
 
+            <!-- Mark All Logs Read Button -->
+            <button onclick="markAllLogsAsRead()"
+              class="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 shrink-0"
+              title="Mark All Activity Logs as Read">
+              <span class="material-symbols-outlined text-sm text-red-600">done_all</span>
+              <span>Mark Logs Read</span>
+            </button>
+
             <!-- Record Payment Button -->
             <button
               class="open-record-payment-modal action-btn-write h-11 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
@@ -1059,91 +1197,79 @@
       <div id="view-manager-users" class="tab-content space-y-6">
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-1">
           <span class="text-xs font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1">
-            <span class="material-symbols-outlined text-sm">manage_accounts</span>
-            <span>Manager Account Console</span>
+            <span class="material-symbols-outlined text-sm">badge</span>
+            <span>Human Resource Management System (HRMS)</span>
           </span>
-          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Staff User Account Management</h2>
-          <p class="text-xs text-slate-500">Manage Operational Staff Accounts (Manager, Receptionist, and Viewer users
-            only).</p>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Staff Management & Directory</h2>
+              <p class="text-xs text-slate-500">Comprehensive HRMS directory for operational staff, roles, branches, departments, and payroll.</p>
+            </div>
+            <button onclick="openAddStaffModal()" type="button" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
+              <span class="material-symbols-outlined text-sm">person_add</span>
+              <span>+ Create New Staff Account</span>
+            </button>
+          </div>
         </div>
 
         <div id="manager-users-container" class="space-y-6">
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <h3
-              class="font-extrabold text-base text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-blue-600">manage_accounts</span>
-                <span>Staff Accounts Roster</span>
-              </div>
-              <span
-                class="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded border border-blue-200">Manager
-                Access</span>
-            </h3>
-
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-              <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Create New Staff Account</h4>
-
-              <form id="manager-create-user-form" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div>
-                  <label class="font-semibold text-slate-700 block mb-1">Full Name *</label>
-                  <input type="text" id="mgr-usr-name" required placeholder="e.g. Vikram Sharma"
-                    class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium" />
-                </div>
-                <div>
-                  <label class="font-semibold text-slate-700 block mb-1">Username *</label>
-                  <input type="text" id="mgr-usr-username" required placeholder="e.g. vikram_staff"
-                    class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium" />
-                </div>
-                <div>
-                  <label class="font-semibold text-slate-700 block mb-1">Email Address *</label>
-                  <input type="email" id="mgr-usr-email" required placeholder="e.g. vikram@karateacademyindia.com"
-                    class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium" />
-                </div>
-                <div>
-                  <label class="font-semibold text-slate-700 block mb-1">Password *</label>
-                  <input type="password" id="mgr-usr-password" required placeholder="••••••••"
-                    class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-medium" />
-                </div>
-                <div class="sm:col-span-2">
-                  <label class="font-bold text-slate-900 block mb-1.5 text-xs tracking-wide">Assign Staff Operational
-                    Role *</label>
-                  <div class="relative">
-                    <select id="mgr-usr-role"
-                      class="w-full px-4 py-3 bg-white border-2 border-slate-300 hover:border-blue-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 rounded-xl font-bold text-slate-900 text-xs shadow-sm appearance-none pr-10 transition">
-                      <option value="receptionist" class="py-2 font-semibold">Receptionist — Attendance Tracker, Kiosk
-                        Scanner & ID Cards</option>
-                      <option value="viewer" class="py-2 font-semibold">Viewer — Read-Only Operational Access</option>
-                      <option value="manager" class="py-2 font-semibold">Manager — Full Operational Management
-                        (Students, Fees, Attendance)</option>
-                    </select>
-                    <span
-                      class="material-symbols-outlined absolute right-3.5 top-3 pointer-events-none text-slate-500 text-xl">expand_more</span>
-                  </div>
-                </div>
-                <div class="sm:col-span-2 pt-1">
-                  <button type="submit"
-                    class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5">
-                    <span class="material-symbols-outlined text-sm">person_add</span>
-                    <span>Create Staff User</span>
-                  </button>
-                </div>
-              </form>
+          <!-- Search & Filter Controls -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="relative w-full md:w-80">
+              <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-sm">search</span>
+              <input type="text" id="staff-search-input" onkeyup="renderManagerUsers()" placeholder="Search staff name, ID, username..." class="w-full pl-9 pr-3.5 py-2 text-xs border border-slate-300 rounded-xl bg-white" />
             </div>
 
-            <!-- User List Table -->
-            <div class="overflow-x-auto border border-slate-200 rounded-xl">
+            <div class="flex items-center gap-2.5 flex-wrap w-full md:w-auto">
+              <select id="staff-role-filter" onchange="renderManagerUsers()" class="px-3 py-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700">
+                <option value="all">All Roles</option>
+                <option value="manager">Manager</option>
+                <option value="receptionist">Receptionist</option>
+                <option value="viewer">Viewer</option>
+                <option value="admin">Admin</option>
+              </select>
+
+              <select id="staff-branch-filter" onchange="renderManagerUsers()" class="px-3 py-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700">
+                <option value="all">All Branches</option>
+                <option value="HQ">Main Honbu Dojo (HQ)</option>
+                <option value="NORTH">North Branch Dojo</option>
+                <option value="SOUTH">South Branch Dojo</option>
+              </select>
+
+              <select id="staff-status-filter" onchange="renderManagerUsers()" class="px-3 py-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="disabled">Disabled</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- HRMS Staff Cards Directory Grid -->
+          <div id="staff-directory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Dynamic HRMS Staff Directory Cards Rendered Here -->
+          </div>
+
+          <!-- Table View Fallback for Compact View -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <span class="material-symbols-outlined text-slate-500 text-sm">table_rows</span>
+              <span>Tabular Staff Account Roster</span>
+            </h4>
+            <div class="overflow-x-auto border border-slate-200 rounded-xl table-scroll-container">
               <table class="w-full text-left text-xs">
                 <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
                   <tr>
-                    <th class="py-2.5 px-4">User</th>
-                    <th class="py-2.5 px-4">Username</th>
-                    <th class="py-2.5 px-4">Role</th>
+                    <th class="py-2.5 px-4">Staff Member</th>
+                    <th class="py-2.5 px-4">Staff ID</th>
+                    <th class="py-2.5 px-4">Role & Dept</th>
+                    <th class="py-2.5 px-4">Branch</th>
+                    <th class="py-2.5 px-4">Salary</th>
                     <th class="py-2.5 px-4">Status</th>
                     <th class="py-2.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="manager-users-table-body" class="divide-y divide-slate-100 font-medium">
-                  <!-- Dynamic Staff List -->
+                  <!-- Dynamic Staff List Table Rows -->
                 </tbody>
               </table>
             </div>
@@ -1209,6 +1335,17 @@
                   Branding Configuration</button>
               </div>
             </form>
+
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-4">
+              <div>
+                <h4 class="font-extrabold text-xs text-slate-900">Belt Examination Portal Status</h4>
+                <p class="text-[11px] text-slate-500">Enable or deactivate online Belt Rank Examination applications (belt_exam.html)</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                <input type="checkbox" id="cfg-belt-exam-enabled" checked onchange="toggleBeltExamActivation(this.checked)" class="sr-only peer">
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+              </label>
+            </div>
           </div>
 
           <!-- Area 2: User & Role Management Module -->
@@ -1691,10 +1828,16 @@
             <p class="text-xs text-slate-500">Complete Audit Trail of Application Operations</p>
           </div>
         </div>
-        <button id="close-logs-modal"
-          class="p-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
-          <span class="material-symbols-outlined">close</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="markAllLogsAsRead()" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-xl border border-red-200 transition flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">done_all</span>
+            <span>Mark All as Read</span>
+          </button>
+          <button id="close-logs-modal"
+            class="p-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
       </div>
 
       <!-- Filter Buttons -->
@@ -2990,6 +3133,149 @@
             class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow flex items-center gap-1.5">
             <span class="material-symbols-outlined text-sm">payments</span>
             <span>Generate & Send Salary Payslip</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CREATE NEW STAFF ACCOUNT LIGHTBOX   -->
+  <!-- ========================================== -->
+  <div id="add-staff-modal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container"
+    data-dismissible="true">
+    <div
+      class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] modal-box">
+
+      <!-- Modal Header (Light Theme) -->
+      <div class="p-5 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600">
+            <span class="material-symbols-outlined text-2xl">person_add</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base text-slate-900">Create New Staff Account</h3>
+            <p class="text-xs text-slate-500">Register Operational Staff & Access Credentials</p>
+          </div>
+        </div>
+        <button onclick="closeAddStaffModal()" class="p-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="add-staff-form" class="p-6 overflow-y-auto space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Full Name *</label>
+            <input type="text" id="new-staff-name" required placeholder="e.g. Vikram Sharma" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Username *</label>
+            <input type="text" id="new-staff-username" required placeholder="e.g. vikram_staff" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Email Address *</label>
+            <input type="email" id="new-staff-email" required placeholder="e.g. vikram@karateacademyindia.com" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Mobile Phone *</label>
+            <input type="text" id="new-staff-phone" required placeholder="e.g. +91 70409 25258" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Password *</label>
+            <input type="password" id="new-staff-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Operational Role *</label>
+            <select id="new-staff-role" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold">
+              <option value="receptionist">Receptionist (Front Desk)</option>
+              <option value="manager">Manager (Dojo Manager)</option>
+              <option value="viewer">Viewer (Read Only)</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Designation</label>
+            <input type="text" id="new-staff-designation" placeholder="e.g. Senior Dojo Specialist" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Department</label>
+            <input type="text" id="new-staff-department" placeholder="e.g. Operations" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Branch Dojo</label>
+            <select id="new-staff-branch" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl">
+              <option value="HQ">Main Honbu Dojo (HQ)</option>
+              <option value="NORTH">North Branch Dojo</option>
+              <option value="SOUTH">South Branch Dojo</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Joining Date</label>
+            <input type="date" id="new-staff-joining" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="font-semibold text-slate-700 block mb-1">Monthly Salary Amount (₹)</label>
+            <input type="number" id="new-staff-salary" placeholder="25000" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold" />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeAddStaffModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">person_add</span>
+            <span>Create Staff Account</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADMIN CREATE BRANCH LIGHTBOX        -->
+  <!-- ========================================== -->
+  <div id="add-branch-modal"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container"
+    data-dismissible="true">
+    <div
+      class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600">storefront</span>
+          <span>Create New Branch Dojo (Admin)</span>
+        </h3>
+        <button onclick="closeAddBranchModal()" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="add-branch-form" class="space-y-3.5 text-xs">
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Branch Name *</label>
+          <input type="text" id="new-branch-name" required placeholder="e.g. East Branch Dojo" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium" />
+        </div>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Branch Code / Identifier *</label>
+          <input type="text" id="new-branch-code" required placeholder="e.g. EAST" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono uppercase font-bold" />
+        </div>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">City</label>
+          <input type="text" id="new-branch-city" placeholder="e.g. Jaipur" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
+        </div>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Full Dojo Address</label>
+          <input type="text" id="new-branch-address" placeholder="Facility location address..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
+        </div>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Contact Phone</label>
+          <input type="text" id="new-branch-phone" placeholder="+91 70409 25257" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="closeAddBranchModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">add_business</span>
+            <span>Create Branch</span>
           </button>
         </div>
       </form>
