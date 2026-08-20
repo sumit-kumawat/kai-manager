@@ -821,11 +821,11 @@ async function checkAuth() {
           const appWrapper = document.getElementById('app-wrapper');
           if (viewLogin) {
             viewLogin.classList.add('hidden');
-            viewLogin.style.display = '';
+            viewLogin.style.display = 'none';
           }
           if (appWrapper) {
             appWrapper.classList.remove('hidden');
-            appWrapper.style.display = '';
+            appWrapper.style.display = 'block';
           }
 
           updateHeaderUserInfo();
@@ -858,8 +858,14 @@ async function checkAuth() {
 
           const viewLogin = document.getElementById('view-login');
           const appWrapper = document.getElementById('app-wrapper');
-          if (viewLogin) viewLogin.classList.add('hidden');
-          if (appWrapper) appWrapper.classList.remove('hidden');
+          if (viewLogin) {
+            viewLogin.classList.add('hidden');
+            viewLogin.style.display = 'none';
+          }
+          if (appWrapper) {
+            appWrapper.classList.remove('hidden');
+            appWrapper.style.display = 'block';
+          }
 
           updateHeaderUserInfo();
           applyRolePermissions();
@@ -890,11 +896,11 @@ async function checkAuth() {
   const aWrap = document.getElementById('app-wrapper');
   if (vLogin) {
     vLogin.classList.remove('hidden');
-    vLogin.style.display = '';
+    vLogin.style.display = 'flex';
   }
   if (aWrap) {
     aWrap.classList.add('hidden');
-    aWrap.style.display = '';
+    aWrap.style.display = 'none';
   }
   return false;
 }
@@ -930,11 +936,11 @@ function triggerLogout(isInactivity = false) {
   const aWrap = document.getElementById('app-wrapper');
   if (vLogin) {
     vLogin.classList.remove('hidden');
-    vLogin.style.display = '';
+    vLogin.style.display = 'flex';
   }
   if (aWrap) {
     aWrap.classList.add('hidden');
-    aWrap.style.display = '';
+    aWrap.style.display = 'none';
   }
 
   const dropdown = document.getElementById('admin-profile-dropdown');
@@ -1200,11 +1206,11 @@ async function performLogin(username, password) {
       const aWrap = document.getElementById('app-wrapper');
       if (vLogin) {
         vLogin.classList.add('hidden');
-        vLogin.style.display = '';
+        vLogin.style.display = 'none';
       }
       if (aWrap) {
         aWrap.classList.remove('hidden');
-        aWrap.style.display = '';
+        aWrap.style.display = 'block';
       }
 
       updateHeaderUserInfo();
