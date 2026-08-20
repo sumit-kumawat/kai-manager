@@ -327,6 +327,13 @@
   ],
   "activityLogs": [
     {
+      "id": 1787234437101,
+      "title": "New Online Admission Application: Rohan Verma",
+      "subtitle": "Application #KAIADM2026003 submitted via public portal for Manager verification",
+      "timestamp": "20/08/26, 7:30 pm",
+      "type": "enrollment"
+    },
+    {
       "id": 1787231563044,
       "timestamp": "8/20/2026, 6:42:43 PM",
       "type": "system",
@@ -400,14 +407,14 @@
   ],
   "sessions": [
     {
-      "token": "kai_sec_token_tes2rjkmago1786303991516",
+      "token": "kai_sec_token_ksgfzq1yll1787234438991",
       "user": {
         "name": "KAI Administrator",
         "username": "admin",
         "email": "info@karateacademyindia.com",
         "role": "admin"
       },
-      "createdAt": 1786303991516
+      "createdAt": 1787234438991
     },
     {
       "token": "kai_sec_token_6crorlvwd8y1786292055345",
@@ -451,6 +458,42 @@
     }
   ],
   "pendingAdmissions": [
+    {
+      "id": "KAIADM2026003",
+      "status": "pending",
+      "submittedAt": "2026-08-20T14:00:37.101Z",
+      "name": "Rohan Verma",
+      "firstName": "Rohan",
+      "middleName": "",
+      "lastName": "Verma",
+      "gender": "Male",
+      "dob": "2012-04-10",
+      "medicalNotes": "",
+      "belt": "White Belt",
+      "membershipPlan": "Monthly",
+      "parentName": "Suresh Verma",
+      "phone": "9876543210",
+      "email": "rohan.verma@gmail.com",
+      "emergName": "Suresh Verma",
+      "emergPhone": "9876543210",
+      "emergRelation": "Parent / Guardian",
+      "address": "Flat 101 MG Road",
+      "city": "Pune",
+      "state": "MH",
+      "pincode": "411033",
+      "govIdType": "Aadhaar Card",
+      "govIdNumber": "123456789012",
+      "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "documents": [
+        {
+          "id": "doc_1787234437101_0",
+          "name": "aadhaar.pdf",
+          "type": "application/pdf",
+          "size": 1024,
+          "data": "data:application/pdf;base64,JVBERi0xLjQK"
+        }
+      ]
+    },
     {
       "id": "KAI-ADM-2026-0002",
       "status": "approved",
@@ -531,6 +574,25 @@
     }
   ],
   "emailLogs": [
+    {
+      "id": 1787234438024,
+      "category": "admission_received",
+      "recipientEmail": "rohan.verma@gmail.com",
+      "recipientName": "Rohan Verma",
+      "subject": "Admission Application Received (KAIADM2026003) - Karate Academy India",
+      "subtitle": "Application Acknowledgement",
+      "contentHtml": "\n                <p>Thank you for submitting your admission application to <strong>Karate Academy India</strong>.</p>\n                <div class=\"card\">\n                  <table class=\"table\">\n                    <tr><td class=\"label\">Application Reference:</td><td class=\"value\"><span class=\"badge-paid\">KAIADM2026003</span></td></tr>\n                    <tr><td class=\"label\">Applicant Name:</td><td class=\"value\">Rohan Verma</td></tr>\n                    <tr><td class=\"label\">Selected Belt:</td><td class=\"value\">White Belt</td></tr>\n                    <tr><td class=\"label\">Membership Plan:</td><td class=\"value\">Monthly</td></tr>\n                    <tr><td class=\"label\">Submission Date:</td><td class=\"value\">20/8/2026</td></tr>\n                    <tr><td class=\"label\">Current Status:</td><td class=\"value\"><span class=\"badge-due\">UNDER MANAGER REVIEW</span></td></tr>\n                  </table>\n                </div>\n                <p>Our Academy Manager is reviewing your verification documents. Once approved, your official Student ID and Digital Mat Pass will be activated.</p>\n              ",
+      "callToActionUrl": "",
+      "callToActionText": "",
+      "status": "pending",
+      "timestamp": "20/08/26, 7:30 pm",
+      "triggeredBy": "Online Admission Portal",
+      "retryCount": 0,
+      "error": null,
+      "meta": {
+        "applicationId": "KAIADM2026003"
+      }
+    },
     {
       "id": 1786292062868,
       "category": "receipt",

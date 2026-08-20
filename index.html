@@ -73,7 +73,7 @@
         <p class="text-xs text-slate-500 font-medium" id="login-app-subtitle">Karate Academy India • Portal Access</p>
       </div>
 
-      <form id="login-form" class="space-y-4" onsubmit="event.preventDefault(); return false;">
+      <form id="login-form" class="space-y-4" onsubmit="event.preventDefault(); handleLoginSubmit(event); return false;">
         <div id="inactivity-logout-alert"
           class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-2">
           <span class="material-symbols-outlined text-base text-amber-600">timer_off</span>

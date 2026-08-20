@@ -829,6 +829,35 @@ async function checkAuth() {
       }
     } catch (e) {
       console.warn('[CheckAuth] Server verification network warning:', e.message);
+      const cachedUser = localStorage.getItem('kai_user');
+      if (cachedUser) {
+        try {
+          const user = JSON.parse(cachedUser);
+          appState.currentUser = user;
+          appState.userRole = (user.role || 'viewer').toLowerCase();
+          appState.isAuthenticated = true;
+
+          const viewLogin = document.getElementById('view-login');
+          const appWrapper = document.getElementById('app-wrapper');
+          if (viewLogin) viewLogin.classList.add('hidden');
+          if (appWrapper) appWrapper.classList.remove('hidden');
+
+          updateHeaderUserInfo();
+          applyRolePermissions();
+
+          const currentHash = window.location.hash ? window.location.hash.replace('#', '') : '';
+          if (!currentHash || currentHash === 'login') {
+            if (appState.userRole === 'admin') {
+              switchTab('admin-dashboard', false);
+            } else {
+              switchTab('dashboard', false);
+            }
+          } else {
+            switchTab(currentHash, false);
+          }
+          return true;
+        } catch (err) {}
+      }
     }
   }
 
