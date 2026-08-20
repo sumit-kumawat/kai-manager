@@ -1155,6 +1155,9 @@ const server = http.createServer((req, res) => {
 
   // REST API Endpoints
   if (req.url.startsWith('/api/')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     // 0. Auth Logout Endpoint
     if (req.url === '/api/logout' && req.method === 'POST') {
       const authHeader = req.headers['authorization'];

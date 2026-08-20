@@ -775,8 +775,8 @@ async function checkAuth() {
 
   if (token) {
     try {
-      // MANDATORY SERVER-SIDE SESSION VERIFICATION
-      const res = await fetch(getApiUrl('/api/verify-session'), {
+      // MANDATORY SERVER-SIDE SESSION VERIFICATION WITH ANTI-CACHE TIMESTAMP
+      const res = await fetch(getApiUrl('/api/verify-session') + `?_t=${Date.now()}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1165,6 +1165,7 @@ async function performLogin(username, password) {
       localStorage.setItem('kai_session', 'authenticated_' + Date.now());
       localStorage.setItem('kai_token', data.token);
       localStorage.setItem('kai_user', JSON.stringify(data.user));
+      localStorage.removeItem('kai_db_cache');
 
       sessionStorage.setItem('kai_session', 'authenticated_' + Date.now());
       sessionStorage.setItem('kai_token', data.token);
@@ -1791,8 +1792,8 @@ async function loadDatabase() {
   if (!token) return;
 
   try {
-    const res = await fetch(getApiUrl('/api/db'), {
-      headers: { 'Authorization': `Bearer ${token}` }
+    const res = await fetch(getApiUrl('/api/db') + `?_t=${Date.now()}`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Cache-Control': 'no-cache' }
     });
     if (res.status === 401) {
       console.warn('[DB] Server returned 401 Unauthorized. Using local cache fallback...');
