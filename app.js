@@ -2269,7 +2269,7 @@ function renderDashboard() {
     }
   });
   const duesEl = document.getElementById('stat-total-dues-display');
-  }
+  if (duesEl) duesEl.textContent = `₹${totalDues.toLocaleString('en-IN')}`;
 }
 
 // 2. Attendance Tracker Engine
