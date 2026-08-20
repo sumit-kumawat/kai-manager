@@ -81,42 +81,56 @@ const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1555597673-b21d5c93586
 const DEFAULT_LOGO = 'https://www.karateacademyindia.com/logo.png';
 
 async function initApp() {
-  setupBrowserHistoryNavigation();
-  setupSyncChannel();
-  setupNavigation();
-  setupAuthHandlers();
-  setupAdminProfileDropdown();
-  setupResetPasswordModal();
-  setupUserProfileModal();
-  setupManagerSecurityModal();
-  setupStudentDetailsModal();
-  setupActivityLogsModal();
-  setupLightboxSystem();
-  setupGlobalPopupDismissal();
-  setupGlobalSearchDropdown();
-  setupLogoRefreshHandler();
-  setupKioskScanner();
-  setupPhotoUploader();
-  setupFormsAndCalculators();
-  setupAdminSettingsForms();
-  setupPaymentStudentSearch();
-  setupInactivityWatchdog();
-  setupAdmissionsHandlers();
-  setupCsvImportExportHandlers();
-  setupDirectorySearchAndFilters();
-  setupAttendanceTrackerEvents();
-  setupSendEmailModalEvents();
-  setupHolidayNoticeFormHandler();
-  setupStaffInvoiceFormHandler();
+  const initializers = [
+    setupBrowserHistoryNavigation,
+    setupSyncChannel,
+    setupNavigation,
+    setupAuthHandlers,
+    setupAdminProfileDropdown,
+    setupResetPasswordModal,
+    setupUserProfileModal,
+    setupManagerSecurityModal,
+    setupStudentDetailsModal,
+    setupActivityLogsModal,
+    setupLightboxSystem,
+    setupGlobalPopupDismissal,
+    setupGlobalSearchDropdown,
+    setupLogoRefreshHandler,
+    setupKioskScanner,
+    setupPhotoUploader,
+    setupFormsAndCalculators,
+    setupAdminSettingsForms,
+    setupPaymentStudentSearch,
+    setupInactivityWatchdog,
+    setupAdmissionsHandlers,
+    setupCsvImportExportHandlers,
+    setupDirectorySearchAndFilters,
+    setupAttendanceTrackerEvents,
+    setupSendEmailModalEvents,
+    setupHolidayNoticeFormHandler,
+    setupStaffInvoiceFormHandler
+  ];
+
+  initializers.forEach(fn => {
+    try {
+      if (typeof fn === 'function') fn();
+    } catch (err) {
+      console.warn(`[Init Warning] ${fn.name || 'initializer'} error:`, err);
+    }
+  });
 
   // Restore session AFTER all UI handlers are wired up
-  await checkAuth();
-  if (appState.isAuthenticated) {
-    await loadDatabase();
-    await renderAllViews();
-    if (appState.userRole === 'admin' || appState.userRole === 'manager') {
-      loadPendingAdmissions();
+  try {
+    await checkAuth();
+    if (appState.isAuthenticated) {
+      await loadDatabase();
+      await renderAllViews();
+      if (appState.userRole === 'admin' || appState.userRole === 'manager') {
+        try { loadPendingAdmissions(); } catch (e) {}
+      }
     }
+  } catch (err) {
+    console.error('[Init Auth Error]', err);
   }
 }
 
@@ -1924,8 +1938,10 @@ function switchTab(tabId, pushHistory = true) {
   contents.forEach(content => {
     if (content.id === `view-${tabId}`) {
       content.classList.add('active');
+      content.style.display = 'block';
     } else {
       content.classList.remove('active');
+      content.style.display = 'none';
     }
   });
 
