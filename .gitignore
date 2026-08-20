@@ -2,4 +2,8 @@ node_modules/
 .DS_Store
 *.log
 *.zip
+*.sqlite
+*.sqlite*
+*.bak
+
 
