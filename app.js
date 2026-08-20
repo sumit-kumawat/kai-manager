@@ -43,6 +43,25 @@ function syncServerBuildVersion(serverBuildId) {
   return false;
 }
 
+window.handleLoginSubmit = async function(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const userVal = document.getElementById('login-username')?.value || '';
+  const passVal = document.getElementById('login-password')?.value || '';
+  return await performLogin(userVal, passVal);
+};
+
+window.doLogin = async function(user, pass) {
+  return await performLogin(user, pass);
+};
+
+window.quickLogin = async function(user, pass) {
+  const uIn = document.getElementById('login-username');
+  const pIn = document.getElementById('login-password');
+  if (uIn) uIn.value = user;
+  if (pIn) pIn.value = pass;
+  return await performLogin(user, pass);
+};
+
 function getApiUrl(endpoint) {
   if (!endpoint) return '';
   if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
