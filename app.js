@@ -787,15 +787,15 @@ function clearSessionStore() {
 }
 
 // ==========================================
-// FIXED: STRICT SERVER-VERIFIED AUTH CHECK
+// ==========================================
+// STANDARD SERVER-VERIFIED AUTH CHECK
 // ==========================================
 async function checkAuth() {
   const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
 
   if (token) {
     try {
-      // MANDATORY SERVER-SIDE SESSION VERIFICATION WITH ANTI-CACHE TIMESTAMP
-      const res = await fetch(getApiUrl('/api/verify-session') + `?_t=${Date.now()}`, {
+      const res = await fetch(getApiUrl('/api/verify-session'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -811,12 +811,10 @@ async function checkAuth() {
           appState.userRole = (data.user.role || 'viewer').toLowerCase();
           appState.isAuthenticated = true;
 
-          // Update stored session tokens
           localStorage.setItem('kai_session', 'authenticated_' + Date.now());
           localStorage.setItem('kai_token', token);
           localStorage.setItem('kai_user', JSON.stringify(data.user));
 
-          // Show app, hide login
           const viewLogin = document.getElementById('view-login');
           const appWrapper = document.getElementById('app-wrapper');
           if (viewLogin) {
@@ -847,46 +845,10 @@ async function checkAuth() {
         }
       }
     } catch (e) {
-      console.warn('[CheckAuth] Server verification network warning:', e.message);
-      const cachedUser = localStorage.getItem('kai_user');
-      if (cachedUser) {
-        try {
-          const user = JSON.parse(cachedUser);
-          appState.currentUser = user;
-          appState.userRole = (user.role || 'viewer').toLowerCase();
-          appState.isAuthenticated = true;
-
-          const viewLogin = document.getElementById('view-login');
-          const appWrapper = document.getElementById('app-wrapper');
-          if (viewLogin) {
-            viewLogin.classList.add('hidden');
-            viewLogin.style.display = 'none';
-          }
-          if (appWrapper) {
-            appWrapper.classList.remove('hidden');
-            appWrapper.style.display = 'block';
-          }
-
-          updateHeaderUserInfo();
-          applyRolePermissions();
-
-          const currentHash = window.location.hash ? window.location.hash.replace('#', '') : '';
-          if (!currentHash || currentHash === 'login') {
-            if (appState.userRole === 'admin') {
-              switchTab('admin-dashboard', false);
-            } else {
-              switchTab('dashboard', false);
-            }
-          } else {
-            switchTab(currentHash, false);
-          }
-          return true;
-        } catch (err) {}
-      }
+      console.warn('[CheckAuth] Session check network error:', e.message);
     }
   }
 
-  // Session verification failed or token is invalid -> Evict broken session state
   clearSessionStore();
   appState.isAuthenticated = false;
   appState.currentUser = null;
@@ -1126,76 +1088,25 @@ async function performLogin(username, password) {
   }
 
   try {
-    console.log('Attempting login for:', userVal);
+    const res = await fetch(getApiUrl('/api/login'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: userVal, password: passVal })
+    });
 
-    let res = null;
     let data = null;
-    let networkError = null;
-
-    // 1. Primary API Attempt
-    try {
-      res = await fetch(getApiUrl('/api/login'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: userVal, password: passVal })
-      });
-      if (res) data = await res.json();
-    } catch (err1) {
-      networkError = err1;
-      if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
-        try {
-          res = await fetch('http://127.0.0.1:3000/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: userVal, password: passVal })
-          });
-          if (res) data = await res.json();
-        } catch (err2) {
-          networkError = err2;
-        }
-      }
-    }
-
-    // 4. Server Unreachable -> Offline Default Credential Fallback
-    if (!data && (networkError || !res)) {
-      const lowerUser = userVal.toLowerCase();
-      const defaultAccounts = {
-        'admin': { pass: 'admin', role: 'admin', name: 'KAI Administrator', email: 'admin@karateacademyindia.com' },
-        'manager': { pass: '123', role: 'manager', name: 'KAI Manager', email: 'manager@karateacademyindia.com' },
-        'receptionist': { pass: '123', role: 'receptionist', name: 'KAI Receptionist', email: 'receptionist@karateacademyindia.com' },
-        'viewer': { pass: '123', role: 'viewer', name: 'KAI Portal Viewer', email: 'viewer@karateacademyindia.com' }
-      };
-
-      const foundAcc = defaultAccounts[lowerUser];
-      if (foundAcc && passVal === foundAcc.pass) {
-        data = {
-          success: true,
-          token: 'kai_sec_token_local_' + Date.now(),
-          user: {
-            name: foundAcc.name,
-            username: lowerUser,
-            email: foundAcc.email,
-            role: foundAcc.role
-          }
-        };
-        res = { ok: true };
-        console.log('[Auth] Logged in via local default account fallback:', lowerUser);
-      }
-    }
+    try { data = await res.json(); } catch (e) {}
 
     if (res && res.ok && data && data.success && data.token && data.user) {
       if (data.buildId) localStorage.setItem('kai_build_id', data.buildId);
 
-      // Store session tokens
       localStorage.setItem('kai_session', 'authenticated_' + Date.now());
       localStorage.setItem('kai_token', data.token);
       localStorage.setItem('kai_user', JSON.stringify(data.user));
-      localStorage.removeItem('kai_db_cache');
 
       sessionStorage.setItem('kai_session', 'authenticated_' + Date.now());
       sessionStorage.setItem('kai_token', data.token);
       sessionStorage.setItem('kai_user', JSON.stringify(data.user));
-      sessionStorage.removeItem('kai_manager_verified');
 
       appState.currentUser = data.user;
       appState.userRole = (data.user.role || 'viewer').toLowerCase();
@@ -1220,7 +1131,6 @@ async function performLogin(username, password) {
 
       await loadDatabase();
 
-      // Route to appropriate view
       const currentHash = (window.location.hash || '').replace(/^#/, '');
       if (!currentHash || currentHash === 'login') {
         if (appState.userRole === 'admin') {
@@ -1250,7 +1160,7 @@ async function performLogin(username, password) {
   } catch (err) {
     console.error('Login error:', err);
     if (loginErr) {
-      loginErr.textContent = err.message || 'Login failed due to connection error. Please check your internet connection.';
+      loginErr.textContent = err.message || 'Login failed due to connection error. Please check your network.';
       loginErr.classList.remove('hidden');
     }
     return false;
@@ -1817,44 +1727,22 @@ async function loadDatabase() {
   if (!token) return;
 
   try {
-    const res = await fetch(getApiUrl('/api/db') + `?_t=${Date.now()}`, {
-      headers: { 'Authorization': `Bearer ${token}`, 'Cache-Control': 'no-cache' }
+    const res = await fetch(getApiUrl('/api/db'), {
+      headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (res.status === 401) {
-      console.warn('[DB] Server returned 401 Unauthorized. Using local cache fallback...');
-      const cached = localStorage.getItem('kai_db_cache');
-      if (cached) {
-        try {
-          applyLoadedData(JSON.parse(cached));
-          return;
-        } catch (e) {}
-      }
-    } else if (res.ok) {
+    if (res.ok) {
       const data = await res.json();
-      if (data.buildId && syncServerBuildVersion(data.buildId)) {
-        return;
-      }
-      localStorage.setItem('kai_db_cache', JSON.stringify(data));
       applyLoadedData(data);
-      return;
     } else {
-      console.warn(`[DB] Server returned HTTP ${res.status} when loading DB, attempting cached fallback.`);
+      console.warn(`[DB] Server returned HTTP ${res.status} when loading DB.`);
     }
   } catch (e) {
-    console.warn('[DB] Network error loading DB, attempting cached fallback:', e.message);
-  }
-
-  const cached = localStorage.getItem('kai_db_cache');
-  if (cached) {
-    try {
-      applyLoadedData(JSON.parse(cached));
-    } catch (e) {
-      console.error('[DB] Cache parse error:', e);
-    }
+    console.error('[DB] Network error loading DB:', e.message);
   }
 }
 
 function applyLoadedData(data) {
+  if (!data) return;
   if (data.config) appState.config = { ...appState.config, ...data.config };
   appState.users = data.users || [];
   appState.students = data.students || [];
@@ -1873,16 +1761,6 @@ async function saveDatabase() {
     showLightbox({ title: 'Permission Denied', message: 'Viewer role is read-only.', type: 'error' });
     return;
   }
-
-  localStorage.setItem('kai_db_cache', JSON.stringify({
-    config: appState.config,
-    users: appState.users,
-    students: appState.students,
-    classes: appState.classes,
-    financials: appState.financials,
-    attendance: appState.attendance,
-    activityLogs: appState.activityLogs
-  }));
 
   if (syncChannel) {
     syncChannel.postMessage({ type: 'KAI_DB_UPDATE', payload: appState });
@@ -1908,7 +1786,9 @@ async function saveDatabase() {
         activityLogs: appState.activityLogs
       })
     });
-  } catch (e) { }
+  } catch (e) {
+    console.error('[DB] Network error saving DB:', e.message);
+  }
 }
 
 function setupSyncChannel() {
