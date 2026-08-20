@@ -407,14 +407,14 @@
   ],
   "sessions": [
     {
-      "token": "kai_sec_token_ksgfzq1yll1787234438991",
+      "token": "kai_sec_token_tes2rjkmago1786303991516",
       "user": {
         "name": "KAI Administrator",
         "username": "admin",
         "email": "info@karateacademyindia.com",
         "role": "admin"
       },
-      "createdAt": 1787234438991
+      "createdAt": 1786303991516
     },
     {
       "token": "kai_sec_token_6crorlvwd8y1786292055345",
@@ -584,7 +584,7 @@
       "contentHtml": "\n                <p>Thank you for submitting your admission application to <strong>Karate Academy India</strong>.</p>\n                <div class=\"card\">\n                  <table class=\"table\">\n                    <tr><td class=\"label\">Application Reference:</td><td class=\"value\"><span class=\"badge-paid\">KAIADM2026003</span></td></tr>\n                    <tr><td class=\"label\">Applicant Name:</td><td class=\"value\">Rohan Verma</td></tr>\n                    <tr><td class=\"label\">Selected Belt:</td><td class=\"value\">White Belt</td></tr>\n                    <tr><td class=\"label\">Membership Plan:</td><td class=\"value\">Monthly</td></tr>\n                    <tr><td class=\"label\">Submission Date:</td><td class=\"value\">20/8/2026</td></tr>\n                    <tr><td class=\"label\">Current Status:</td><td class=\"value\"><span class=\"badge-due\">UNDER MANAGER REVIEW</span></td></tr>\n                  </table>\n                </div>\n                <p>Our Academy Manager is reviewing your verification documents. Once approved, your official Student ID and Digital Mat Pass will be activated.</p>\n              ",
       "callToActionUrl": "",
       "callToActionText": "",
-      "status": "pending",
+      "status": "sent",
       "timestamp": "20/08/26, 7:30 pm",
       "triggeredBy": "Online Admission Portal",
       "retryCount": 0,

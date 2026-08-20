@@ -2,15 +2,20 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { DatabaseSync } from 'node:sqlite';
 import nodemailer from 'nodemailer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'db.json');
+const SQLITE_FILE = path.join(__dirname, 'kai_manager.sqlite');
 
 // Stable Server Build Identifier Token
 const SERVER_BUILD_ID = 'BUILD_V2.0_STABLE';
+
+// Native SQLite Database Connection
+const sqliteDb = new DatabaseSync(SQLITE_FILE);
 
 // In-memory active session tokens map: token -> user object
 const activeSessions = new Map();
@@ -26,55 +31,327 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
-let cachedDb = null;
-let cachedDbTime = 0;
+// Initialize SQLite Schema
+function initSqliteTables() {
+  sqliteDb.exec(`
+    CREATE TABLE IF NOT EXISTS config (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      username TEXT UNIQUE,
+      password TEXT,
+      name TEXT,
+      email TEXT,
+      role TEXT,
+      branchId TEXT,
+      status TEXT,
+      createdAt TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS students (
+      id TEXT PRIMARY KEY,
+      studentId TEXT UNIQUE,
+      name TEXT,
+      firstName TEXT,
+      middleName TEXT,
+      lastName TEXT,
+      gender TEXT,
+      dob TEXT,
+      belt TEXT,
+      parentName TEXT,
+      phone TEXT,
+      email TEXT,
+      emergName TEXT,
+      emergPhone TEXT,
+      emergRelation TEXT,
+      address TEXT,
+      city TEXT,
+      state TEXT,
+      pincode TEXT,
+      govIdType TEXT,
+      govIdNumber TEXT,
+      avatar TEXT,
+      accountStatus TEXT,
+      branchId TEXT,
+      joinDate TEXT,
+      matHours INTEGER,
+      monthlyFee REAL,
+      lastPaymentDate TEXT,
+      status TEXT,
+      createdAt TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS attendance (
+      id TEXT PRIMARY KEY,
+      date TEXT,
+      studentId TEXT,
+      studentName TEXT,
+      branchId TEXT,
+      time TEXT,
+      status TEXT,
+      checkInBy TEXT,
+      createdAt TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS financials (
+      id TEXT PRIMARY KEY,
+      invoiceId TEXT,
+      date TEXT,
+      studentId TEXT,
+      studentName TEXT,
+      branchId TEXT,
+      category TEXT,
+      amount REAL,
+      discount REAL,
+      finalPaid REAL,
+      paymentMethod TEXT,
+      transactionRef TEXT,
+      notes TEXT,
+      status TEXT,
+      createdAt TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS expenses (
+      id TEXT PRIMARY KEY,
+      expenseId TEXT,
+      date TEXT,
+      category TEXT,
+      vendor TEXT,
+      description TEXT,
+      amount REAL,
+      branchId TEXT,
+      status TEXT,
+      createdAt TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS staff_salaries (
+      id TEXT PRIMARY KEY,
+      invoiceId TEXT,
+      staffId TEXT,
+      staffName TEXT,
+      role TEXT,
+      branchId TEXT,
+      month TEXT,
+      baseSalary REAL,
+      bonus REAL,
+      deductions REAL,
+      paidAmount REAL,
+      paymentDate TEXT,
+      paymentMethod TEXT,
+      status TEXT,
+      createdAt TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS activity_logs (
+      id TEXT PRIMARY KEY,
+      title TEXT,
+      subtitle TEXT,
+      timestamp TEXT,
+      type TEXT,
+      isRead INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS pending_admissions (
+      id TEXT PRIMARY KEY,
+      applicationId TEXT UNIQUE,
+      name TEXT,
+      firstName TEXT,
+      middleName TEXT,
+      lastName TEXT,
+      email TEXT,
+      phone TEXT,
+      branchId TEXT,
+      gender TEXT,
+      dob TEXT,
+      belt TEXT,
+      membershipPlan TEXT,
+      medicalNotes TEXT,
+      parentName TEXT,
+      emergName TEXT,
+      emergPhone TEXT,
+      emergRelation TEXT,
+      address TEXT,
+      city TEXT,
+      state TEXT,
+      pincode TEXT,
+      govIdType TEXT,
+      govIdNumber TEXT,
+      avatar TEXT,
+      documentsJson TEXT,
+      status TEXT,
+      createdAt TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS belt_exams (
+      id TEXT PRIMARY KEY,
+      examAppId TEXT UNIQUE,
+      studentId TEXT,
+      candidateName TEXT,
+      dojoBranch TEXT,
+      joinDate TEXT,
+      matHours INTEGER,
+      currentBelt TEXT,
+      targetBelt TEXT,
+      instructorRec TEXT,
+      notes TEXT,
+      status TEXT,
+      createdAt TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS sessions (
+      token TEXT PRIMARY KEY,
+      userJson TEXT,
+      createdAt TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS branches (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      code TEXT,
+      city TEXT,
+      address TEXT,
+      phone TEXT,
+      status TEXT
+    );
+  `);
+
+  // Migrate legacy db.json data to SQLite if users table is empty
+  const userCount = sqliteDb.prepare('SELECT COUNT(*) as count FROM users').get().count;
+  if (userCount === 0 && fs.existsSync(DB_FILE)) {
+    try {
+      console.log('[SQLite DB] Migrating data from db.json into SQLite database...');
+      const raw = fs.readFileSync(DB_FILE, 'utf8');
+      const data = JSON.parse(raw);
+      seedSqliteFromJson(data);
+      console.log('[SQLite DB] Migration completed successfully.');
+    } catch (e) {
+      console.warn('[SQLite DB Migration Warning]', e.message);
+    }
+  }
+}
+
+function seedSqliteFromJson(data) {
+  if (data.users && Array.isArray(data.users)) {
+    const insertUser = sqliteDb.prepare(`INSERT OR REPLACE INTO users (id, username, password, name, email, role, branchId, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    data.users.forEach(u => insertUser.run(String(u.id || u.username), u.username, u.password, u.name, u.email, u.role, u.branchId || 'HQ', u.status || 'active', u.createdAt || new Date().toISOString()));
+  }
+
+  if (data.students && Array.isArray(data.students)) {
+    const insertStudent = sqliteDb.prepare(`INSERT OR REPLACE INTO students (id, studentId, name, firstName, middleName, lastName, gender, dob, belt, parentName, phone, email, emergName, emergPhone, emergRelation, address, city, state, pincode, govIdType, govIdNumber, avatar, accountStatus, branchId, joinDate, matHours, monthlyFee, lastPaymentDate, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    data.students.forEach(s => insertStudent.run(String(s.id || s.studentId), s.studentId, s.name, s.firstName || '', s.middleName || '', s.lastName || '', s.gender || 'Male', s.dob || '', s.belt || 'White Belt', s.parentName || '', s.phone || '', s.email || '', s.emergName || '', s.emergPhone || '', s.emergRelation || 'Parent / Guardian', s.address || '', s.city || 'Jaipur', s.state || 'Rajasthan', s.pincode || '', s.govIdType || 'Aadhaar Card', s.govIdNumber || '', s.avatar || '', s.accountStatus || 'active', s.branchId || 'HQ', s.joinDate || new Date().toISOString().split('T')[0], s.matHours || 0, s.monthlyFee || 2500, s.lastPaymentDate || '', s.status || 'present', s.createdAt || new Date().toISOString()));
+  }
+
+  if (data.financials && Array.isArray(data.financials)) {
+    const insertFinancial = sqliteDb.prepare(`INSERT OR REPLACE INTO financials (id, invoiceId, date, studentId, studentName, branchId, category, amount, discount, finalPaid, paymentMethod, transactionRef, notes, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    data.financials.forEach(f => insertFinancial.run(String(f.id || f.invoiceId), f.invoiceId || f.id, f.date || '', f.studentId || '', f.studentName || '', f.branchId || 'HQ', f.category || 'Tuition Fee', f.amount || 0, f.discount || 0, f.finalPaid || f.amount || 0, f.paymentMethod || 'Cash', f.transactionRef || '', f.notes || '', f.status || 'PAID', f.createdAt || new Date().toISOString()));
+  }
+
+  if (data.expenses && Array.isArray(data.expenses)) {
+    const insertExp = sqliteDb.prepare(`INSERT OR REPLACE INTO expenses (id, expenseId, date, category, vendor, description, amount, branchId, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    data.expenses.forEach(e => insertExp.run(String(e.id || e.expenseId), e.expenseId || e.id, e.date || '', e.category || 'Equipment', e.vendor || '', e.description || '', e.amount || 0, e.branchId || 'HQ', e.status || 'paid', e.createdAt || new Date().toISOString()));
+  }
+
+  if (data.staffSalaries && Array.isArray(data.staffSalaries)) {
+    const insertSal = sqliteDb.prepare(`INSERT OR REPLACE INTO staff_salaries (id, invoiceId, staffId, staffName, role, branchId, month, baseSalary, bonus, deductions, paidAmount, paymentDate, paymentMethod, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    data.staffSalaries.forEach(s => insertSal.run(String(s.id || s.invoiceId), s.invoiceId || s.id, s.staffId || '', s.staffName || '', s.role || 'Staff', s.branchId || 'HQ', s.month || '', s.baseSalary || 0, s.bonus || 0, s.deductions || 0, s.paidAmount || s.amount || 0, s.paymentDate || '', s.paymentMethod || 'Bank Transfer', s.status || 'PAID', s.createdAt || new Date().toISOString()));
+  }
+
+  if (data.activityLogs && Array.isArray(data.activityLogs)) {
+    const insertLog = sqliteDb.prepare(`INSERT OR REPLACE INTO activity_logs (id, title, subtitle, timestamp, type, isRead) VALUES (?, ?, ?, ?, ?, ?)`);
+    data.activityLogs.forEach(l => insertLog.run(String(l.id), l.title, l.subtitle, l.timestamp, l.type || 'system', l.isRead ? 1 : 0));
+  }
+
+  if (data.pendingAdmissions && Array.isArray(data.pendingAdmissions)) {
+    const insertAdm = sqliteDb.prepare(`INSERT OR REPLACE INTO pending_admissions (id, applicationId, name, firstName, middleName, lastName, email, phone, branchId, gender, dob, belt, membershipPlan, medicalNotes, parentName, emergName, emergPhone, emergRelation, address, city, state, pincode, govIdType, govIdNumber, avatar, documentsJson, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    data.pendingAdmissions.forEach(a => insertAdm.run(String(a.id || a.applicationId), a.applicationId, a.name, a.firstName || '', a.middleName || '', a.lastName || '', a.email || '', a.phone || '', a.branchId || 'HQ', a.gender || 'Male', a.dob || '', a.belt || 'White Belt', a.membershipPlan || 'Monthly', a.medicalNotes || '', a.parentName || '', a.emergName || '', a.emergPhone || '', a.emergRelation || 'Parent / Guardian', a.address || '', a.city || 'Jaipur', a.state || 'Rajasthan', a.pincode || '', a.govIdType || 'Aadhaar Card', a.govIdNumber || '', a.avatar || '', JSON.stringify(a.documents || []), a.status || 'pending', a.createdAt || new Date().toISOString()));
+  }
+
+  if (data.pendingBeltExams && Array.isArray(data.pendingBeltExams)) {
+    const insertExam = sqliteDb.prepare(`INSERT OR REPLACE INTO belt_exams (id, examAppId, studentId, candidateName, dojoBranch, joinDate, matHours, currentBelt, targetBelt, instructorRec, notes, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    data.pendingBeltExams.forEach(x => insertExam.run(String(x.id || x.examAppId), x.examAppId, x.studentId, x.candidateName, x.dojoBranch || 'HQ', x.joinDate || '', x.matHours || 0, x.currentBelt || 'White Belt', x.targetBelt || 'Yellow Belt', x.instructorRec || '', x.notes || '', x.status || 'pending', x.createdAt || new Date().toISOString()));
+  }
+
+  if (data.config) {
+    const insertConfig = sqliteDb.prepare(`INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)`);
+    Object.keys(data.config).forEach(k => {
+      insertConfig.run(k, typeof data.config[k] === 'object' ? JSON.stringify(data.config[k]) : String(data.config[k]));
+    });
+  }
+
+  if (data.branches && Array.isArray(data.branches)) {
+    const insertBranch = sqliteDb.prepare(`INSERT OR REPLACE INTO branches (id, name, code, city, address, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+    data.branches.forEach(b => insertBranch.run(b.id, b.name, b.code, b.city, b.address, b.phone, b.status || 'active'));
+  }
+}
 
 function readDbFile() {
-  if (cachedDb && (Date.now() - cachedDbTime < 1000)) {
-    return cachedDb;
-  }
-  try {
-    const raw = fs.readFileSync(DB_FILE, 'utf8');
-    const parsed = JSON.parse(raw);
-    parsed.users = parsed.users || [];
-    parsed.students = parsed.students || [];
-    parsed.financials = parsed.financials || [];
-    parsed.attendance = parsed.attendance || [];
-    parsed.activityLogs = parsed.activityLogs || [];
-    parsed.sessions = parsed.sessions || [];
-    parsed.pendingAdmissions = parsed.pendingAdmissions || [];
-    parsed.pendingBeltExams = parsed.pendingBeltExams || [];
-    cachedDb = parsed;
-    cachedDbTime = Date.now();
-    return parsed;
-  } catch (e) {
-    return { users: [], config: {}, students: [], financials: [], attendance: [], activityLogs: [], sessions: [], pendingAdmissions: [], pendingBeltExams: [] };
-  }
+  initSqliteTables();
+
+  const users = sqliteDb.prepare('SELECT * FROM users').all();
+  const students = sqliteDb.prepare('SELECT * FROM students').all();
+  const financials = sqliteDb.prepare('SELECT * FROM financials').all();
+  const attendance = sqliteDb.prepare('SELECT * FROM attendance').all();
+  const expenses = sqliteDb.prepare('SELECT * FROM expenses').all();
+  const staffSalaries = sqliteDb.prepare('SELECT * FROM staff_salaries').all();
+  const activityLogs = sqliteDb.prepare('SELECT * FROM activity_logs ORDER BY id DESC').all().map(l => ({ ...l, isRead: Boolean(l.isRead) }));
+  const pendingAdmissions = sqliteDb.prepare('SELECT * FROM pending_admissions').all().map(a => ({ ...a, documents: JSON.parse(a.documentsJson || '[]') }));
+  const pendingBeltExams = sqliteDb.prepare('SELECT * FROM belt_exams').all();
+  const branches = sqliteDb.prepare('SELECT * FROM branches').all();
+
+  const configRows = sqliteDb.prepare('SELECT * FROM config').all();
+  const config = {};
+  configRows.forEach(r => {
+    try {
+      config[r.key] = JSON.parse(r.value);
+    } catch (e) {
+      config[r.key] = r.value === 'true' ? true : r.value === 'false' ? false : r.value;
+    }
+  });
+
+  const sessionRows = sqliteDb.prepare('SELECT * FROM sessions').all();
+  const sessions = sessionRows.map(s => ({ token: s.token, user: JSON.parse(s.userJson || '{}') }));
+
+  return {
+    users,
+    students,
+    financials,
+    attendance,
+    expenses,
+    staffSalaries,
+    activityLogs,
+    pendingAdmissions,
+    pendingBeltExams,
+    branches,
+    config,
+    sessions
+  };
 }
 
 function writeDbFile(data) {
-  cachedDb = data;
-  cachedDbTime = Date.now();
-  fs.writeFile(DB_FILE, JSON.stringify(data, null, 2), 'utf8', (err) => {
-    if (err) console.error('[Server DB Write Error]', err);
-  });
+  initSqliteTables();
+  seedSqliteFromJson(data);
 }
 
-// Purge sessions on code update/boot so active browser sessions invalidate automatically
+// Hydrate sessions from SQLite database
 function hydrateActiveSessions() {
   activeSessions.clear();
   try {
-    const dbData = readDbFile();
-    if (dbData.sessions && Array.isArray(dbData.sessions)) {
-      dbData.sessions.forEach(s => {
-        if (s.token && s.user) {
-          activeSessions.set(s.token, s.user);
-        }
-      });
-      console.log(`[Server] Hydrated ${activeSessions.size} active sessions from db.json`);
-    }
+    initSqliteTables();
+    const rows = sqliteDb.prepare('SELECT * FROM sessions').all();
+    rows.forEach(r => {
+      if (r.token && r.userJson) {
+        try {
+          const user = JSON.parse(r.userJson);
+          activeSessions.set(r.token, user);
+        } catch (e) {}
+      }
+    });
+    console.log(`[SQLite Server] Hydrated ${activeSessions.size} active sessions from SQLite database.`);
   } catch (e) {
-    console.warn('[Server] Error hydrating sessions:', e.message);
+    console.warn('[SQLite Server] Error hydrating sessions:', e.message);
   }
 }
 
@@ -932,18 +1209,14 @@ const server = http.createServer((req, res) => {
 
             activeSessions.set(token, sessionUser);
 
-            // Persist session to db.json
-            dbData.sessions = dbData.sessions || [];
-            dbData.sessions = dbData.sessions.filter(s => s.user.username !== sessionUser.username);
-            dbData.sessions.unshift({
-              token,
-              user: sessionUser,
-              createdAt: Date.now()
-            });
-            if (dbData.sessions.length > 100) dbData.sessions = dbData.sessions.slice(0, 100);
-            writeDbFile(dbData);
+            // Persist session to SQLite database
+            try {
+              sqliteDb.prepare(`INSERT OR REPLACE INTO sessions (token, userJson, createdAt) VALUES (?, ?, ?)`).run(token, JSON.stringify(sessionUser), new Date().toISOString());
+            } catch (e) {
+              console.warn('[SQLite Session Insert Warning]', e.message);
+            }
 
-            console.log('[Server] Login successful for:', sessionUser.username, 'role:', sessionUser.role);
+            console.log('[SQLite Server] Login successful for:', sessionUser.username, 'role:', sessionUser.role);
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({

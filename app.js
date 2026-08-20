@@ -1806,10 +1806,14 @@ async function loadDatabase() {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.status === 401) {
-      console.warn('[DB] Server returned 401 Unauthorized. Evicting stale session...');
-      clearSessionStore();
-      triggerLogout(false);
-      return;
+      console.warn('[DB] Server returned 401 Unauthorized. Using local cache fallback...');
+      const cached = localStorage.getItem('kai_db_cache');
+      if (cached) {
+        try {
+          applyLoadedData(JSON.parse(cached));
+          return;
+        } catch (e) {}
+      }
     } else if (res.ok) {
       const data = await res.json();
       if (data.buildId && syncServerBuildVersion(data.buildId)) {
