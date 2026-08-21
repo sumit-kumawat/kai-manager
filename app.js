@@ -1977,7 +1977,8 @@ function updateSidebarNavHighlight(tabId, adminSec) {
   // Operational Console
   const opLinks = document.querySelectorAll('#operational-sidebar-nav [data-tab]');
   opLinks.forEach(link => {
-    const isTarget = link.getAttribute('data-tab') === tabId;
+    const linkTab = link.getAttribute('data-tab');
+    const isTarget = (linkTab === tabId) || ((tabId === 'admin-dashboard' || tabId === 'dashboard') && linkTab === 'dashboard');
     link.className = isTarget
       ? 'sidebar-nav-item sidebar-nav-active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition'
       : 'sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition';
@@ -1992,7 +1993,15 @@ function updateSidebarNavHighlight(tabId, adminSec) {
       : 'sidebar-nav-item sidebar-nav-staff-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition';
   });
 
-  // Root Admin System Administration Subsections
+  // Root Admin System Administration Subsections & Dashboard Link
+  const adminDashLink = document.getElementById('nav-admin-dashboard-link');
+  if (adminDashLink) {
+    const isTarget = (tabId === 'admin-dashboard' || tabId === 'dashboard');
+    adminDashLink.className = isTarget
+      ? 'sidebar-nav-item sidebar-nav-active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition'
+      : 'sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition';
+  }
+
   const adminLinks = document.querySelectorAll('#administrative-sidebar-section [data-admin-sec]');
   adminLinks.forEach(link => {
     const isTarget = (tabId === 'admin-settings' && link.getAttribute('data-admin-sec') === adminSec);
@@ -2004,7 +2013,8 @@ function updateSidebarNavHighlight(tabId, adminSec) {
   // Mobile Bottom Nav Highlight
   const mobLinks = document.querySelectorAll('nav.lg\\:hidden [data-mob-tab]');
   mobLinks.forEach(link => {
-    const isTarget = link.getAttribute('data-mob-tab') === tabId;
+    const mobTab = link.getAttribute('data-mob-tab');
+    const isTarget = (mobTab === tabId) || ((tabId === 'admin-dashboard' || tabId === 'dashboard') && mobTab === 'dashboard');
     link.className = isTarget
       ? 'flex flex-col items-center gap-1 p-2 rounded-xl text-red-600 font-extrabold'
       : 'flex flex-col items-center gap-1 p-2 rounded-xl text-slate-500 font-medium hover:text-slate-900';
@@ -7114,6 +7124,82 @@ window.openAddBranchModal = async function() {
       showCustomAlert({ title: 'Branch Creation Failed', message: d.error || 'Failed to create branch.', type: 'error' });
     }
   }).catch(e => showToast('Error creating branch: ' + e.message));
+};
+
+window.openEditBranchModal = async function(branchId) {
+  if (appState.userRole !== 'admin') {
+    await showCustomAlert({ title: 'Permission Restricted', message: 'Only Administrators can edit branch details.', type: 'error' });
+    return;
+  }
+
+  const branch = (appState.branches || []).find(b => String(b.id) === String(branchId) || String(b.code) === String(branchId));
+  if (!branch) return;
+
+  const result = await showCustomPrompt({
+    title: `Edit Branch Dojo - ${branch.name}`,
+    message: 'Update facility details and active status',
+    confirmText: 'Save Changes',
+    fields: [
+      { name: 'name', label: 'Branch Name', value: branch.name, required: true },
+      { name: 'code', label: 'Branch Code', value: branch.code || branch.id, required: true },
+      { name: 'city', label: 'City Location', value: branch.city || 'Jaipur', required: true },
+      { name: 'address', label: 'Address', value: branch.address || '' },
+      { name: 'phone', label: 'Contact Phone', value: branch.phone || '' },
+      { name: 'status', label: 'Operational Status', type: 'select', options: ['active', 'inactive'], value: branch.status || 'active' }
+    ]
+  });
+
+  if (!result) return;
+  const { name, code, city, address, phone, status } = result;
+
+  const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
+  fetch(getApiUrl('/api/branches'), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ id: branch.id, name, code: code.trim().toUpperCase(), city, address, phone, status })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      appState.branches = d.branches;
+      renderBranches();
+      showToast('Branch details updated successfully.');
+    } else {
+      showCustomAlert({ title: 'Update Failed', message: d.error || 'Failed to update branch.', type: 'error' });
+    }
+  }).catch(e => showToast('Error updating branch: ' + e.message));
+};
+
+window.openDeleteBranchModal = async function(branchId) {
+  if (appState.userRole !== 'admin') {
+    await showCustomAlert({ title: 'Permission Restricted', message: 'Only Administrators can delete branches.', type: 'error' });
+    return;
+  }
+
+  const branch = (appState.branches || []).find(b => String(b.id) === String(branchId) || String(b.code) === String(branchId));
+  if (!branch) return;
+
+  const confirmed = await showCustomConfirm({
+    title: 'Delete Dojo Branch',
+    message: `Are you sure you want to delete branch "${branch.name}" (${branch.code || branch.id})? This action cannot be undone.`,
+    confirmText: 'Delete Branch',
+    cancelText: 'Cancel',
+    type: 'warning'
+  });
+
+  if (!confirmed) return;
+
+  const token = localStorage.getItem('kai_token') || sessionStorage.getItem('kai_token');
+  fetch(getApiUrl(`/api/branches?id=${branch.id}`), {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      appState.branches = d.branches;
+      renderBranches();
+      showToast(`Branch ${branch.name} deleted.`);
+    } else {
+      showCustomAlert({ title: 'Deletion Failed', message: d.error || 'Failed to delete branch.', type: 'error' });
+    }
+  }).catch(e => showToast('Error deleting branch: ' + e.message));
 };
 
 window.deleteExpense = async function(expId) {
