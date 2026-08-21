@@ -1082,8 +1082,8 @@ function applyRolePermissions() {
     admissionsBtns.forEach(btn => btn?.classList.remove('hidden'));
     sendEmailBtns.forEach(btn => btn?.classList.remove('hidden'));
   } else if (role === 'manager') {
-    // Manager: Full Executive Dashboard (identical to Admin) + Operational Controls
-    adminSecNav?.classList.remove('hidden');
+    // Manager: Operational Console Sidebar (Admin Settings hidden) + Executive Dashboard cards
+    adminSecNav?.classList.add('hidden');
     operationalSecNav?.classList.remove('hidden');
     bottomMgrBox?.classList.remove('hidden');
     financialsLink?.classList.remove('hidden');
@@ -2013,6 +2013,11 @@ function updateSidebarNavHighlight(tabId, adminSec) {
 
 function switchTab(tabId, pushHistory = true) {
   if (tabId !== 'kiosk') stopCamera();
+
+  // If dashboard tab is requested for admin or manager, display #view-admin-dashboard (Executive Dashboard)
+  if ((tabId === 'dashboard' || tabId === 'admin-dashboard') && (appState.userRole === 'admin' || appState.userRole === 'manager')) {
+    tabId = 'admin-dashboard';
+  }
 
   appState.activeTab = tabId;
 
@@ -3751,12 +3756,12 @@ function toggleStudentActive(idStr) {
   }
 }
 
-function deleteStudent(idStr) {
+async function deleteStudent(idStr) {
   if (appState.userRole !== 'admin') {
-    showLightbox({
+    await showCustomAlert({
       title: 'Admin Permission Required',
       message: 'Only Root Admin accounts can delete student records. Please contact info@karateacademyindia.com.',
-      type: 'info'
+      type: 'error'
     });
     return;
   }
@@ -3764,27 +3769,31 @@ function deleteStudent(idStr) {
   const student = appState.students.find(s => String(s.id) === String(idStr));
   if (!student) return;
 
-  showLightbox({
+  const confirmed = await showCustomConfirm({
     title: 'Delete Student Record (Admin Action)',
     message: `Are you sure you want to permanently delete athlete "${student.name}" (${student.studentId}) from the database?`,
-    type: 'confirm',
     confirmText: 'Permanently Delete',
-    onResult: (confirmed) => {
-      if (confirmed) {
-        appState.students = appState.students.filter(s => String(s.id) !== String(idStr));
-        appState.financials = appState.financials.filter(f => String(f.studentId) !== String(student.studentId));
-        appState.attendance = appState.attendance.filter(a => String(a.studentId) !== String(student.studentId));
-
-        logActivity(`Student Record Deleted: ${student.name}`, `Purged ID ${student.studentId} permanently`, 'enrollment');
-
-        saveDatabase();
-        renderAllViews();
-        document.getElementById('student-details-modal')?.classList.add('hidden');
-        showToast(`Student record for ${student.name} permanently deleted.`);
-      }
-    }
+    cancelText: 'Cancel',
+    type: 'warning'
   });
+
+  if (confirmed) {
+    appState.students = (appState.students || []).filter(s => String(s.id) !== String(idStr));
+    appState.financials = (appState.financials || []).filter(f => String(f.studentId) !== String(student.studentId));
+    appState.attendance = (appState.attendance || []).filter(a => String(a.studentId) !== String(student.studentId));
+
+    logActivity(`Student Record Deleted: ${student.name}`, `Purged ID ${student.studentId} permanently`, 'enrollment');
+
+    await saveDatabase();
+    renderAllViews();
+    
+    const detailsModal = document.getElementById('student-details-modal');
+    if (detailsModal) closeSpecificModal(detailsModal);
+
+    showToast(`Student record for ${student.name} permanently deleted.`);
+  }
 }
+window.deleteStudent = deleteStudent;
 
 // 6. Dynamic Student Digital ID Cards & PNG Download Engine (Clean Layout, All Fields, No Overlap)
 async function renderIDCards() {
