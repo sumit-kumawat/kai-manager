@@ -3649,7 +3649,16 @@ async function openStudentDetailsModal(studentIdStr) {
 
   if (cardMount) {
     cardMount.innerHTML = `
-      <div class="id-card-printable p-5 rounded-2xl bg-white border-2 border-slate-200 shadow-md space-y-3 relative overflow-hidden flex flex-col justify-between w-full max-w-sm" id="idcard-element-${student.id}">
+      <div class="id-card-printable p-5 rounded-2xl bg-white border-2 border-slate-200 shadow-md space-y-3 relative group overflow-hidden flex flex-col justify-between w-full max-w-sm" id="idcard-element-${student.id}">
+        
+        <!-- HOVER OVERLAY WITH DOWNLOAD PNG BUTTON (IN LIGHTBOX) -->
+        <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 backdrop-blur-[2px] flex items-center justify-center p-4 z-20 pointer-events-none group-hover:pointer-events-auto">
+          <button onclick="downloadIDCardPNG('${student.id}')" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-xl transition transform scale-95 group-hover:scale-100 flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">download</span>
+            <span>Download PNG</span>
+          </button>
+        </div>
+
         <div>
           <!-- CLEAN HEADER WITHOUT ACTIVE/INACTIVE BADGE AND WITHOUT OFFICIAL ATHLETE ID SUBTITLE -->
           <div class="flex items-center gap-3 border-b border-slate-200 pb-3 mb-3">
@@ -3678,9 +3687,9 @@ async function openStudentDetailsModal(studentIdStr) {
         </div>
 
         <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
-          <div class="text-[9px] text-slate-400 font-mono">
-            <div class="font-bold text-slate-700">KARATE ACADEMY INDIA</div>
-            <div>Official Athlete Pass</div>
+          <div class="space-y-0.5">
+            <div class="text-[10px] font-extrabold text-slate-800 uppercase tracking-wider">DOJO SCAN PASS</div>
+            <div class="text-[9px] text-slate-500 font-medium">KAI Kiosk Check-In</div>
           </div>
           <div class="w-16 h-16 bg-white p-0.5 border border-slate-200 rounded-lg flex items-center justify-center shadow-sm shrink-0">
             ${qrDataBase64 ? `
@@ -3690,11 +3699,6 @@ async function openStudentDetailsModal(studentIdStr) {
             `}
           </div>
         </div>
-
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-center no-print">
-          <button onclick="downloadIDCardPNG('${student.id}')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition text-center flex items-center justify-center gap-1.5 shadow text-xs">
-            <span class="material-symbols-outlined text-sm">download</span><span>Download PNG</span>
-          </button>
         </div>
       </div>
     `;
@@ -3810,7 +3814,16 @@ async function renderIDCards() {
     const qrDataBase64 = await generateStudentQRCodeBase64(s.studentId);
 
     return `
-      <div class="kai-idcard-light id-card-printable p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-lg space-y-4 relative overflow-hidden flex flex-col justify-between w-full max-w-sm" id="idcard-element-${s.id}">
+      <div class="kai-idcard-light id-card-printable p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-lg space-y-4 relative group overflow-hidden flex flex-col justify-between w-full max-w-sm" id="idcard-element-${s.id}">
+        
+        <!-- HOVER OVERLAY WITH DOWNLOAD PNG BUTTON -->
+        <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 backdrop-blur-[2px] flex items-center justify-center p-4 z-20 pointer-events-none group-hover:pointer-events-auto">
+          <button onclick="downloadIDCardPNG('${s.id}')" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-xl transition transform scale-95 group-hover:scale-100 flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">download</span>
+            <span>Download PNG</span>
+          </button>
+        </div>
+
         <div>
           <!-- HEADER BANNER WITH RED ACCENT -->
           <div class="flex items-center gap-3 border-b-2 border-slate-100 pb-3.5 mb-4">
@@ -3850,8 +3863,7 @@ async function renderIDCards() {
         <div class="pt-3 border-t-2 border-dashed border-slate-200 flex items-center justify-between">
           <div class="space-y-0.5">
             <div class="text-[10px] font-extrabold text-slate-800 uppercase tracking-wider">DOJO SCAN PASS</div>
-            <div class="text-[9px] text-slate-400 font-mono">KAI Kiosk Check-In</div>
-            <div class="text-[9px] text-red-600 font-mono font-bold">${s.studentId}</div>
+            <div class="text-[9px] text-slate-500 font-medium">KAI Kiosk Check-In</div>
           </div>
           <div class="w-16 h-16 bg-white p-1 border-2 border-slate-200 rounded-xl flex items-center justify-center shadow-sm shrink-0">
             ${qrDataBase64 ? `
@@ -3860,12 +3872,6 @@ async function renderIDCards() {
               <button onclick="renderAllViews()" class="text-[8px] font-bold text-red-600 hover:underline text-center">Retry QR</button>
             `}
           </div>
-        </div>
-
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-center no-print">
-          <button onclick="downloadIDCardPNG('${s.id}')" class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition text-center flex items-center justify-center gap-1.5 shadow text-xs">
-            <span class="material-symbols-outlined text-sm">download</span><span>Download PNG</span>
-          </button>
         </div>
       </div>
     `;
@@ -3948,9 +3954,8 @@ async function downloadIDCardPNG(studentIdStr) {
       <!-- BOTTOM SCAN SECTION -->
       <div style="border-top: 2px dashed #cbd5e1; padding-top: 14px; display: flex; align-items: center; justify-content: space-between;">
         <div>
-          <div style="font-size: 11px; font-weight: 900; color: #0f172a; text-transform: uppercase;">DOJO KIOSK SCAN PASS</div>
-          <div style="font-size: 9px; color: #64748b; margin-top: 2px;">Karate Academy India Honbu Portal</div>
-          <div style="font-size: 9px; color: #dc2626; font-family: monospace; font-weight: 800; margin-top: 2px;">${student.studentId}</div>
+          <div style="font-size: 11px; font-weight: 900; color: #0f172a; text-transform: uppercase;">DOJO SCAN PASS</div>
+          <div style="font-size: 9px; color: #64748b; margin-top: 2px;">KAI Kiosk Check-In</div>
         </div>
         <div style="width: 70px; height: 70px; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
           <img src="${qrDataBase64}" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain;"/>
