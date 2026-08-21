@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "build:zip": "zip -r kai-manager.zip server.js app.js index.html styles.css admission.html belt_exam.html deploy.sh package.json package-lock.json"
   },
   "dependencies": {
     "cors": "^2.8.5",
