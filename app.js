@@ -1129,7 +1129,7 @@ function applyRolePermissions() {
     adminSecNav?.classList.add('hidden');
     operationalSecNav?.classList.remove('hidden');
     bottomMgrBox?.classList.add('hidden');
-    financialsLink?.classList.remove('hidden');
+    financialsLink?.classList.add('hidden');
     idcardsLink?.classList.remove('hidden');
 
     totalStudentsCard?.classList.remove('hidden');
