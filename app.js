@@ -1060,10 +1060,10 @@ function applyRolePermissions() {
   const sendEmailBtns = [document.getElementById('header-send-email-btn'), document.getElementById('mobile-send-email-btn')];
 
   if (role === 'admin') {
-    // Admin has 100% full unrestricted control of ALL system modules (System Administration + Operational Console)
+    // Admin sees System Administration + Branch Management (Operational Console links hidden per user request)
     adminSecNav?.classList.remove('hidden');
-    operationalSecNav?.classList.remove('hidden');
-    bottomMgrBox?.classList.remove('hidden');
+    operationalSecNav?.classList.add('hidden');
+    bottomMgrBox?.classList.add('hidden');
     financialsLink?.classList.remove('hidden');
     idcardsLink?.classList.remove('hidden');
 
