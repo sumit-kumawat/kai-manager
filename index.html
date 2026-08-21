@@ -68,7 +68,7 @@
           <span id="login-app-title">KAI Manager</span>
           <span
             class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 font-bold"
-            id="login-app-version">v1.0</span>
+            id="login-app-version">v2.0</span>
         </h1>
         <p class="text-xs text-slate-500 font-medium" id="login-app-subtitle">Karate Academy India • Portal Access</p>
       </div>
@@ -170,7 +170,7 @@
               class="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5 group-hover:text-red-600 transition">
               <span id="nav-app-title">KAI Manager</span>
               <span id="app-version-badge"
-                class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 font-bold">v1.0</span>
+                class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 font-bold">v2.0</span>
             </h1>
             <p class="text-xs text-slate-500 font-medium" id="nav-app-subtitle">Karate Academy India</p>
           </div>
@@ -229,7 +229,7 @@
               <span class="material-symbols-outlined text-lg text-emerald-600">storefront</span>
               <span>Branch Management</span>
             </a>
-            <a href="belt_exam.html" target="_blank"
+            <a href="#" data-tab="belt-exam" id="nav-belt-exam-link"
               class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-amber-700 hover:bg-amber-50 transition">
               <span class="material-symbols-outlined text-lg text-amber-600">military_tech</span>
               <span>Belt Exam Application</span>
@@ -299,7 +299,7 @@
         <!-- BOTTOM SIDEBAR SECTION: KAI BRAND FOOTER -->
         <div class="p-4 border-t border-slate-200 shrink-0">
           <div class="text-center text-xs font-semibold text-slate-500 tracking-wide">
-            Karate Academy India ERP
+            A <a href="http://www.conzex.com" target="_blank" rel="noopener noreferrer" class="conzex-rainbow-text hover:underline">Conzex</a> Global Product
           </div>
         </div>
       </div>
@@ -493,42 +493,60 @@
           </div>
         </div>
 
-        <!-- Dynamic Admin KPI Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="admin-kpi-grid">
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+        <!-- Dynamic Executive & Manager KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4" id="admin-kpi-grid">
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="dash-kpi-students-card">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Athletes</span>
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Students</span>
               <span class="material-symbols-outlined text-blue-600 text-lg">groups</span>
             </div>
-            <h3 id="adm-kpi-total-students" class="text-3xl font-extrabold text-slate-900">0</h3>
-            <p id="adm-kpi-students-sub" class="text-xs text-slate-500 font-medium">0 Active • 0 Inactive</p>
+            <h3 id="adm-kpi-total-students" class="text-2xl font-extrabold text-slate-900">0</h3>
+            <p id="adm-kpi-students-sub" class="text-[11px] text-slate-500 font-medium">0 Active • 0 Inactive</p>
           </div>
 
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="dash-kpi-staff-card">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Operational Staff</span>
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Staff</span>
               <span class="material-symbols-outlined text-purple-600 text-lg">badge</span>
             </div>
-            <h3 id="adm-kpi-total-staff" class="text-3xl font-extrabold text-slate-900">0</h3>
-            <p id="adm-kpi-staff-sub" class="text-xs text-slate-500 font-medium">0 Active Staff Members</p>
+            <h3 id="adm-kpi-total-staff" class="text-2xl font-extrabold text-slate-900">0</h3>
+            <p id="adm-kpi-staff-sub" class="text-[11px] text-slate-500 font-medium">0 Active Staff</p>
           </div>
 
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2 financial-sensitive-ui" id="dash-kpi-revenue-card">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Total Revenue</span>
+              <span class="material-symbols-outlined text-emerald-600 text-lg">payments</span>
+            </div>
+            <h3 id="adm-kpi-total-revenue" class="text-2xl font-extrabold text-emerald-700">₹0</h3>
+            <p id="adm-kpi-revenue-sub" class="text-[11px] text-slate-500 font-medium">Tuition Settlements</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2 financial-sensitive-ui" id="dash-kpi-expenses-card">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-red-800 uppercase tracking-wider">Total Expenses</span>
+              <span class="material-symbols-outlined text-red-600 text-lg">receipt_long</span>
+            </div>
+            <h3 id="adm-kpi-total-expenses" class="text-2xl font-extrabold text-red-600">₹0</h3>
+            <p id="adm-kpi-expenses-sub" class="text-[11px] text-slate-500 font-medium">Ops & Payroll</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2 financial-sensitive-ui" id="dash-kpi-dues-card">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-800 uppercase tracking-wider">Outstanding Dues</span>
+              <span class="material-symbols-outlined text-amber-600 text-lg">pending_actions</span>
+            </div>
+            <h3 id="adm-kpi-outstanding-dues" class="text-2xl font-extrabold text-amber-600">₹0</h3>
+            <p id="adm-kpi-dues-sub" class="text-[11px] text-slate-500 font-medium">Unpaid Dues</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2" id="dash-kpi-attendance-card">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Attendance Rate</span>
               <span class="material-symbols-outlined text-emerald-600 text-lg">fact_check</span>
             </div>
-            <h3 id="adm-kpi-attendance-rate" class="text-3xl font-extrabold text-emerald-700">0%</h3>
-            <p id="adm-kpi-attendance-sub" class="text-xs text-slate-500 font-medium">0 Present Today</p>
-          </div>
-
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Net Financial Balance</span>
-              <span class="material-symbols-outlined text-emerald-600 text-lg">payments</span>
-            </div>
-            <h3 id="adm-kpi-net-balance" class="text-3xl font-extrabold text-emerald-700">₹0</h3>
-            <p id="adm-kpi-finance-sub" class="text-xs text-slate-500 font-medium">Revenue ₹0 • Expenses ₹0</p>
+            <h3 id="adm-kpi-attendance-rate" class="text-2xl font-extrabold text-emerald-700">0%</h3>
+            <p id="adm-kpi-attendance-sub" class="text-[11px] text-slate-500 font-medium">0 Present Today</p>
           </div>
         </div>
 
@@ -1048,7 +1066,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center" id="id-cards-container">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center" id="id-cards-container">
           <!-- Dynamic CR80 Cards -->
         </div>
 
@@ -1095,14 +1113,6 @@
               title="Download Professional Financial Ledger Audit Statement PDF">
               <span class="material-symbols-outlined text-sm text-red-400">picture_as_pdf</span>
               <span>Download PDF Report</span>
-            </button>
-
-            <!-- Mark All Logs Read Button -->
-            <button onclick="markAllLogsAsRead()"
-              class="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 shrink-0"
-              title="Mark All Activity Logs as Read">
-              <span class="material-symbols-outlined text-sm text-red-600">done_all</span>
-              <span>Mark Logs Read</span>
             </button>
 
             <!-- Record Payment Button -->
@@ -1274,31 +1284,133 @@
           <div id="staff-directory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <!-- Dynamic HRMS Staff Directory Cards Rendered Here -->
           </div>
+        </div>
+      </div>
 
-          <!-- Table View Fallback for Compact View -->
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-slate-500 text-sm">table_rows</span>
-              <span>Tabular Staff Account Roster</span>
-            </h4>
-            <div class="overflow-x-auto border border-slate-200 rounded-xl table-scroll-container">
-              <table class="w-full text-left text-xs">
-                <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
-                  <tr>
-                    <th class="py-2.5 px-4">Staff Member</th>
-                    <th class="py-2.5 px-4">Staff ID</th>
-                    <th class="py-2.5 px-4">Role & Dept</th>
-                    <th class="py-2.5 px-4">Branch</th>
-                    <th class="py-2.5 px-4">Salary</th>
-                    <th class="py-2.5 px-4">Status</th>
-                    <th class="py-2.5 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="manager-users-table-body" class="divide-y divide-slate-100 font-medium">
-                  <!-- Dynamic Staff List Table Rows -->
-                </tbody>
-              </table>
+      <!-- ========================================== -->
+      <!-- MODULE: BELT EXAM APPLICATION CONSOLE      -->
+      <!-- ========================================== -->
+      <div id="view-belt-exam" class="tab-content space-y-6">
+        <!-- Header Bar -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+          <span class="text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">military_tech</span>
+            <span>Belt Rank Promotion & Grading Management</span>
+          </span>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Belt Exam Application Console</h2>
+              <p class="text-xs text-slate-500">Configure online grading applications, link expiry, limits, and review submitted candidate forms.</p>
             </div>
+            <div class="flex items-center gap-2">
+              <a href="belt_exam.html" target="_blank" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 shrink-0">
+                <span class="material-symbols-outlined text-sm">open_in_new</span>
+                <span>Open Public Portal</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls & Configuration Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Public Link Share Box -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center gap-2 text-slate-900 border-b border-slate-100 pb-3">
+              <span class="material-symbols-outlined text-amber-600">link</span>
+              <h3 class="font-extrabold text-sm uppercase tracking-wider">Public Exam Application URL</h3>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Share this official public URL with students to submit belt rank grading candidacy.
+            </p>
+            <div class="space-y-2">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase">Public URL Path</label>
+              <div class="flex items-center gap-2">
+                <input type="text" readonly id="belt-exam-url-display" value="https://kai-manager.conzex.com/belt_exam.html"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs font-bold text-slate-800" />
+                <button type="button" onclick="copyBeltExamUrl()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition shrink-0 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">content_copy</span>
+                  <span>Copy</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Application Configuration Card -->
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-red-600">tune</span>
+                <h3 class="font-extrabold text-sm text-slate-900 uppercase tracking-wider">Application Rules & Security Settings</h3>
+              </div>
+              <span id="belt-exam-active-status-badge" class="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-full border border-emerald-200">Active</span>
+            </div>
+
+            <form id="belt-exam-config-form" class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Public Form Status</label>
+                <select id="be-cfg-enabled" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
+                  <option value="true">Active (Accepting Submissions)</option>
+                  <option value="false">Inactive (Applications Closed)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Application Limit (Max Total)</label>
+                <input type="number" id="be-cfg-limit" min="0" placeholder="e.g. 50 (0 = Unlimited)" value="50"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Link Expiry Date</label>
+                <input type="date" id="be-cfg-expiry"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900" />
+              </div>
+              <div class="sm:col-span-3 flex justify-end pt-2">
+                <button type="submit" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm">save</span>
+                  <span>Save Configuration</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+
+        <!-- Submitted Belt Exam Applications Table -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="font-extrabold text-base text-slate-900">Submitted Belt Exam Applications</h3>
+              <p class="text-xs text-slate-500">Review candidate submissions, verify mat hours, change target belts, and approve promotions.</p>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+              <input type="text" id="be-search-input" onkeyup="renderBeltExamApplications()" placeholder="Search candidate, ID..." class="px-3.5 py-2 text-xs border border-slate-300 rounded-xl bg-white w-48" />
+              <select id="be-status-filter" onchange="renderBeltExamApplications()" class="px-3.5 py-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700">
+                <option value="all">All Status</option>
+                <option value="pending" selected>Pending Review</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-4">Ref ID</th>
+                  <th class="py-3 px-4">Student Candidate</th>
+                  <th class="py-3 px-4">Branch</th>
+                  <th class="py-3 px-4">Current Belt</th>
+                  <th class="py-3 px-4">Applying Target Belt</th>
+                  <th class="py-3 px-4">Submission Date</th>
+                  <th class="py-3 px-4">Status</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="belt-exam-table-body" class="divide-y divide-slate-100 font-medium">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -2427,22 +2539,48 @@
   <!-- ========================================== -->
   <!-- MODAL 1: ADD NEW STUDENT FORM              -->
   <!-- ========================================== -->
+  <!-- ========================================== -->
+  <!-- MODAL 1: ADD / REGISTER NEW STUDENT FORM   -->
+  <!-- ========================================== -->
   <div id="add-student-modal"
-    class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container"
     data-dismissible="true">
     <div
-      class="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 max-h-[90vh] overflow-y-auto modal-box">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">
-          <span class="material-symbols-outlined text-red-600">person_add</span>
-          <span>Register New Student (KAI Format)</span>
-        </h3>
-        <button id="close-add-student-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+      class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-auto max-h-[90vh] modal-box">
+      
+      <!-- Modal Header (Light Theme matching Student Details) -->
+      <div class="p-6 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600 shadow-sm shrink-0">
+            <span class="material-symbols-outlined text-2xl">person_add</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg text-slate-900">Register New Student</h3>
+            <p class="text-xs text-slate-500 font-medium">Create Athlete Profile & Generate Digital ID Card</p>
+          </div>
+        </div>
+        <button id="close-add-student-modal" class="p-2 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
-      <form id="add-student-form" class="space-y-3.5 text-xs">
+      <form id="add-student-form" class="p-6 overflow-y-auto space-y-4 text-xs flex-1">
+
+        <!-- MANDATORY BRANCH SELECTION -->
+        <div class="bg-red-50/60 p-4 rounded-2xl border border-red-200 space-y-1.5">
+          <label class="font-extrabold text-red-900 block text-xs flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm text-red-600">storefront</span>
+            <span>Select Dojo Branch * (Mandatory)</span>
+          </label>
+          <select id="new-student-branch" required
+            class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none text-xs">
+            <option value="">-- Choose Dojo Branch --</option>
+            <option value="HQ">Main Honbu Dojo (HQ)</option>
+            <option value="NORTH">North Branch Dojo</option>
+            <option value="SOUTH">South Branch Dojo</option>
+          </select>
+          <p class="text-[10px] text-red-700 font-medium">A new student must be assigned to an authorized branch dojo before enrollment.</p>
+        </div>
 
         <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
           <label class="font-semibold text-slate-800 block text-xs">Student Profile Photo</label>
@@ -2598,10 +2736,16 @@
           </div>
         </div>
 
-        <button type="submit"
-          class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition">
-          Generate KAI Student ID & Complete Enrollment
-        </button>
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
+          <button type="button" onclick="popModalStack()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition">
+            Cancel
+          </button>
+          <button type="submit"
+            class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">badge</span>
+            <span>Complete Enrollment</span>
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -2609,21 +2753,31 @@
   <!-- ========================================== -->
   <!-- MODAL 2: RECORD PAYMENT FORM               -->
   <!-- ========================================== -->
+  <!-- ========================================== -->
+  <!-- MODAL 2: RECORD PAYMENT FORM               -->
+  <!-- ========================================== -->
   <div id="record-payment-modal"
-    class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container"
     data-dismissible="true">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 modal-box">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">
-          <span class="material-symbols-outlined text-emerald-600">payments</span>
-          <span>Record Student Fee Payment</span>
-        </h3>
-        <button id="close-record-payment-modal" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] modal-box">
+      
+      <!-- Modal Header (Light Theme matching Student Details) -->
+      <div class="p-6 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-sm shrink-0">
+            <span class="material-symbols-outlined text-2xl">payments</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg text-slate-900">Record Student Fee Payment</h3>
+            <p class="text-xs text-slate-500 font-medium">Process Fee Settlement & Issue Official Receipt</p>
+          </div>
+        </div>
+        <button id="close-record-payment-modal" class="p-2 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
-      <form id="record-payment-form" class="space-y-3.5 text-xs">
+      <form id="record-payment-form" class="p-6 overflow-y-auto space-y-4 text-xs flex-1">
         <div class="space-y-1.5 relative">
           <label class="font-semibold text-slate-700 block mb-1">Search & Select Student *</label>
           <div class="relative">
@@ -2656,9 +2810,9 @@
           </div>
         </div>
 
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-          <span class="font-semibold text-slate-700">Final Payment Amount:</span>
-          <span id="pay-final-amount" class="text-base font-extrabold text-emerald-700">₹2,500</span>
+        <div class="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-200 flex justify-between items-center">
+          <span class="font-bold text-emerald-900">Final Payment Amount:</span>
+          <span id="pay-final-amount" class="text-lg font-extrabold text-emerald-700">₹2,500</span>
         </div>
 
         <div>
@@ -2672,10 +2826,16 @@
           </select>
         </div>
 
-        <button type="submit"
-          class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">
-          Generate Official Invoice & Receipt
-        </button>
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
+          <button type="button" onclick="popModalStack()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition">
+            Cancel
+          </button>
+          <button type="submit"
+            class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">receipt_long</span>
+            <span>Generate Official Invoice & Receipt</span>
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -2912,33 +3072,35 @@
   <!-- ========================================== -->
   <!-- MODAL: SEND EMAIL DISPATCH DIALOG          -->
   <!-- ========================================== -->
+  <!-- ========================================== -->
+  <!-- MODAL: SEND EMAIL DISPATCH DIALOG          -->
+  <!-- ========================================== -->
   <div id="send-email-modal"
     class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop-container"
     data-dismissible="true">
     <div
-      class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] modal-box animate-in">
+      class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] modal-box">
 
-      <!-- Modal Header -->
-      <div class="p-6 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-3">
+      <!-- Modal Header (Light Theme matching Student Details) -->
+      <div class="p-6 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
+        <div class="flex items-center gap-3.5">
           <div
-            class="w-10 h-10 rounded-2xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600 shadow-sm">
+            class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
             <span class="material-symbols-outlined text-2xl">forward_to_inbox</span>
           </div>
           <div>
             <h3 class="font-extrabold text-lg text-slate-900">Send Email Notification</h3>
-            <p class="text-xs text-slate-500" id="send-email-modal-subtitle">Dispatch official KAI email to student,
-              parent, or custom address</p>
+            <p class="text-xs text-slate-500 font-medium" id="send-email-modal-subtitle">Dispatch official KAI email to student, parent, or custom address</p>
           </div>
         </div>
         <button onclick="closeSendEmailModal()"
-          class="p-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 transition shadow-sm">
+          class="p-2 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
       <!-- Modal Body Form -->
-      <form id="header-send-email-form" class="p-6 overflow-y-auto space-y-4 text-xs">
+      <form id="header-send-email-form" class="p-6 overflow-y-auto space-y-4 text-xs flex-1">
 
         <!-- Recipient Type & Target Selection -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2961,7 +3123,7 @@
           </div>
         </div>
 
-        <!-- Custom Recipient Details (When Custom Email is selected or athlete auto-populates) -->
+        <!-- Custom Recipient Details -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="font-bold text-slate-700 block mb-1">Recipient Name *</label>
@@ -2989,7 +3151,7 @@
             <label class="font-bold text-slate-700">Message Content (Plain Text / HTML) *</label>
             <span class="text-[10px] text-slate-400 font-medium">Rendered with clean light-theme template</span>
           </div>
-          <textarea id="send-email-body" rows="6" required placeholder="Write email body message..."
+          <textarea id="send-email-body" rows="5" required placeholder="Write email body message..."
             class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 text-xs focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none leading-relaxed"></textarea>
         </div>
 
@@ -3004,10 +3166,10 @@
           </p>
         </div>
 
-        <!-- Footer Submit Button -->
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+        <!-- Footer Action Bar -->
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
           <button type="button" onclick="closeSendEmailModal()"
-            class="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-sm transition">
+            class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition">
             Cancel
           </button>
           <button type="submit" id="btn-dispatch-email-submit"
@@ -3174,47 +3336,47 @@
     <div
       class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] modal-box">
 
-      <!-- Modal Header (Light Theme) -->
-      <div class="p-5 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600">
+      <!-- Modal Header (Light Theme matching Student Details) -->
+      <div class="p-6 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200 shrink-0">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
             <span class="material-symbols-outlined text-2xl">person_add</span>
           </div>
           <div>
-            <h3 class="font-extrabold text-base text-slate-900">Create New Staff Account</h3>
-            <p class="text-xs text-slate-500">Register Operational Staff & Access Credentials</p>
+            <h3 class="font-extrabold text-lg text-slate-900">Create New Staff Account</h3>
+            <p class="text-xs text-slate-500 font-medium">Register Operational Staff & Access Credentials</p>
           </div>
         </div>
-        <button onclick="closeAddStaffModal()" class="p-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
+        <button onclick="closeAddStaffModal()" class="p-2 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
-      <form id="add-staff-form" class="p-6 overflow-y-auto space-y-4 text-xs">
+      <form id="add-staff-form" class="p-6 overflow-y-auto space-y-4 text-xs flex-1">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Full Name *</label>
-            <input type="text" id="new-staff-name" required placeholder="e.g. Vikram Sharma" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+            <input type="text" id="new-staff-name" required placeholder="e.g. Vikram Sharma" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
           </div>
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Username *</label>
-            <input type="text" id="new-staff-username" required placeholder="e.g. vikram_staff" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+            <input type="text" id="new-staff-username" required placeholder="e.g. vikram_staff" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
           </div>
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Email Address *</label>
-            <input type="email" id="new-staff-email" required placeholder="e.g. vikram@karateacademyindia.com" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+            <input type="email" id="new-staff-email" required placeholder="e.g. vikram@karateacademyindia.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
           </div>
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Mobile Phone *</label>
-            <input type="text" id="new-staff-phone" required placeholder="e.g. +91 70409 25258" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+            <input type="text" id="new-staff-phone" required placeholder="e.g. +91 70409 25258" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
           </div>
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Password *</label>
-            <input type="password" id="new-staff-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+            <input type="password" id="new-staff-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
           </div>
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Operational Role *</label>
-            <select id="new-staff-role" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold">
+            <select id="new-staff-role" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold">
               <option value="receptionist">Receptionist (Front Desk)</option>
               <option value="manager">Manager (Dojo Manager)</option>
               <option value="viewer">Viewer (Read Only)</option>
@@ -3222,15 +3384,15 @@
           </div>
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Designation</label>
-            <input type="text" id="new-staff-designation" placeholder="e.g. Senior Dojo Specialist" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+            <input type="text" id="new-staff-designation" placeholder="e.g. Senior Dojo Specialist" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
           </div>
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Department</label>
-            <input type="text" id="new-staff-department" placeholder="e.g. Operations" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+            <input type="text" id="new-staff-department" placeholder="e.g. Operations" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
           </div>
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Branch Dojo</label>
-            <select id="new-staff-branch" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl">
+            <select id="new-staff-branch" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
               <option value="HQ">Main Honbu Dojo (HQ)</option>
               <option value="NORTH">North Branch Dojo</option>
               <option value="SOUTH">South Branch Dojo</option>
@@ -3238,17 +3400,19 @@
           </div>
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Joining Date</label>
-            <input type="date" id="new-staff-joining" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl" />
+            <input type="date" id="new-staff-joining" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
           </div>
           <div class="sm:col-span-2">
             <label class="font-semibold text-slate-700 block mb-1">Monthly Salary Amount (₹)</label>
-            <input type="number" id="new-staff-salary" placeholder="25000" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold" />
+            <input type="number" id="new-staff-salary" placeholder="25000" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold" />
           </div>
         </div>
 
-        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-          <button type="button" onclick="closeAddStaffModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl">Cancel</button>
-          <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow flex items-center gap-1.5">
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
+          <button type="button" onclick="closeAddStaffModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition">
+            Cancel
+          </button>
+          <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center gap-1.5">
             <span class="material-symbols-outlined text-sm">person_add</span>
             <span>Create Staff Account</span>
           </button>

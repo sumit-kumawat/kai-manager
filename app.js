@@ -13,7 +13,7 @@ let appState = {
   config: {
     appTitle: 'KAI Manager',
     appSubtitle: 'Karate Academy India',
-    appVersion: 'v1.0',
+    appVersion: 'v2.0',
     logoUrl: 'https://www.karateacademyindia.com/logo.png',
     faviconUrl: 'https://www.karateacademyindia.com/logo.png',
     defaultUsername: 'admin',
@@ -202,6 +202,83 @@ async function markAllLogsAsRead() {
 window.markAllLogsAsRead = markAllLogsAsRead;
 
 // ==========================================
+// GLOBAL POPUP & MODAL STACK MANAGER (LIFO ORDER)
+// ==========================================
+const activeModalStack = [];
+
+function pushModalStack(modalEl) {
+  if (!modalEl) return;
+  if (typeof modalEl === 'string') modalEl = document.getElementById(modalEl);
+  if (!modalEl) return;
+
+  const idx = activeModalStack.indexOf(modalEl);
+  if (idx !== -1) activeModalStack.splice(idx, 1);
+
+  activeModalStack.push(modalEl);
+  modalEl.style.zIndex = (50 + activeModalStack.length * 10).toString();
+  modalEl.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function popModalStack() {
+  if (activeModalStack.length === 0) return null;
+  const topModal = activeModalStack.pop();
+  if (topModal) {
+    topModal.classList.add('hidden');
+    topModal.style.zIndex = '';
+  }
+  if (activeModalStack.length === 0) {
+    document.body.style.overflow = '';
+  } else {
+    const prevModal = activeModalStack[activeModalStack.length - 1];
+    if (prevModal) {
+      prevModal.classList.remove('hidden');
+    }
+  }
+  return topModal;
+}
+
+function closeSpecificModal(modalEl) {
+  if (!modalEl) return;
+  if (typeof modalEl === 'string') modalEl = document.getElementById(modalEl);
+  if (!modalEl) return;
+
+  const idx = activeModalStack.indexOf(modalEl);
+  if (idx !== -1) {
+    activeModalStack.splice(idx, 1);
+  }
+  modalEl.classList.add('hidden');
+  modalEl.style.zIndex = '';
+
+  if (activeModalStack.length === 0) {
+    document.body.style.overflow = '';
+  } else {
+    const prevModal = activeModalStack[activeModalStack.length - 1];
+    if (prevModal) prevModal.classList.remove('hidden');
+  }
+}
+
+window.pushModalStack = pushModalStack;
+window.popModalStack = popModalStack;
+window.closeSpecificModal = closeSpecificModal;
+
+document.addEventListener('click', (e) => {
+  const target = e.target;
+  if (target && target.classList && target.classList.contains('modal-backdrop-container') && activeModalStack.length > 0) {
+    if (target === activeModalStack[activeModalStack.length - 1]) {
+      popModalStack();
+    }
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && activeModalStack.length > 0) {
+    e.preventDefault();
+    popModalStack();
+  }
+});
+
+// ==========================================
 // SYSTEM ACTIVITY LOGS MODAL CONTROLLER (STABLE DIMENSIONS)
 // ==========================================
 function setupActivityLogsModal() {
@@ -209,7 +286,7 @@ function setupActivityLogsModal() {
   const btnClose = document.getElementById('btn-close-logs-modal');
   const modal = document.getElementById('activity-logs-modal');
 
-  const closeModal = () => modal?.classList.add('hidden');
+  const closeModal = () => popModalStack();
   closeBtn?.addEventListener('click', closeModal);
   btnClose?.addEventListener('click', closeModal);
 
@@ -237,7 +314,7 @@ function openActivityLogsModal() {
   const modal = document.getElementById('activity-logs-modal');
   if (!modal) return;
   renderActivityLogsList();
-  modal.classList.remove('hidden');
+  pushModalStack(modal);
 }
 
 function renderActivityLogsList() {
@@ -1764,6 +1841,11 @@ function applyLoadedData(data) {
   appState.financials = data.financials || [];
   appState.attendance = data.attendance || [];
   appState.activityLogs = data.activityLogs || [];
+  appState.beltExams = data.beltExams || [];
+  appState.expenses = data.expenses || [];
+  appState.branches = data.branches || [];
+  appState.staffSalaries = data.staffSalaries || [];
+  appState.emailLogs = data.emailLogs || [];
 
   updateDynamicBrandingUI();
   updateHeaderLogsBadge();
@@ -1822,7 +1904,7 @@ function updateDynamicBrandingUI() {
   const cfg = appState.config;
   const title = cfg.appTitle || 'KAI Manager';
   const subtitle = cfg.appSubtitle || 'Karate Academy India';
-  const version = cfg.appVersion || 'v1.0';
+  const version = cfg.appVersion || 'v2.0';
   const logo = cfg.logoUrl || DEFAULT_LOGO;
 
   document.title = `${title} - ${subtitle}`;
@@ -2012,6 +2094,7 @@ async function renderAllViews() {
   try { renderManagerUsers(); } catch (e) { console.error('Users table error:', e); }
   try { renderAdminStudentsTable(); } catch (e) { console.error('Admin students error:', e); }
   try { renderAdminLogsTable(); } catch (e) { console.error('Admin logs error:', e); }
+  try { renderBeltExamApplications(); } catch (e) { console.error('Belt exam table error:', e); }
   try { if (appState.activeAdminSec === 'emails') loadAdminEmailLogs(); } catch (e) { }
 }
 
@@ -2078,7 +2161,7 @@ function renderAdminDashboard() {
   const totalStaffEl = document.getElementById('adm-kpi-total-staff');
   if (totalStaffEl) totalStaffEl.textContent = users.length;
   const staffSubEl = document.getElementById('adm-kpi-staff-sub');
-  if (staffSubEl) staffSubEl.textContent = `${activeStaff.length} Active Staff Members`;
+  if (staffSubEl) staffSubEl.textContent = `${activeStaff.length} Active Staff`;
 
   const presentCount = activeStudents.filter(s => s.status === 'present').length;
   const rate = activeStudents.length > 0 ? Math.round((presentCount / activeStudents.length) * 100) : 0;
@@ -2092,36 +2175,66 @@ function renderAdminDashboard() {
   const salTotal = salaries.reduce((sum, s) => sum + (parseFloat(s.paidAmount || s.amount) || 0), 0);
   const netBalance = revTotal - expTotal - salTotal;
 
+  // Outstanding Dues calculation
+  const outstandingDues = students.reduce((sum, s) => {
+    if (s.dueAmount && parseFloat(s.dueAmount) > 0) return sum + parseFloat(s.dueAmount);
+    if (s.outstandingBalance && parseFloat(s.outstandingBalance) > 0) return sum + parseFloat(s.outstandingBalance);
+    if (s.feeStatus === 'overdue' || s.paymentStatus === 'overdue') return sum + 2500;
+    return sum;
+  }, 0);
+
+  const revEl = document.getElementById('adm-kpi-total-revenue');
+  if (revEl) revEl.textContent = `₹${revTotal.toLocaleString('en-IN')}`;
+  const expEl = document.getElementById('adm-kpi-total-expenses');
+  if (expEl) expEl.textContent = `₹${(expTotal + salTotal).toLocaleString('en-IN')}`;
+  const duesEl = document.getElementById('adm-kpi-outstanding-dues');
+  if (duesEl) duesEl.textContent = `₹${outstandingDues.toLocaleString('en-IN')}`;
+
   const netEl = document.getElementById('adm-kpi-net-balance');
   if (netEl) netEl.textContent = `₹${netBalance.toLocaleString('en-IN')}`;
   const financeSubEl = document.getElementById('adm-kpi-finance-sub');
   if (financeSubEl) financeSubEl.textContent = `Rev ₹${revTotal.toLocaleString('en-IN')} • Exp ₹${(expTotal + salTotal).toLocaleString('en-IN')}`;
 
+  // Hide Financial UI for Viewer and Receptionist
+  const isFinancialRestricted = (appState.userRole === 'viewer' || appState.userRole === 'receptionist');
+  document.querySelectorAll('.financial-sensitive-ui').forEach(el => {
+    if (isFinancialRestricted) el.classList.add('hidden');
+    else el.classList.remove('hidden');
+  });
+
+  const finChartCard = document.getElementById('chart-finance-performance')?.closest('.p-6');
+  if (finChartCard) {
+    if (isFinancialRestricted) finChartCard.classList.add('hidden');
+    else finChartCard.classList.remove('hidden');
+  }
+
   // Check if Chart.js is available
   if (typeof Chart === 'undefined') return;
 
   // Chart 1: Revenue vs Operational Expenses & Salaries
-  const ctxFinance = document.getElementById('chart-finance-performance')?.getContext('2d');
-  if (ctxFinance) {
-    if (adminCharts.finance) adminCharts.finance.destroy();
-    adminCharts.finance = new Chart(ctxFinance, {
-      type: 'bar',
-      data: {
-        labels: ['Revenue (Tuition)', 'Operational Expenses', 'Staff Salaries', 'Net Cash Flow'],
-        datasets: [{
-          label: 'Financial Flow (₹)',
-          data: [revTotal, expTotal, salTotal, netBalance],
-          backgroundColor: ['#059669', '#dc2626', '#7c3aed', netBalance >= 0 ? '#2563eb' : '#ef4444'],
-          borderRadius: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
+  if (!isFinancialRestricted) {
+    const ctxFinance = document.getElementById('chart-finance-performance')?.getContext('2d');
+    if (ctxFinance) {
+      if (adminCharts.finance) adminCharts.finance.destroy();
+      adminCharts.finance = new Chart(ctxFinance, {
+        type: 'bar',
+        data: {
+          labels: ['Revenue (Tuition)', 'Operational Expenses', 'Staff Salaries', 'Net Cash Flow'],
+          datasets: [{
+            label: 'Financial Flow (₹)',
+            data: [revTotal, expTotal, salTotal, netBalance],
+            backgroundColor: ['#059669', '#dc2626', '#7c3aed', netBalance >= 0 ? '#2563eb' : '#ef4444'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
   }
 
   // Chart 2: Attendance Trends
@@ -2158,21 +2271,21 @@ function renderAdminDashboard() {
     });
   }
 
-  // Chart 3: Belt Rank Roster Distribution
+  // Chart 3: Belt Rank Roster Distribution (PIE CHART)
   const ctxBelt = document.getElementById('chart-students-belt')?.getContext('2d');
   if (ctxBelt) {
     if (adminCharts.belt) adminCharts.belt.destroy();
 
     const belts = ['White Belt', 'Yellow Belt', 'Orange Belt', 'Green Belt', 'Blue Belt', 'Purple Belt', 'Brown Belt', 'Black Belt'];
-    const beltCounts = belts.map(b => students.filter(s => s.belt === b).length);
+    const beltCounts = belts.map(b => students.filter(s => String(s.belt || '').toLowerCase().includes(b.toLowerCase())).length);
 
     adminCharts.belt = new Chart(ctxBelt, {
-      type: 'doughnut',
+      type: 'pie',
       data: {
         labels: belts,
         datasets: [{
           data: beltCounts,
-          backgroundColor: ['#e2e8f0', '#facc15', '#fb923c', '#4ade80', '#38bdf8', '#c084fc', '#92400e', '#0f172a']
+          backgroundColor: ['#cbd5e1', '#facc15', '#fb923c', '#4ade80', '#38bdf8', '#c084fc', '#92400e', '#0f172a']
         }]
       },
       options: {
@@ -5206,8 +5319,18 @@ function setupFormsAndCalculators() {
     const contactName = document.getElementById('new-student-contact-name').value.trim() || name;
     const phone = document.getElementById('new-student-contact-phone').value.trim();
     const email = document.getElementById('new-student-contact-email').value.trim();
+    const branchVal = document.getElementById('new-student-branch')?.value || '';
 
-    // MANDATORY FIELD VALIDATION FOR PRIMARY CONTACT PHONE & EMAIL
+    // MANDATORY FIELD VALIDATION FOR BRANCH DOJO & CONTACT DETAILS
+    if (!branchVal) {
+      showLightbox({
+        title: 'Branch Selection Mandatory',
+        message: 'A new student must not be registered without selecting a branch dojo.',
+        type: 'warning'
+      });
+      return;
+    }
+
     if (!phone || !email) {
       showLightbox({
         title: 'Mandatory Contact Details Missing',
@@ -5232,6 +5355,7 @@ function setupFormsAndCalculators() {
     const newStudent = {
       id: Date.now(),
       studentId,
+      branchId: branchVal,
       name,
       firstName,
       middleName,
@@ -6989,4 +7113,162 @@ window.deleteExpense = async function(expId) {
   saveDatabase();
   renderExpenses();
   showToast('Expense deleted.');
+};
+
+// ==========================================
+// BELT EXAM APPLICATION CONSOLE CONTROLLERS
+// ==========================================
+window.renderBeltExamApplications = function() {
+  const tbody = document.getElementById('belt-exam-table-body');
+  if (!tbody) return;
+
+  const exams = appState.beltExams || [];
+  const statusFilter = document.getElementById('be-status-filter')?.value || 'all';
+  const query = (document.getElementById('be-search-input')?.value || '').toLowerCase().trim();
+
+  let filtered = exams.filter(e => {
+    if (statusFilter !== 'all' && (e.status || 'pending').toLowerCase() !== statusFilter.toLowerCase()) return false;
+    if (query) {
+      const matchName = String(e.candidateName || '').toLowerCase().includes(query);
+      const matchId = String(e.studentId || '').toLowerCase().includes(query);
+      const matchRef = String(e.examAppId || e.id || '').toLowerCase().includes(query);
+      if (!matchName && !matchId && !matchRef) return false;
+    }
+    return true;
+  });
+
+  const isReadOnly = (appState.userRole === 'viewer');
+  const beltsSequence = [
+    'Yellow Belt', 'Orange Belt', 'Green Belt', 'Blue Belt',
+    'Purple Belt', 'Brown Belt 3rd Kyu', 'Brown Belt 2nd Kyu', 'Brown Belt 1st Kyu',
+    'Black Belt 1st Dan', 'Black Belt 2nd Dan'
+  ];
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="py-12 text-center text-slate-400">
+          <span class="material-symbols-outlined text-4xl block mb-2 text-slate-300">military_tech</span>
+          <div class="font-extrabold text-sm text-slate-700">No applications found</div>
+          <p class="text-xs text-slate-400">No submitted belt grading applications match your search or status filter.</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(app => {
+    const status = (app.status || 'pending').toLowerCase();
+    let badgeClass = 'bg-amber-50 text-amber-800 border-amber-200';
+    if (status === 'approved') badgeClass = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+    if (status === 'rejected') badgeClass = 'bg-red-50 text-red-800 border-red-200';
+
+    return `
+      <tr class="hover:bg-slate-50 transition">
+        <td class="py-3 px-4 font-mono font-bold text-slate-900">${app.examAppId || app.id}</td>
+        <td class="py-3 px-4">
+          <div class="font-extrabold text-slate-900">${app.candidateName || 'Candidate'}</div>
+          <span class="font-mono text-[10px] text-slate-400">ID: ${app.studentId}</span>
+        </td>
+        <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 font-mono text-[10px] rounded-lg font-bold">${app.dojoBranch || 'HQ'}</span></td>
+        <td class="py-3 px-4 font-semibold text-slate-700">${app.currentBelt || 'White Belt'}</td>
+        <td class="py-3 px-4">
+          ${isReadOnly || status === 'approved' ? `
+            <span class="font-bold text-red-600">${app.targetBelt}</span>
+          ` : `
+            <select onchange="updateBeltExamTargetBelt('${app.id}', this.value)" class="px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-bold text-red-600 focus:ring-2 focus:ring-red-500">
+              ${beltsSequence.map(b => `<option value="${b}" ${b === app.targetBelt ? 'selected' : ''}>${b}</option>`).join('')}
+            </select>
+          `}
+        </td>
+        <td class="py-3 px-4 font-mono text-slate-600">${(app.createdAt || app.submissionDate || 'N/A').split('T')[0]}</td>
+        <td class="py-3 px-4">
+          <span class="px-2.5 py-1 ${badgeClass} font-extrabold text-[10px] rounded-lg border uppercase">${status}</span>
+        </td>
+        <td class="py-3 px-4 text-right">
+          ${isReadOnly ? '<span class="text-slate-400 text-xs">Read Only</span>' : `
+            <div class="flex items-center justify-end gap-1.5">
+              ${status === 'pending' ? `
+                <button onclick="approveBeltExamApplication('${app.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-lg shadow transition">Approve Promotion</button>
+                <button onclick="rejectBeltExamApplication('${app.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] rounded-lg border transition">Reject</button>
+              ` : ''}
+              <button onclick="deleteBeltExamApplication('${app.id}')" class="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[10px] rounded-lg border border-red-200 transition">Delete</button>
+            </div>
+          `}
+        </td>
+      </tr>
+    `;
+  }).join('');
+};
+
+window.copyBeltExamUrl = function() {
+  const urlInput = document.getElementById('belt-exam-url-display');
+  if (urlInput) {
+    urlInput.select();
+    navigator.clipboard.writeText(urlInput.value);
+    showToast('Public Belt Exam URL copied to clipboard.');
+  }
+};
+
+window.updateBeltExamTargetBelt = function(appId, newBelt) {
+  const app = (appState.beltExams || []).find(e => String(e.id) === String(appId));
+  if (app) {
+    app.targetBelt = newBelt;
+    saveDatabase();
+    showToast(`Target belt for ${app.candidateName} updated to ${newBelt}.`);
+  }
+};
+
+window.approveBeltExamApplication = async function(appId) {
+  if (appState.userRole === 'viewer') return;
+  const app = (appState.beltExams || []).find(e => String(e.id) === String(appId));
+  if (!app) return;
+
+  const student = (appState.students || []).find(s => String(s.studentId) === String(app.studentId));
+  const confirmed = await showCustomConfirm({
+    title: 'Approve Belt Promotion',
+    message: `Promote candidate ${app.candidateName} (${app.studentId}) from ${app.currentBelt} to ${app.targetBelt}?`,
+    confirmText: 'Approve Promotion',
+    cancelText: 'Cancel',
+    type: 'success'
+  });
+  if (!confirmed) return;
+
+  app.status = 'approved';
+  if (student) {
+    student.belt = app.targetBelt;
+  }
+
+  saveDatabase();
+  renderBeltExamApplications();
+  if (typeof renderDirectory === 'function') renderDirectory();
+  showToast(`Candidate ${app.candidateName} promoted to ${app.targetBelt}!`);
+};
+
+window.rejectBeltExamApplication = async function(appId) {
+  if (appState.userRole === 'viewer') return;
+  const app = (appState.beltExams || []).find(e => String(e.id) === String(appId));
+  if (!app) return;
+
+  app.status = 'rejected';
+  saveDatabase();
+  renderBeltExamApplications();
+  showToast(`Application for ${app.candidateName} rejected.`);
+};
+
+window.deleteBeltExamApplication = async function(appId) {
+  if (appState.userRole === 'viewer') return;
+  const confirmed = await showCustomConfirm({
+    title: 'Delete Belt Application',
+    message: 'Are you sure you want to delete this application record?',
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    type: 'warning'
+  });
+  if (!confirmed) return;
+
+  appState.beltExams = (appState.beltExams || []).filter(e => String(e.id) !== String(appId));
+  saveDatabase();
+  renderBeltExamApplications();
+  showToast('Application record deleted.');
 };

@@ -708,10 +708,10 @@ startxref
   return Buffer.from(pdfText, 'utf-8');
 }
 
-// PDF Financial Ledger Statement Generator
+// PDF Financial Ledger Statement Generator (Accounting Style Format)
 function createPdfFinancialLedgerBuffer(dbData, filterBranch = 'all') {
   const cfg = dbData.config || {};
-  const appTitle = cfg.appTitle || 'KAI Manager';
+  const appTitle = 'Karate Academy India ERP v2.0';
   const orgName = cfg.receiptHeader || 'KARATE ACADEMY INDIA';
   const phone = cfg.contactPhone || '+91 70409 25257';
   const email = cfg.contactEmail || 'info@karateacademyindia.com';
@@ -732,53 +732,61 @@ function createPdfFinancialLedgerBuffer(dbData, filterBranch = 'all') {
   const netBalance = totalIncome - totalExpenses - totalSalaries;
   const genDate = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
 
+  const rowsText = financials.slice(0, 15).map((f, idx) => {
+    const cleanRef = `REC-2026-${String(idx + 1).padStart(3, '0')}`;
+    const cleanName = String(f.studentName || f.payerName || 'Student Candidate').substring(0, 22).padEnd(22, ' ');
+    const amtStr = `Rs. ${parseInt(f.finalPaid || f.amount || 0).toLocaleString('en-IN')}`.padEnd(14, ' ');
+    const methodStr = String(f.method || f.paymentMethod || 'UPI').substring(0, 10);
+    return `(${cleanRef}   ${cleanName}   ${amtStr}   ${methodStr}   Settled)`;
+  }).join('\n0 -15 TD\n');
+
   const pdfText = `%PDF-1.4
 1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj
 2 0 obj <</Type /Pages /Kids [3 0 R] /Count 1>> endobj
 3 0 obj <</Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources <</Font <</F1 4 0 R /F2 6 0 R>>>> /Contents 5 0 R>> endobj
 4 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold>> endobj
 6 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>> endobj
-5 0 obj <</Length 1300>> stream
+5 0 obj <</Length 1400>> stream
 BT
 /F1 18 Tf
 40 800 TD
 (${orgName.toUpperCase()}) Tj
 0 -20 TD
 /F2 10 Tf
-(FINANCIAL LEDGER & AUDIT STATEMENT) Tj
+(OFFICIAL ACCOUNTING LEDGER & AUDIT STATEMENT) Tj
 0 -15 TD
-(Generated: ${genDate}   |   Branch Scope: ${filterBranch.toUpperCase()}) Tj
+(Generated: ${genDate}   |   Branch: ${filterBranch.toUpperCase()}) Tj
 0 -15 TD
-(Tel: ${phone}   |   Email: ${email}) Tj
+(Phone: ${phone}   |   Email: ${email}) Tj
 0 -30 TD
 /F1 12 Tf
-(FINANCIAL SUMMARY & BALANCE SHEET:) Tj
+(FINANCIAL SUMMARY & BALANCE SHEET ACCOUNTING:) Tj
 0 -20 TD
 /F2 10 Tf
-(Total Gross Income Received: Rs. ${totalIncome.toLocaleString('en-IN')}) Tj
+(Gross Revenue Received: Rs. ${totalIncome.toLocaleString('en-IN')}) Tj
 0 -15 TD
-(Total Operational Expenses: Rs. ${totalExpenses.toLocaleString('en-IN')}) Tj
+(Operational Expenses: Rs. ${totalExpenses.toLocaleString('en-IN')}) Tj
 0 -15 TD
-(Total Staff Salaries Disbursed: Rs. ${totalSalaries.toLocaleString('en-IN')}) Tj
+(Disbursed Payroll: Rs. ${totalSalaries.toLocaleString('en-IN')}) Tj
 0 -20 TD
 /F1 14 Tf
-(NET CLOSING CASH BALANCE: Rs. ${netBalance.toLocaleString('en-IN')}) Tj
+(NET BALANCE: Rs. ${netBalance.toLocaleString('en-IN')}) Tj
 0 -30 TD
 /F1 12 Tf
-(KEY TRANSACTIONS LOG:) Tj
+(ITEMIZED TRANSACTIONS LEDGER:) Tj
 0 -20 TD
 /F2 9 Tf
-(Ref ID          Type        Recipient / Note            Amount (Rs.)    Status) Tj
+(Ref No.        Athlete / Payee          Amount         Method     Status) Tj
 0 -15 TD
 (--------------------------------------------------------------------------------) Tj
 0 -15 TD
-${financials.slice(0, 15).map(f => `(${String(f.id || 'N/A').substring(0, 15)}  Income   ${String(f.studentName || 'Student').substring(0, 20)}  Rs.${String(f.finalPaid || f.amount || 0)}  Paid)`).join('\n0 -15 TD\n')}
+${rowsText}
 0 -30 TD
 /F1 10 Tf
-(END OF STATEMENT - CONFIDENTIAL FINANCIAL REPORT) Tj
+(CONFIDENTIAL - COMPUTERIZED FINANCIAL AUDIT STATEMENT) Tj
 0 -14 TD
 /F2 9 Tf
-(Page 1 of 1 - Computerized Statement Issued by ${appTitle}) Tj
+(A Conzex Global Product (www.conzex.com) | ${appTitle}) Tj
 ET
 endstream
 endobj
@@ -1155,7 +1163,37 @@ const server = http.createServer((req, res) => {
 
   // Extract clean pathname without query parameters
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const pathname = parsedUrl.pathname;
+  const rawPathname = parsedUrl.pathname;
+  const pathname = rawPathname.replace(/\/+/g, '/');
+
+  // Handle public HTML pages requested with /api/ prefix or double slashes (e.g. /api/belt_exam.html or //api/belt_exam.html)
+  if (pathname === '/api/belt_exam.html' || pathname === '/api/belt_exam' || pathname === '/api/belt-exam.html' || pathname === '/api/belt-exam' || pathname === '/belt_exam' || pathname === '/belt-exam') {
+    const beltExamPath = path.join(__dirname, 'belt_exam.html');
+    fs.readFile(beltExamPath, (err, content) => {
+      if (!err) {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(content, 'utf-8');
+      } else {
+        res.writeHead(500);
+        res.end(`Server Error loading belt_exam.html`);
+      }
+    });
+    return;
+  }
+
+  if (pathname === '/api/admission.html' || pathname === '/api/admission' || pathname === '/admission') {
+    const admissionPath = path.join(__dirname, 'admission.html');
+    fs.readFile(admissionPath, (err, content) => {
+      if (!err) {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(content, 'utf-8');
+      } else {
+        res.writeHead(500);
+        res.end(`Server Error loading admission.html`);
+      }
+    });
+    return;
+  }
 
   // REST API Endpoints
   if (pathname.startsWith('/api/')) {
@@ -1383,6 +1421,19 @@ const server = http.createServer((req, res) => {
         // Hide Root Admin for Non-Admins
         if (sessionUser.role !== 'admin' && Array.isArray(dbObj.users)) {
           dbObj.users = dbObj.users.filter(u => u.username !== 'admin' && u.role !== 'admin');
+        }
+
+        // Financial Privacy Enforcement: Strip financial data for Viewer and Receptionist
+        if (sessionUser.role === 'viewer' || sessionUser.role === 'receptionist') {
+          dbObj.financials = [];
+          dbObj.expenses = [];
+          dbObj.staffSalaries = [];
+          if (Array.isArray(dbObj.students)) {
+            dbObj.students = dbObj.students.map(s => {
+              const { feeStatus, dueAmount, paidAmount, outstandingBalance, paymentHistory, ...safeStudent } = s;
+              return safeStudent;
+            });
+          }
         }
 
         // Sort data for clean presentation
@@ -2240,6 +2291,12 @@ const server = http.createServer((req, res) => {
       if (!sessionUser) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: '401 Unauthorized.' }));
+        return;
+      }
+
+      if (sessionUser.role === 'viewer' || sessionUser.role === 'receptionist') {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: '403 Forbidden. Financial reports restricted.' }));
         return;
       }
 
@@ -3283,9 +3340,14 @@ function getStudentPublicRef(student) {
   }
 
   // Static File Serving with Single Page Application (SPA) Fallback
-  let relativePath = (pathname === '/' || pathname === '') ? 'index.html' : pathname.replace(/^\/+/, '');
-  if (relativePath === 'admission') relativePath = 'admission.html';
-  if (relativePath === 'belt-exam' || relativePath === 'belt_exam') relativePath = 'belt_exam.html';
+  let cleanPath = pathname.replace(/\/+/g, '/');
+  if (cleanPath.startsWith('/api/belt_exam') || cleanPath.startsWith('/api/belt-exam') || cleanPath.startsWith('/api/admission')) {
+    cleanPath = cleanPath.replace('/api/', '/');
+  }
+
+  let relativePath = (cleanPath === '/' || cleanPath === '') ? 'index.html' : cleanPath.replace(/^\/+/, '');
+  if (relativePath === 'admission' || relativePath === 'admission.html') relativePath = 'admission.html';
+  if (relativePath === 'belt-exam' || relativePath === 'belt_exam' || relativePath === 'belt_exam.html' || relativePath === 'belt-exam.html') relativePath = 'belt_exam.html';
 
   let filePath = path.join(__dirname, relativePath);
   const ext = path.extname(filePath);

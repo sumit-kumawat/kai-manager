@@ -402,10 +402,12 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 /* Rainbow Text Effect for Conzex Footer Link */
 .conzex-rainbow-text {
-  background: linear-gradient(135deg, #d90429, #2563eb, #059669, #d97706);
+  background: linear-gradient(135deg, #ef4444, #3b82f6, #10b981, #f59e0b, #ec4899);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-weight: 700;
+  background-clip: text;
+  font-weight: 800;
+  display: inline-block;
 }
 
 /* GLOBAL MOBILE RESPONSIVE OVERHAUL & ANTI-SCROLL ENGINE */

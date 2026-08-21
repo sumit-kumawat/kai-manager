@@ -27,6 +27,7 @@
       }
     }
   </script>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body class="h-full font-sans text-slate-900 bg-slate-50 flex flex-col min-h-screen">
@@ -277,7 +278,7 @@
   <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
     <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
       <div><strong>Karate Academy India</strong> • Official Mat Examination Portal</div>
-      <div><span class="font-bold text-slate-600">Karate Academy India Official ERP</span></div>
+      <div>A <a href="http://www.conzex.com" target="_blank" rel="noopener noreferrer" class="conzex-rainbow-text hover:underline">Conzex</a> Global Product</div>
     </div>
   </footer>
 
@@ -364,10 +365,28 @@
         'Brown Belt 2nd Kyu', 'Brown Belt 1st Kyu',
         'Black Belt 1st Dan', 'Black Belt 2nd Dan'
       ];
-      const curIndex = sequence.findIndex(b => b.toLowerCase() === String(currentBelt || '').toLowerCase());
-      if (curIndex !== -1 && curIndex < sequence.length - 1) {
-        beltSelect.value = sequence[curIndex + 1];
-      }
+      const normalizedCurrent = String(currentBelt || 'White Belt').toLowerCase();
+      let curIndex = sequence.findIndex(b => b.toLowerCase() === normalizedCurrent || normalizedCurrent.includes(b.toLowerCase().split(' ')[0]));
+      if (curIndex === -1) curIndex = 0;
+      
+      const nextEligibleIndex = Math.min(curIndex + 1, sequence.length - 1);
+      const nextEligibleBelt = sequence[nextEligibleIndex];
+
+      Array.from(beltSelect.options).forEach(opt => {
+        const optVal = opt.value;
+        const optIndex = sequence.findIndex(b => b.toLowerCase() === optVal.toLowerCase() || optVal.toLowerCase().includes(b.toLowerCase()));
+        
+        if (optVal.toLowerCase() === nextEligibleBelt.toLowerCase() || optIndex === nextEligibleIndex) {
+          opt.disabled = false;
+          opt.selected = true;
+          opt.textContent = opt.textContent.replace(' (Reference Only)', '');
+        } else {
+          opt.disabled = true;
+          if (!opt.textContent.includes('(Reference Only)')) {
+            opt.textContent = opt.textContent + ' (Reference Only)';
+          }
+        }
+      });
     }
 
     function showError(msg) {
