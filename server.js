@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'db.json');
 const SQLITE_FILE = path.join(__dirname, 'kai_manager.sqlite');
 
-// Stable Server Build Identifier Token
-const SERVER_BUILD_ID = 'BUILD_V2.0_STABLE';
+// Dynamic Server Build Identifier Token (Updated on every PM2 reload/restart)
+const SERVER_BUILD_ID = 'BUILD_' + Date.now();
 
 // Dynamic Native SQLite Database Connection
 let sqliteDb = null;
@@ -1200,6 +1200,13 @@ const server = http.createServer((req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+
+    // System Build Version Check Endpoint (Public)
+    if ((pathname === '/api/version' || pathname === '/api/public/version') && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, buildId: SERVER_BUILD_ID, version: 'v2.0', serverTime: new Date().toISOString() }));
+      return;
+    }
     // 0. Auth Logout Endpoint
     if (pathname === '/api/logout' && req.method === 'POST') {
       const authHeader = req.headers['authorization'];

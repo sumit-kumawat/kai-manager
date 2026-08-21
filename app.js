@@ -1847,6 +1847,14 @@ function applyLoadedData(data) {
   appState.staffSalaries = data.staffSalaries || [];
   appState.emailLogs = data.emailLogs || [];
 
+  if (data.buildId) {
+    if (!window.activeServerBuildId) {
+      window.activeServerBuildId = data.buildId;
+    } else if (window.activeServerBuildId !== data.buildId) {
+      triggerSystemUpdateSnackbar();
+    }
+  }
+
   updateDynamicBrandingUI();
   updateHeaderLogsBadge();
   renderAdminUsersTable();
@@ -7272,3 +7280,42 @@ window.deleteBeltExamApplication = async function(appId) {
   renderBeltExamApplications();
   showToast('Application record deleted.');
 };
+
+// ==========================================
+// SYSTEM BUILD VERSION UPDATE POLLING ENGINE
+// ==========================================
+window.checkSystemVersionUpdate = function() {
+  fetch(getApiUrl('/api/version'))
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.buildId) {
+        if (!window.activeServerBuildId) {
+          window.activeServerBuildId = data.buildId;
+        } else if (window.activeServerBuildId !== data.buildId) {
+          triggerSystemUpdateSnackbar();
+        }
+      }
+    })
+    .catch(() => {});
+};
+
+window.triggerSystemUpdateSnackbar = function() {
+  const snackbar = document.getElementById('update-notification-snackbar');
+  if (snackbar) {
+    snackbar.classList.remove('hidden');
+  }
+};
+
+window.dismissUpdateSnackbar = function() {
+  const snackbar = document.getElementById('update-notification-snackbar');
+  if (snackbar) {
+    snackbar.classList.add('hidden');
+  }
+};
+
+// Poll for server build updates every 30 seconds
+setInterval(() => {
+  if (typeof checkSystemVersionUpdate === 'function') {
+    checkSystemVersionUpdate();
+  }
+}, 30000);
