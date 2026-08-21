@@ -178,68 +178,68 @@
 
         <div class="p-6 overflow-y-auto flex-1 space-y-4">
 
-          <!-- MAIN OPERATIONAL SIDEBAR NAV (OPERATIONAL CONSOLE FOR ALL ROLES) -->
+          <!-- MAIN OPERATIONAL SIDEBAR NAV (OPERATIONAL CONSOLE FOR MANAGERS & STAFF) -->
           <div id="operational-sidebar-nav" class="space-y-1">
             <div
               class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 flex items-center gap-1">
               <span>Operational Console</span>
             </div>
-            <a href="#" data-tab="dashboard"
-              class="sidebar-nav-item sidebar-nav-active flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition">
-              <span class="material-symbols-outlined text-lg">dashboard</span>
+            <a href="#" data-tab="dashboard" id="nav-dashboard-link"
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-blue-600">dashboard</span>
               <span>Dashboard</span>
             </a>
-            <a href="#" data-tab="attendance"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">fact_check</span>
-              <span>Attendance Tracker</span>
-            </a>
-            <a href="#" data-tab="kiosk"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
-              <span>Scan for Attendance</span>
-            </a>
-            <a href="#" data-tab="schedule"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">calendar_month</span>
-              <span>Training Schedule</span>
-            </a>
-            <a href="#" data-tab="directory"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">groups</span>
+            <a href="#" data-tab="directory" id="nav-directory-link"
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-indigo-600">groups</span>
               <span>Student Directory</span>
             </a>
+            <a href="#" data-tab="attendance" id="nav-attendance-link"
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-emerald-600">fact_check</span>
+              <span>Attendance Tracker</span>
+            </a>
+            <a href="#" data-tab="kiosk" id="nav-kiosk-link"
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-purple-600">qr_code_scanner</span>
+              <span>Scan for Attendance</span>
+            </a>
             <a href="#" data-tab="idcards" id="nav-idcards-link"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">badge</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-rose-600">badge</span>
               <span>Student ID Cards</span>
             </a>
+            <a href="#" data-tab="belt-exam" id="nav-belt-exam-link"
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-amber-600">military_tech</span>
+              <span>Belt & Exam Applications</span>
+            </a>
             <a href="#" data-tab="financials" id="nav-financials-link"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">payments</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-emerald-600">payments</span>
               <span>Financial Ledger</span>
             </a>
             <a href="#" data-tab="expenses" id="nav-expenses-link"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg text-amber-600">receipt_long</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-orange-600">receipt_long</span>
               <span>Expense Management</span>
             </a>
             <a href="#" data-tab="branches" id="nav-branches-link"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg text-emerald-600">storefront</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-teal-600">storefront</span>
               <span>Branch Management</span>
             </a>
-            <a href="#" data-tab="belt-exam" id="nav-belt-exam-link"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs text-amber-700 hover:bg-amber-50 transition">
-              <span class="material-symbols-outlined text-lg text-amber-600">military_tech</span>
-              <span>Belt & Exam Applications</span>
+            <a href="#" data-tab="classes" id="nav-classes-link"
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-cyan-600">calendar_month</span>
+              <span>Training Schedule</span>
             </a>
 
             <!-- STAFF USER MANAGEMENT LINK FOR MANAGERS -->
             <div id="bottom-manager-users-box" class="hidden">
               <a href="#" data-tab="manager-users" id="nav-manager-users-link"
-                class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-                <span class="material-symbols-outlined text-lg text-blue-600">manage_accounts</span>
+                class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+                <span class="material-symbols-outlined text-lg text-sky-600">manage_accounts</span>
                 <span>Staff User Management</span>
               </a>
             </div>
@@ -253,49 +253,49 @@
               <span>System Administration</span>
             </div>
             <a href="#" data-tab="admin-dashboard" id="nav-admin-dashboard-link"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">dashboard</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-blue-600">dashboard</span>
               <span>Admin Executive Dashboard</span>
             </a>
             <a href="#" data-tab="branches" id="nav-admin-branches-link"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg text-emerald-600">storefront</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-teal-600">storefront</span>
               <span>Branch Management</span>
             </a>
             <a href="#" data-tab="admin-settings" data-admin-sec="branding"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">tune</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-amber-600">tune</span>
               <span>Branding & App Config</span>
             </a>
             <a href="#" data-tab="admin-settings" data-admin-sec="users"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">manage_accounts</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-sky-600">manage_accounts</span>
               <span>RBAC Staff Management</span>
             </a>
             <a href="#" data-tab="admin-settings" data-admin-sec="students"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">groups</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-indigo-600">groups</span>
               <span>RBAC Student Management</span>
             </a>
             <a href="#" data-tab="admin-settings" data-admin-sec="fees"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">payments</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-emerald-600">payments</span>
               <span>Tuition Fees Config</span>
             </a>
             <a href="#" data-tab="admin-settings" data-admin-sec="smtp"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">mail</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-violet-600">mail</span>
               <span>SMTP Config Manager</span>
             </a>
             <a href="#" data-tab="admin-settings" data-admin-sec="emails"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">outgoing_mail</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-purple-600">outgoing_mail</span>
               <span>Email Logs & Queue</span>
             </a>
             <a href="#" data-tab="admin-settings" data-admin-sec="logs"
-              class="sidebar-nav-item sidebar-nav-inactive flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
-              <span class="material-symbols-outlined text-lg">notifications</span>
-              <span>Logs Manager</span>
+              class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-xs transition">
+              <span class="material-symbols-outlined text-lg text-rose-600">notifications</span>
+              <span>System Audit Logs</span>
             </a>
           </div>
 
