@@ -922,7 +922,7 @@ async function checkAuth() {
 
           const currentHash = window.location.hash ? window.location.hash.replace('#', '') : '';
           if (!currentHash || currentHash === 'login') {
-            if (appState.userRole === 'admin') {
+            if (appState.userRole === 'admin' || appState.userRole === 'manager') {
               switchTab('admin-dashboard', false);
             } else {
               switchTab('dashboard', false);
@@ -1082,9 +1082,8 @@ function applyRolePermissions() {
     admissionsBtns.forEach(btn => btn?.classList.remove('hidden'));
     sendEmailBtns.forEach(btn => btn?.classList.remove('hidden'));
   } else if (role === 'manager') {
-    // Manager: Operational Console + Staff User Management + Logs + Send Email
-    // Per requirements: Remove cards: New Admissions, Pending Admissions, Belt Candidates
-    adminSecNav?.classList.add('hidden');
+    // Manager: Full Executive Dashboard (identical to Admin) + Operational Controls
+    adminSecNav?.classList.remove('hidden');
     operationalSecNav?.classList.remove('hidden');
     bottomMgrBox?.classList.remove('hidden');
     financialsLink?.classList.remove('hidden');
@@ -1092,11 +1091,11 @@ function applyRolePermissions() {
 
     totalStudentsCard?.classList.remove('hidden');
     attendanceCard?.classList.remove('hidden');
-    newAdmissionsCard?.classList.add('hidden'); // HIDDEN for Manager
-    pendingAdmissionsCard?.classList.add('hidden'); // HIDDEN for Manager
+    newAdmissionsCard?.classList.remove('hidden');
+    pendingAdmissionsCard?.classList.remove('hidden');
     revenueCard?.classList.remove('hidden');
     duesCard?.classList.remove('hidden');
-    beltCard?.classList.add('hidden'); // HIDDEN for Manager
+    beltCard?.classList.remove('hidden');
 
     addStudentBtns.forEach(btn => btn.classList.remove('hidden'));
     recordPayBtns.forEach(btn => btn.classList.remove('hidden'));
@@ -1224,13 +1223,10 @@ async function performLogin(username, password) {
 
       const currentHash = (window.location.hash || '').replace(/^#/, '');
       if (!currentHash || currentHash === 'login') {
-        if (appState.userRole === 'admin') {
+        if (appState.userRole === 'admin' || appState.userRole === 'manager') {
           switchTab('admin-dashboard', true);
         } else {
           switchTab('dashboard', true);
-          if (appState.userRole === 'manager') {
-            loadPendingAdmissions();
-          }
         }
       } else if (currentHash === 'admin-settings') {
         switchAdminSection(appState.activeAdminSec || 'branding', true);
