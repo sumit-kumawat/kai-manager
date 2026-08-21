@@ -12,8 +12,20 @@ const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'db.json');
 const SQLITE_FILE = path.join(__dirname, 'kai_manager.sqlite');
 
-// Dynamic Server Build Identifier Token (Updated on every PM2 reload/restart)
-const SERVER_BUILD_ID = 'BUILD_' + Date.now();
+import crypto from 'crypto';
+
+// Compute build hash based on source files so update notification ONLY appears when code changes
+function computeSystemBuildHash() {
+  try {
+    const code = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8') +
+                 fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8') +
+                 fs.readFileSync(path.join(__dirname, 'server.js'), 'utf8');
+    return 'BUILD_' + crypto.createHash('md5').update(code).digest('hex').substring(0, 12);
+  } catch (e) {
+    return 'BUILD_STABLE_V2';
+  }
+}
+const SERVER_BUILD_ID = computeSystemBuildHash();
 
 // Dynamic Native SQLite Database Connection
 let sqliteDb = null;
